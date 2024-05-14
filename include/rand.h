@@ -241,10 +241,7 @@ typedef struct BcRandState
  * @param l  The low 64 bits.
  * @return   The constant built from @a h and @a l.
  */
-#define BC_RAND_CONSTANT(h, l) \
-	{                          \
-		.lo = (l), .hi = (h)   \
-	}
+#define BC_RAND_CONSTANT(h, l) { .lo = (l), .hi = (h) }
 
 /**
  * Truncates a PCG state to the number of bits in a random integer.
