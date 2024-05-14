@@ -668,7 +668,7 @@ unset DC_DIGIT_CLAMP
 
 # Set some strict warning flags. Clang's -Weverything can be way too strict, so
 # we actually have to turn off some things.
-clang_flags="-Weverything -Wno-padded -Wno-unsafe-buffer-usage -Wno-poison-system-directories"
+clang_flags="-Weverything -Wno-padded -Wno-unsafe-buffer-usage -Wno-poison-system-directories -Wno-switch-default"
 gcc_flags="-Wno-clobbered"
 
 # Common CFLAGS.
