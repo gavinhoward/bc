@@ -77,7 +77,7 @@ cd "$scriptdir/.."
 
 set -e
 
-CFLAGS="-flto -fstack-protector-all -fsanitize=shadow-call-stack -fsanitize=cfi -fvisibility=hidden"
+CFLAGS="-flto -fstack-protector-all -fsanitize=shadow-call-stack -fvisibility=hidden"
 
 if [ "$asan" -ne 0 ]; then
 	CFLAGS="$CFLAGS -fsanitize=address"

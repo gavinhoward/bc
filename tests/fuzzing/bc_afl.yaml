@@ -15,6 +15,7 @@ windows:
     panes:
       - shell_command:
         - export AFL_AUTORESUME=1
+        - export AFL_MAP_SIZE=5000000
         - unset POSIXLY_CORRECT
         - unset BC_BANNER
         - unset BC_ENV_ARGS
@@ -31,6 +32,7 @@ windows:
     panes:
       - shell_command:
         - export AFL_AUTORESUME=1
+        - export AFL_MAP_SIZE=5000000
         - unset POSIXLY_CORRECT
         - unset BC_BANNER
         - unset BC_ENV_ARGS
@@ -47,6 +49,7 @@ windows:
     panes:
       - shell_command:
         - export AFL_AUTORESUME=1
+        - export AFL_MAP_SIZE=5000000
         - unset POSIXLY_CORRECT
         - unset BC_BANNER
         - unset BC_ENV_ARGS
@@ -63,6 +66,7 @@ windows:
     panes:
       - shell_command:
         - export AFL_AUTORESUME=1
+        - export AFL_MAP_SIZE=5000000
         - unset POSIXLY_CORRECT
         - unset BC_BANNER
         - unset BC_ENV_ARGS
@@ -79,6 +83,7 @@ windows:
     panes:
       - shell_command:
         - export AFL_AUTORESUME=1
+        - export AFL_MAP_SIZE=5000000
         - unset POSIXLY_CORRECT
         - unset BC_BANNER
         - unset BC_ENV_ARGS
@@ -95,6 +100,7 @@ windows:
     panes:
       - shell_command:
         - export AFL_AUTORESUME=1
+        - export AFL_MAP_SIZE=5000000
         - unset POSIXLY_CORRECT
         - unset BC_BANNER
         - unset BC_ENV_ARGS
@@ -111,6 +117,7 @@ windows:
     panes:
       - shell_command:
         - export AFL_AUTORESUME=1
+        - export AFL_MAP_SIZE=5000000
         - unset POSIXLY_CORRECT
         - unset BC_BANNER
         - unset BC_ENV_ARGS
@@ -127,6 +134,7 @@ windows:
     panes:
       - shell_command:
         - export AFL_AUTORESUME=1
+        - export AFL_MAP_SIZE=5000000
         - unset POSIXLY_CORRECT
         - unset BC_BANNER
         - unset BC_ENV_ARGS
@@ -143,6 +151,7 @@ windows:
     panes:
       - shell_command:
         - export AFL_AUTORESUME=1
+        - export AFL_MAP_SIZE=5000000
         - unset POSIXLY_CORRECT
         - unset BC_BANNER
         - unset BC_ENV_ARGS
@@ -159,6 +168,7 @@ windows:
     panes:
       - shell_command:
         - export AFL_AUTORESUME=1
+        - export AFL_MAP_SIZE=5000000
         - unset POSIXLY_CORRECT
         - unset BC_BANNER
         - unset BC_ENV_ARGS
@@ -175,6 +185,7 @@ windows:
     panes:
       - shell_command:
         - export AFL_AUTORESUME=1
+        - export AFL_MAP_SIZE=5000000
         - unset DC_ENV_ARGS
         - unset DC_LINE_LENGTH
         - unset DC_SIGINT_RESET
@@ -189,6 +200,7 @@ windows:
     panes:
       - shell_command:
         - export AFL_AUTORESUME=1
+        - export AFL_MAP_SIZE=5000000
         - unset DC_ENV_ARGS
         - unset DC_LINE_LENGTH
         - unset DC_SIGINT_RESET
@@ -203,6 +215,7 @@ windows:
     panes:
       - shell_command:
         - export AFL_AUTORESUME=1
+        - export AFL_MAP_SIZE=5000000
         - unset DC_ENV_ARGS
         - unset DC_LINE_LENGTH
         - unset DC_SIGINT_RESET
@@ -217,6 +230,7 @@ windows:
     panes:
       - shell_command:
         - export AFL_AUTORESUME=1
+        - export AFL_MAP_SIZE=5000000
         - unset DC_ENV_ARGS
         - unset DC_LINE_LENGTH
         - unset DC_SIGINT_RESET
@@ -231,6 +245,7 @@ windows:
     panes:
       - shell_command:
         - export AFL_AUTORESUME=1
+        - export AFL_MAP_SIZE=5000000
         - unset DC_ENV_ARGS
         - unset DC_LINE_LENGTH
         - unset DC_SIGINT_RESET
