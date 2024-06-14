@@ -215,6 +215,26 @@ bc_num_zeroDigits(const BcDig* n)
 }
 
 /**
+ * Returns the power of 10 that the least significant limb should be multiplied
+ * by to put its digits in the right place. For example, if the scale only
+ * reaches 8 places into the limb, this will return 1 (because it should be
+ * multiplied by 10^1) to put the number in the correct place.
+ * @param scale  The scale.
+ * @return       The power of 10 that the least significant limb should be
+ *               multiplied by
+ */
+static inline size_t
+bc_num_leastSigPow(size_t scale)
+{
+	size_t digs;
+
+	digs = scale % BC_BASE_DIGS;
+	digs = digs != 0 ? BC_BASE_DIGS - digs : 0;
+
+	return bc_num_pow10[digs];
+}
+
+/**
  * Return the total number of integer digits in a number. This is the opposite
  * of scale, like bc_num_int() is the opposite of rdx.
  * @param n  The number.
@@ -547,10 +567,8 @@ bc_num_truncate(BcNum* restrict n, size_t places)
 		size_t pow;
 
 		// This calculates how many decimal digits are in the least significant
-		// limb.
-		pow = n->scale % BC_BASE_DIGS;
-		pow = pow ? BC_BASE_DIGS - pow : 0;
-		pow = bc_num_pow10[pow];
+		// limb, then gets the power for that.
+		pow = bc_num_leastSigPow(n->scale);
 
 		n->len -= places_rdx;
 
