@@ -1956,6 +1956,9 @@ bc_num_d(BcNum* a, BcNum* b, BcNum* restrict c, size_t scale)
 	// actual algorithm easier to understand because it can assume a lot of
 	// things. Thus, you should view all of this setup code as establishing
 	// assumptions for bc_num_d_long(), where the actual division happens.
+	//
+	// But in short, this setup makes it so bc_num_d_long() can pretend the
+	// numbers are integers.
 	if (cpardx == cpa.len) cpa.len = bc_num_nonZeroLen(&cpa);
 	if (BC_NUM_RDX_VAL_NP(cpb) == cpb.len) cpb.len = bc_num_nonZeroLen(&cpb);
 	cpb.scale = 0;
