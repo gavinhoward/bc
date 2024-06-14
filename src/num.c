@@ -275,6 +275,33 @@ bc_num_nonZeroLen(const BcNum* restrict n)
 }
 
 /**
+ * Returns the power of 10 that a number with an absolute value less than 1
+ * needs to be multiplied by in order to be greater than 1 or less than -1.
+ * @param n  The number.
+ * @return   The power of 10 that a number greater than 1 and less than -1 must
+ *           be multiplied by to be greater than 1 or less than -1.
+ */
+static size_t
+bc_num_negPow10(const BcNum* restrict n)
+{
+	// Figure out how many limbs after the decimal point is zero.
+	size_t i, places, idx = bc_num_nonZeroLen(n) - 1;
+
+	places = 1;
+
+	// Figure out how much in the last limb is zero.
+	for (i = BC_BASE_DIGS - 1; i < BC_BASE_DIGS; --i)
+	{
+		if (bc_num_pow10[i] > (BcBigDig) n->num[idx]) places += 1;
+		else break;
+	}
+
+	// Calculate the combination of zero limbs and zero digits in the last
+	// limb.
+	return places + (BC_NUM_RDX_VAL(n) - (idx + 1)) * BC_BASE_DIGS;
+}
+
+/**
  * Performs a one-limb add with a carry.
  * @param a      The first limb.
  * @param b      The second limb.
@@ -2878,21 +2905,11 @@ bc_num_printExponent(const BcNum* restrict n, bool eng, bool newline)
 	// number is all fractional or not, obviously.
 	if (neg)
 	{
-		// Figure out how many limbs after the decimal point is zero.
-		size_t i, idx = bc_num_nonZeroLen(n) - 1;
+		// Figure out the negative power of 10.
+		places = bc_num_negPow10(n);
 
-		places = 1;
-
-		// Figure out how much in the last limb is zero.
-		for (i = BC_BASE_DIGS - 1; i < BC_BASE_DIGS; --i)
-		{
-			if (bc_num_pow10[i] > (BcBigDig) n->num[idx]) places += 1;
-			else break;
-		}
-
-		// Calculate the combination of zero limbs and zero digits in the last
-		// limb.
-		places += (nrdx - (idx + 1)) * BC_BASE_DIGS;
+		// Figure out how many digits mod 3 there are (important for
+		// engineering mode).
 		mod = places % 3;
 
 		// Calculate places if we are in engineering mode.
