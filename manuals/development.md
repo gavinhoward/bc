@@ -2662,7 +2662,7 @@ This split is convenient, however, because the tests in each directory are
 treated differently.
 
 The error tests in the standard test directory, which include `errors.txt` for
-both calculators, `posix_errors.txt` for `bc`, and `read_errors.txt` for `dc`,
+both calculators, `posix_errors.txt` for `bc`, and `read_errors.txt` for both,
 are run by [`tests/errors.sh`][226]. It reads them line-by-line and shoves the
 data through `stdin`. Each line is considered a separate test. For this reason,
 there can't be any blank lines in the error files in the standard tests
