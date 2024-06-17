@@ -61,4 +61,5 @@ dc_main(int argc, char* argv[])
 
 	return bc_vm_boot(argc, argv);
 }
+
 #endif // DC_ENABLED
