@@ -1551,8 +1551,12 @@ bc_vm_exec(void)
 
 #if BC_ENABLE_OSSFUZZ
 
-	// XXX: Yes, this is a hack to run the fuzzer for OSS-Fuzz, but it works.
-	bc_vm_load("<stdin>", (const char*) bc_fuzzer_data);
+	if (BC_VM_RUN_STDIN(has_file))
+	{
+		// XXX: Yes, this is a hack to run the fuzzer for OSS-Fuzz, but it
+		// works.
+		bc_vm_load("<stdin>", (const char*) bc_fuzzer_data);
+	}
 
 #else // BC_ENABLE_OSSFUZZ
 
