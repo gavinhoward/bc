@@ -1439,11 +1439,6 @@ else
 	COVERAGE_PREREQS=""
 fi
 
-# Add in the OSS-Fuzz flags.
-if [ "$ossfuzz" -ne 0 ]; then
-	CFLAGS="-fsanitize=fuzzer,address,undefined $CFLAGS"
-fi
-
 # Set some defaults.
 if [ -z "${DESTDIR+set}" ]; then
 	destdir=""
