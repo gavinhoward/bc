@@ -108,5 +108,7 @@ exit:
 
 	free(bc_fuzzer_data);
 
+	assert(false);
+
 	return s == BC_STATUS_SUCCESS || s == BC_STATUS_QUIT ? 0 : -1;
 }
