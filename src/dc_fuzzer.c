@@ -106,5 +106,7 @@ exit:
 
 	BC_SIG_MAYLOCK;
 
+	free(bc_fuzzer_data);
+
 	return s == BC_STATUS_SUCCESS || s == BC_STATUS_QUIT ? 0 : -1;
 }
