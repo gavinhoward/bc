@@ -1334,6 +1334,10 @@ elif [ "$ossfuzz" -eq 1 ]; then
 	bc=1
 	dc=1
 
+	# Expressions *cannot* exit in an OSS-Fuzz build.
+	bc_default_expr_exit=0
+	dc_default_expr_exit=0
+
 	executables="bc_fuzzer and dc_fuzzer"
 
 	karatsuba="@\$(KARATSUBA) 30 0 \$(BC_EXEC)"

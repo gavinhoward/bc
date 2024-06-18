@@ -1523,8 +1523,6 @@ bc_vm_exec(void)
 		bc_vm_file(path);
 	}
 
-	assert(false);
-
 #if BC_ENABLE_EXTRA_MATH
 	// These are needed for the pseudo-random number generator.
 	bc_unveil("/dev/urandom", "r");
@@ -1837,8 +1835,6 @@ bc_vm_atexit(BcStatus status)
 {
 	// Set the status correctly.
 	BcStatus s = BC_STATUS_IS_ERROR(status) ? status : BC_STATUS_SUCCESS;
-
-	assert(false);
 
 	bc_vm_shutdown();
 
