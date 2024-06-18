@@ -1502,8 +1502,6 @@ bc_vm_exec(void)
 	}
 #endif // BC_ENABLED
 
-	assert(false);
-
 	// If there are expressions to execute...
 	if (vm->exprs.len)
 	{
@@ -1542,6 +1540,8 @@ bc_vm_exec(void)
 	{
 		bc_pledge(bc_pledge_end, NULL);
 	}
+
+	assert(false);
 
 #if BC_ENABLE_AFL
 	// This is the thing that makes fuzzing with AFL++ so fast. If you move this
