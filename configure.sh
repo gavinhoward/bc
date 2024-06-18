@@ -1354,8 +1354,8 @@ elif [ "$ossfuzz" -eq 1 ]; then
 
 	second_target_prereqs="src/bc_fuzzer.o $default_target_prereqs"
 	default_target_prereqs="\$(BC_FUZZER) src/dc_fuzzer.o $default_target_prereqs"
-	default_target_cmd="\$(CC) \$(CFLAGS) src/dc_fuzzer.o \$(LIB_FUZZING_ENGINE) \$(OBJS) \$(LDFLAGS) -o \$(DC_FUZZER) \&\& ln -sf ./dc_fuzzer_c \$(DC_FUZZER_C)"
-	second_target_cmd="\$(CC) \$(CFLAGS) src/bc_fuzzer.o \$(LIB_FUZZING_ENGINE) \$(OBJS) \$(LDFLAGS) -o \$(BC_FUZZER) \&\& ln -sf ./bc_fuzzer_c \$(BC_FUZZER_C)"
+	default_target_cmd="\$(CXX) \$(CFLAGS) src/dc_fuzzer.o \$(LIB_FUZZING_ENGINE) \$(OBJS) \$(LDFLAGS) -o \$(DC_FUZZER) \&\& ln -sf ./dc_fuzzer_c \$(DC_FUZZER_C)"
+	second_target_cmd="\$(CXX) \$(CFLAGS) src/bc_fuzzer.o \$(LIB_FUZZING_ENGINE) \$(OBJS) \$(LDFLAGS) -o \$(BC_FUZZER) \&\& ln -sf ./bc_fuzzer_c \$(BC_FUZZER_C)"
 
 	default_target="\$(DC_FUZZER) \$(DC_FUZZER_C)"
 	second_target="\$(BC_FUZZER) \$(BC_FUZZER_C)"
