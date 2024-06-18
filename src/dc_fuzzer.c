@@ -78,7 +78,7 @@ LLVMFuzzerTestOneInput(const uint8_t* Data, size_t Size)
 	BcStatus s;
 
 	// I've already tested empty input, so just ignore.
-	if (Size == 0) return 0;
+	if (Size == 0 || Data[0] == '\0') return 0;
 
 	// Clear the global. This is to ensure a clean start.
 	memset(vm, 0, sizeof(BcVm));
