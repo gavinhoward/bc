@@ -1547,7 +1547,7 @@ bc_vm_exec(void)
 }
 
 BcStatus
-bc_vm_boot(int argc, char* argv[])
+bc_vm_boot(int argc, const char* argv[])
 {
 	int ttyin, ttyout, ttyerr;
 	bool tty;

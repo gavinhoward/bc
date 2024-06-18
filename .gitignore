@@ -9,7 +9,15 @@ bin/*bc
 bin/*bc.exe
 bin/*dc
 bin/*dc.exe
+bin/bc_fuzzer_c
+bin/bc_fuzzer_C
+bin/dc_fuzzer_c
+bin/dc_fuzzer_C
 bin/bcl
+bc_fuzzer_c
+bc_fuzzer_C
+dc_fuzzer_c
+dc_fuzzer_C
 bc.old
 *.o
 *.a

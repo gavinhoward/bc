@@ -46,7 +46,7 @@
  * @param argv  The arguments.
  */
 BcStatus
-bc_main(int argc, char* argv[])
+bc_main(int argc, const char* argv[])
 {
 	// All of these just set bc-specific items in BcVm.
 

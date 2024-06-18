@@ -181,6 +181,8 @@ usage() {
 	printf '        Enable a build appropriate for valgrind. For development only.\n'
 	printf '    -z, --enable-fuzz-mode\n'
 	printf '        Enable fuzzing mode. THIS IS FOR DEVELOPMENT ONLY.\n'
+	printf '    -Z, --enable-ossfuzz-mode\n'
+	printf '        Enable fuzzing mode for OSS-Fuzz. THIS IS FOR DEVELOPMENT ONLY.\n'
 	printf '    --prefix PREFIX\n'
 	printf '        The prefix to install to. Overrides "$PREFIX" if it exists.\n'
 	printf '        If PREFIX is "/usr", install path will be "/usr/bin".\n'
@@ -888,6 +890,7 @@ strip_bin=1
 all_locales=0
 library=0
 fuzz=0
+ossfuzz=0
 time_tests=0
 vg=0
 memcheck=0
@@ -911,7 +914,7 @@ dc_default_digit_clamp=0
 # getopts is a POSIX utility, but it cannot handle long options. Thus, the
 # handling of long options is done by hand, and that's the reason that short and
 # long options cannot be mixed.
-while getopts "abBcdDeEfgGhHik:lMmNO:p:PrS:s:tTvz-" opt; do
+while getopts "abBcdDeEfgGhHik:lMmNO:p:PrS:s:tTvzZ-" opt; do
 
 	case "$opt" in
 		a) library=1 ;;
@@ -944,6 +947,7 @@ while getopts "abBcdDeEfgGhHik:lMmNO:p:PrS:s:tTvz-" opt; do
 		T) strip_bin=0 ;;
 		v) vg=1 ;;
 		z) fuzz=1 ;;
+		Z) ossfuzz=1 ;;
 		-)
 			arg="$1"
 			arg="${arg#--}"
@@ -1070,6 +1074,7 @@ while getopts "abBcdDeEfgGhHik:lMmNO:p:PrS:s:tTvz-" opt; do
 				enable-test-timing) time_tests=1 ;;
 				enable-valgrind) vg=1 ;;
 				enable-fuzz-mode) fuzz=1 ;;
+				enable-ossfuzz-mode) ossfuzz=1 ;;
 				enable-memcheck) memcheck=1 ;;
 				install-all-locales) all_locales=1 ;;
 				help* | bc-only* | dc-only* | coverage* | debug*)
@@ -1320,6 +1325,41 @@ elif [ "$dc_only" -eq 1 ]; then
 
 	tests="test_dc"
 
+elif [ "$ossfuzz" -eq 1 ]; then
+
+	if [ "$bc_only" -ne 0 ] || [ "$dc_only" -ne 0 ]; then
+		usage "An OSS-Fuzz build must build both fuzzers."
+	fi
+
+	bc=1
+	dc=1
+
+	executables="bc_fuzzer and dc_fuzzer"
+
+	karatsuba="@\$(KARATSUBA) 30 0 \$(BC_EXEC)"
+	karatsuba_test="@\$(KARATSUBA) 1 100 \$(BC_EXEC)"
+
+	if [ "$library" -eq 0 ]; then
+		install_prereqs=" install_execs"
+		install_man_prereqs=" install_bc_manpage install_dc_manpage"
+		uninstall_prereqs=" uninstall_bc uninstall_dc"
+		uninstall_man_prereqs=" uninstall_bc_manpage uninstall_dc_manpage"
+	else
+		install_prereqs=" install_library install_bcl_header"
+		install_man_prereqs=" install_bcl_manpage"
+		uninstall_prereqs=" uninstall_library uninstall_bcl_header"
+		uninstall_man_prereqs=" uninstall_bcl_manpage"
+		tests="test_library"
+	fi
+
+	second_target_prereqs="src/bc_fuzzer.o $default_target_prereqs"
+	default_target_prereqs="\$(BC_FUZZER) src/dc_fuzzer.o $default_target_prereqs"
+	default_target_cmd="\$(CC) \$(CFLAGS) src/dc_fuzzer.o \$(LIB_FUZZING_ENGINE) \$(OBJS) \$(LDFLAGS) -o \$(DC_FUZZER) \&\& ln -sf ./dc_fuzzer_c \$(DC_FUZZER_C)"
+	second_target_cmd="\$(CC) \$(CFLAGS) src/bc_fuzzer.o \$(LIB_FUZZING_ENGINE) \$(OBJS) \$(LDFLAGS) -o \$(BC_FUZZER) \&\& ln -sf ./bc_fuzzer_c \$(BC_FUZZER_C)"
+
+	default_target="\$(DC_FUZZER) \$(DC_FUZZER_C)"
+	second_target="\$(BC_FUZZER) \$(BC_FUZZER_C)"
+
 else
 
 	bc=1
@@ -1349,8 +1389,12 @@ else
 
 fi
 
+if [ "$fuzz" -ne 0 ] && [ "$ossfuzz" -ne 0 ]; then
+	usage "Fuzzing mode and OSS-Fuzz mode are mutually exclusive"
+fi
+
 # We need specific stuff for fuzzing.
-if [ "$fuzz" -ne 0 ]; then
+if [ "$fuzz" -ne 0 ] || [ "$ossfuzz" -ne 0 ]; then
 	debug=1
 	hist=0
 	nls=0
@@ -1395,6 +1439,10 @@ else
 	COVERAGE_PREREQS=""
 fi
 
+# Add in the OSS-Fuzz flags.
+if [ "$ossfuzz" -ne 0 ]; then
+	CFLAGS="-fsanitize=fuzzer,address,undefined $CFLAGS"
+fi
 
 # Set some defaults.
 if [ -z "${DESTDIR+set}" ]; then
@@ -1754,8 +1802,9 @@ else
 	fi
 fi
 
+# The fuzzer files are always unneeded because they'll be built separately.
 manpage_args=""
-unneeded=""
+unneeded="bc_fuzzer.c dc_fuzzer.c"
 headers="\$(HEADERS)"
 
 # This series of if statements figure out what source files are *not* needed.
@@ -1826,6 +1875,14 @@ if [ "$library" -ne 0 ]; then
 
 	fi
 
+elif [ "$ossfuzz" -ne 0 ]; then
+
+	unneeded="$unneeded library.c main.c"
+
+	PC_PATH=""
+	pkg_config_install=""
+	pkg_config_uninstall=""
+
 else
 
 	unneeded="$unneeded library.c"
@@ -1836,9 +1893,10 @@ else
 
 fi
 
-# library.c is not needed under normal circumstances.
+# library.c, bc_fuzzer.c, and dc_fuzzer.c are not needed under normal
+# circumstances.
 if [ "$unneeded" = "" ]; then
-	unneeded="library.c"
+	unneeded="library.c bc_fuzzer.c dc_fuzzer.c"
 fi
 
 # This sets the appropriate manpage for a full build.
@@ -2011,7 +2069,9 @@ contents=$(replace "$contents" "HISTORY" "$hist")
 contents=$(replace "$contents" "EXTRA_MATH" "$extra_math")
 contents=$(replace "$contents" "NLS" "$nls")
 contents=$(replace "$contents" "FUZZ" "$fuzz")
+contents=$(replace "$contents" "OSSFUZZ" "$ossfuzz")
 contents=$(replace "$contents" "MEMCHECK" "$memcheck")
+contents=$(replace "$contents" "LIB_FUZZING_ENGINE" "$LIB_FUZZING_ENGINE")
 
 contents=$(replace "$contents" "BC_LIB_O" "$bc_lib")
 contents=$(replace "$contents" "BC_HELP_O" "$bc_help")
@@ -2115,6 +2175,15 @@ if [ "$dc" -ne 0 ]; then
 	gen_std_tests dc "$extra_math" "$time_tests" $dc_test_exec
 	gen_script_tests dc "$extra_math" "$generate_tests" "$time_tests" $dc_test_exec
 	gen_err_tests dc $dc_test_exec
+fi
+
+if [ "$ossfuzz" -ne 0 ]; then
+
+	printf 'bc_fuzzer_c: $(BC_FUZZER)\n\tln -sf $(BC_FUZZER) bc_fuzzer_c\n' >> Makefile
+	printf 'bc_fuzzer_C: $(BC_FUZZER)\n\tln -sf $(BC_FUZZER) bc_fuzzer_C\n' >> Makefile
+	printf 'dc_fuzzer_c: $(DC_FUZZER)\n\tln -sf $(DC_FUZZER) dc_fuzzer_c\n' >> Makefile
+	printf 'dc_fuzzer_C: $(DC_FUZZER)\n\tln -sf $(DC_FUZZER) dc_fuzzer_C\n' >> Makefile
+
 fi
 
 # Copy the correct manuals to the expected places.
