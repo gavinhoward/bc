@@ -82,6 +82,9 @@ LLVMFuzzerTestOneInput(const uint8_t* Data, size_t Size)
 	// I've already tested empty input, so just ignore.
 	if (Size == 0) return 0;
 
+	// Clear the global. This is to ensure a clean start.
+	memset(vm, 0, sizeof(BcVm));
+
 	// Make sure to set the name.
 	vm->name = "dc";
 
