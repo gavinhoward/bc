@@ -1502,6 +1502,8 @@ bc_vm_exec(void)
 	}
 #endif // BC_ENABLED
 
+	assert(!BC_ENABLE_OSSFUZZ || BC_EXPR_EXIT == 0);
+
 	// If there are expressions to execute...
 	if (vm->exprs.len)
 	{
