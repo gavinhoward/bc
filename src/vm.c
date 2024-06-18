@@ -1832,6 +1832,8 @@ bc_vm_atexit(BcStatus status)
 	// Set the status correctly.
 	BcStatus s = BC_STATUS_IS_ERROR(status) ? status : BC_STATUS_SUCCESS;
 
+	assert(false);
+
 	bc_vm_shutdown();
 
 #if BC_DEBUG
