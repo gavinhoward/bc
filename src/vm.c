@@ -1504,15 +1504,11 @@ bc_vm_exec(void)
 
 	assert(!BC_ENABLE_OSSFUZZ || BC_EXPR_EXIT == 0);
 
-	assert(vm->exprs.len);
-
 	// If there are expressions to execute...
 	if (vm->exprs.len)
 	{
 		// Process the expressions.
 		bc_vm_exprs();
-
-		assert(false);
 
 		// Sometimes, executing expressions means we need to quit.
 		if (!vm->no_exprs && vm->exit_exprs && BC_EXPR_EXIT) return;
@@ -1847,8 +1843,6 @@ bc_vm_atexit(BcStatus status)
 #if BC_DEBUG
 	bc_vec_free(&vm->jmp_bufs);
 #endif // BC_DEBUG
-
-	assert(false);
 
 	return s;
 }
