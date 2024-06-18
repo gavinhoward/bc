@@ -1523,6 +1523,8 @@ bc_vm_exec(void)
 		bc_vm_file(path);
 	}
 
+	assert(false);
+
 #if BC_ENABLE_EXTRA_MATH
 	// These are needed for the pseudo-random number generator.
 	bc_unveil("/dev/urandom", "r");
@@ -1540,8 +1542,6 @@ bc_vm_exec(void)
 	{
 		bc_pledge(bc_pledge_end, NULL);
 	}
-
-	assert(false);
 
 #if BC_ENABLE_AFL
 	// This is the thing that makes fuzzing with AFL++ so fast. If you move this
