@@ -1904,7 +1904,7 @@ if [ "$manpage_args" = "" ]; then
 	manpage_args="A"
 fi
 
-if [ "$vg" -ne 0 ]; then
+if [ "$vg" -ne 0 ] || [ "$ossfuzz" -ne 0 ]; then
 	memcheck=1
 fi
 
