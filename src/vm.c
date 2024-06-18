@@ -1502,6 +1502,8 @@ bc_vm_exec(void)
 	}
 #endif // BC_ENABLED
 
+	assert(false);
+
 	// If there are expressions to execute...
 	if (vm->exprs.len)
 	{
