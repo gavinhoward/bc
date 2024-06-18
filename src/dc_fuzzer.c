@@ -43,9 +43,7 @@
 #include <bc.h>
 #include <dc.h>
 
-const uint8_t* bc_fuzzer_data;
-
-size_t bc_fuzzer_size;
+uint8_t* bc_fuzzer_data;
 
 /// A boolean about whether we should use -c (false) or -C (true).
 static bool dc_C;
@@ -96,8 +94,10 @@ LLVMFuzzerTestOneInput(const uint8_t* Data, size_t Size)
 
 	BC_SETJMP_LOCKED(vm, exit);
 
-	bc_fuzzer_data = Data;
-	bc_fuzzer_size = Size;
+	// Create a string with the data.
+	bc_fuzzer_data = bc_vm_malloc(Size + 1);
+	memcpy(bc_fuzzer_data, Data, Size);
+	bc_fuzzer_data[Size] = '\0';
 
 	s = dc_main((int) (bc_fuzzer_args_len - 1),
 	            dc_C ? dc_fuzzer_args_C : dc_fuzzer_args_c);

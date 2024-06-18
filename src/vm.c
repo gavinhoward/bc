@@ -66,6 +66,9 @@
 #if BC_ENABLE_LIBRARY
 #include <library.h>
 #endif // BC_ENABLE_LIBRARY
+#if BC_ENABLE_OSSFUZZ
+#include <ossfuzz.h>
+#endif // BC_ENABLE_OSSFUZZ
 
 #if !BC_ENABLE_LIBRARY
 
@@ -1140,6 +1143,8 @@ err:
 	BC_LONGJMP_CONT(vm);
 }
 
+#if !BC_ENABLE_OSSFUZZ
+
 bool
 bc_vm_readLine(bool clear)
 {
@@ -1275,6 +1280,8 @@ err:
 
 	BC_LONGJMP_CONT(vm);
 }
+
+#endif // BC_ENABLE_OSSFUZZ
 
 bool
 bc_vm_readBuf(bool clear)
@@ -1542,8 +1549,17 @@ bc_vm_exec(void)
 	__AFL_INIT();
 #endif // BC_ENABLE_AFL
 
+#if BC_ENABLE_OSSFUZZ
+
+	// XXX: Yes, this is a hack to run the fuzzer for OSS-Fuzz, but it works.
+	bc_vm_load("<stdin>", (const char*) bc_fuzzer_data);
+
+#else // BC_ENABLE_OSSFUZZ
+
 	// Execute from stdin. bc always does.
 	if (BC_VM_RUN_STDIN(has_file)) bc_vm_stdin();
+
+#endif // BC_ENABLE_OSSFUZZ
 }
 
 BcStatus

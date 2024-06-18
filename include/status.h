@@ -676,8 +676,12 @@ typedef enum BcMode
 	/// File mode.
 	BC_MODE_FILE,
 
+#if !BC_ENABLE_OSSFUZZ
+
 	/// stdin mode.
 	BC_MODE_STDIN,
+
+#endif // !BC_ENABLE_OSSFUZZ
 
 } BcMode;
 

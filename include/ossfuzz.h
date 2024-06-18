@@ -55,10 +55,7 @@ extern const char* dc_fuzzer_args_c[];
 extern const char* dc_fuzzer_args_C[];
 
 /// The data pointer.
-extern const uint8_t* bc_fuzzer_data;
-
-/// The data size.
-extern size_t bc_fuzzer_size;
+extern uint8_t* bc_fuzzer_data;
 
 /**
  * The function that the fuzzer runs.
