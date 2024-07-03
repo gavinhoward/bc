@@ -2990,7 +2990,7 @@ bc_program_reset(BcProgram* p)
 	// stack is implicit.
 	//
 	// XXX: We don't do this in dc because other dc implementations don't.
-	if (BC_IS_BC) bc_vec_popAll(&p->results);
+	if (BC_IS_BC || !BC_I) bc_vec_popAll(&p->results);
 
 	// Clear the globals' stacks.
 	if (BC_G) bc_program_popGlobals(p, true);
