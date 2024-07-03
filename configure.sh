@@ -1532,8 +1532,8 @@ if [ "$nls" -ne 0 ]; then
 
 	flags="-DBC_ENABLE_NLS=1 -DBC_ENABLED=$bc -DDC_ENABLED=$dc"
 	flags="$flags -DBC_ENABLE_HISTORY=$hist -DBC_ENABLE_LIBRARY=0 -DBC_ENABLE_AFL=0"
-	flags="$flags -DBC_ENABLE_EXTRA_MATH=$extra_math -I$scriptdir/include/"
-	flags="$flags -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700"
+	flags="$flags -DBC_ENABLE_EXTRA_MATH=$extra_math -DBC_ENABLE_OSSFUZZ=0"
+	flags="$flags -I$scriptdir/include/ -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700"
 
 	ccbase=$(basename "$CC")
 
@@ -1634,8 +1634,8 @@ if [ "$hist" -eq 1 ]; then
 	flags="-DBC_ENABLE_HISTORY=1 -DBC_ENABLED=$bc -DDC_ENABLED=$dc"
 	flags="$flags -DBC_ENABLE_NLS=$nls -DBC_ENABLE_LIBRARY=0 -DBC_ENABLE_AFL=0"
 	flags="$flags -DBC_ENABLE_EDITLINE=$editline -DBC_ENABLE_READLINE=$readline"
-	flags="$flags -DBC_ENABLE_EXTRA_MATH=$extra_math -I$scriptdir/include/"
-	flags="$flags -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700"
+	flags="$flags -DBC_ENABLE_EXTRA_MATH=$extra_math -DBC_ENABLE_OSSFUZZ=0"
+	flags="$flags -I$scriptdir/include/ -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700"
 
 	"$CC" $CPPFLAGS $CFLAGS $flags -c "$scriptdir/src/history.c" -o "./history.o" > /dev/null 2>&1
 
