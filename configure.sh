@@ -68,7 +68,7 @@ usage() {
 	printf '       [--man3dir=MAN3DIR]\n'
 
 	if [ "$_usage_val" -ne 0 ]; then
-		exit
+		exit "$_usage_val"
 	fi
 
 	printf '\n'
