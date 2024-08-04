@@ -1547,8 +1547,8 @@ if [ "$nls" -ne 0 ]; then
 
 	rm -rf "./vm.o"
 
-	# If this errors, it is probably because of building on Windows,
-	# and NLS is not supported on Windows, so disable it.
+	# If this errors, it is probably because of building on Windows or musl,
+	# and NLS is not supported on Windows or musl, so disable it.
 	if [ "$err" -ne 0 ]; then
 		printf 'NLS does not work.\n'
 		if [ $force -eq 0 ]; then
