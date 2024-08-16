@@ -1541,7 +1541,7 @@ if [ "$nls" -ne 0 ]; then
 		flags="$flags -Wno-unreachable-code"
 	fi
 
-	"$CC" $CPPFLAGS $CFLAGS $flags -c "$scriptdir/src/vm.c" -o "./vm.o" > /dev/null 2>&1
+	"$CC" $CPPFLAGS $CFLAGS $flags -c "$scriptdir/src/vm.c" -E > /dev/null
 
 	err="$?"
 
@@ -1561,7 +1561,7 @@ if [ "$nls" -ne 0 ]; then
 		printf 'NLS works.\n\n'
 
 		printf 'Testing gencat...\n'
-		gencat "./en_US.cat" "$scriptdir/locales/en_US.msg" > /dev/null 2>&1
+		gencat "./en_US.cat" "$scriptdir/locales/en_US.msg" > /dev/null
 
 		err="$?"
 
@@ -1637,7 +1637,7 @@ if [ "$hist" -eq 1 ]; then
 	flags="$flags -DBC_ENABLE_EXTRA_MATH=$extra_math -DBC_ENABLE_OSSFUZZ=0"
 	flags="$flags -I$scriptdir/include/ -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700"
 
-	"$CC" $CPPFLAGS $CFLAGS $flags -c "$scriptdir/src/history.c" -o "./temp.o" > /dev/null 2>&1
+	"$CC" $CPPFLAGS $CFLAGS $flags -c "$scriptdir/src/history.c" -E > /dev/null
 
 	err="$?"
 
@@ -1707,7 +1707,7 @@ set +e
 printf 'Testing for FreeBSD...\n'
 
 flags="-DBC_TEST_FREEBSD -DBC_ENABLE_AFL=0"
-"$CC" $CPPFLAGS $CFLAGS $flags "-I$scriptdir/include" -E "$scriptdir/scripts/os.c" > /dev/null 2>&1
+"$CC" $CPPFLAGS $CFLAGS $flags "-I$scriptdir/include" -E "$scriptdir/scripts/os.c" > /dev/null
 
 err="$?"
 
@@ -1724,7 +1724,7 @@ fi
 printf 'Testing for macOS...\n'
 
 flags="-DBC_TEST_APPLE -DBC_ENABLE_AFL=0"
-"$CC" $CPPFLAGS $CFLAGS $flags "-I$scriptdir/include" -E "$scriptdir/scripts/os.c" > /dev/null 2>&1
+"$CC" $CPPFLAGS $CFLAGS $flags "-I$scriptdir/include" -E "$scriptdir/scripts/os.c" > /dev/null
 
 err="$?"
 
@@ -1752,7 +1752,7 @@ fi
 printf 'Testing for OpenBSD...\n'
 
 flags="-DBC_TEST_OPENBSD -DBC_ENABLE_AFL=0"
-"$CC" $CPPFLAGS $CFLAGS $flags "-I$scriptdir/include" -E "$scriptdir/scripts/os.c" > /dev/null 2>&1
+"$CC" $CPPFLAGS $CFLAGS $flags "-I$scriptdir/include" -E "$scriptdir/scripts/os.c" > /dev/null
 
 err="$?"
 
