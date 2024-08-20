@@ -122,5 +122,6 @@ main(int argc, char* argv[])
 exit:
 	BC_SIG_MAYLOCK;
 
-	return vm->status == BC_STATUS_QUIT ? BC_STATUS_SUCCESS : vm->status;
+	// Need the cast for FreeBSD.
+	return vm->status == BC_STATUS_QUIT ? BC_STATUS_SUCCESS : (int) vm->status;
 }
