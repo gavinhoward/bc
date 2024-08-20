@@ -724,6 +724,7 @@ predefined_build() {
 			all_locales=0
 			library=0
 			fuzz=0
+			ossfuzz=0
 			time_tests=0
 			vg=0
 			memcheck=0
@@ -757,6 +758,7 @@ predefined_build() {
 			all_locales=0
 			library=0
 			fuzz=0
+			ossfuzz=0
 			time_tests=0
 			vg=0
 			memcheck=0
@@ -774,7 +776,8 @@ predefined_build() {
 			dc_default_digit_clamp=0;;
 
 		GDH)
-			CFLAGS="-flto -Weverything -Wno-padded -Wno-unsafe-buffer-usage -Wno-poison-system-directories -Werror -pedantic -std=c11"
+			CFLAGS="-Weverything -Wno-padded -Wno-unsafe-buffer-usage -Wno-poison-system-directories"
+			CFLAGS="$CFLAGS -Wno-switch-default -Werror -pedantic -std=c11"
 			bc_only=0
 			dc_only=0
 			coverage=0
@@ -791,6 +794,7 @@ predefined_build() {
 			all_locales=0
 			library=0
 			fuzz=0
+			ossfuzz=0
 			time_tests=0
 			vg=0
 			memcheck=0
@@ -808,7 +812,8 @@ predefined_build() {
 			dc_default_digit_clamp=1;;
 
 		DBG)
-			CFLAGS="-Weverything -Wno-padded -Wno-unsafe-buffer-usage -Wno-poison-system-directories -Werror -pedantic -std=c11"
+			CFLAGS="-Weverything -Wno-padded -Wno-unsafe-buffer-usage -Wno-poison-system-directories"
+			CFLAGS="$CFLAGS -Wno-switch-default -Werror -pedantic -std=c11"
 			bc_only=0
 			dc_only=0
 			coverage=0
@@ -825,6 +830,7 @@ predefined_build() {
 			all_locales=0
 			library=0
 			fuzz=0
+			ossfuzz=0
 			time_tests=0
 			vg=0
 			memcheck=1
@@ -1788,7 +1794,7 @@ GEN_DIR="$scriptdir/gen"
 # These lines set the appropriate targets based on whether `gen/strgen.c` or
 # `gen/strgen.sh` is used.
 GEN="strgen"
-GEN_EXEC_TARGET="\$(HOSTCC) -DBC_ENABLE_AFL=0 -I$scriptdir/include/  \$(HOSTCFLAGS) -o \$(GEN_EXEC) \$(GEN_C)"
+GEN_EXEC_TARGET="\$(HOSTCC) -DBC_ENABLE_AFL=0 -I$scriptdir/include/ \$(CPPFLAGS) \$(HOSTCFLAGS) -o \$(GEN_EXEC) \$(GEN_C)"
 CLEAN_PREREQS=" clean_gen clean_coverage"
 
 if [ -z "${GEN_HOST+set}" ]; then
