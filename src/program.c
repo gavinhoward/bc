@@ -2803,7 +2803,7 @@ bc_program_insertFunc(BcProgram* p, const char* name)
 	return idx;
 }
 
-#if BC_DEBUG
+#if BC_DEBUG || BC_ENABLE_MEMCHECK
 void
 bc_program_free(BcProgram* p)
 {
@@ -2850,7 +2850,7 @@ bc_program_free(BcProgram* p)
 	if (BC_IS_DC) bc_vec_free(&p->tail_calls);
 #endif // DC_ENABLED
 }
-#endif // BC_DEBUG
+#endif // BC_DEBUG || BC_ENABLE_MEMCHECK
 
 void
 bc_program_init(BcProgram* p)

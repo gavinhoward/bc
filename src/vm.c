@@ -677,7 +677,7 @@ bc_vm_shutdown(void)
 #endif // BC_ENABLE_HISTORY
 #endif // !BC_ENABLE_LIBRARY
 
-#if BC_DEBUG
+#if BC_DEBUG || BC_ENABLE_MEMCHECK
 #if !BC_ENABLE_LIBRARY
 	bc_vec_free(&vm->env_args);
 	free(vm->env_args_buffer);
@@ -697,7 +697,7 @@ bc_vm_shutdown(void)
 #endif // !BC_ENABLE_LIBRARY
 
 	bc_vm_freeTemps();
-#endif // BC_DEBUG
+#endif // BC_DEBUG || BC_ENABLE_MEMCHECK
 
 #if !BC_ENABLE_LIBRARY
 	// We always want to flush.
@@ -1278,7 +1278,16 @@ err:
 	bc_vec_free(&vm->buffer);
 #endif // BC_DEBUG
 
-	BC_LONGJMP_CONT(vm);
+	// We don't want to jump in the case of a plain quit.
+	if (vm->status != (sig_atomic_t) BC_STATUS_QUIT)
+	{
+		BC_LONGJMP_CONT(vm);
+	}
+	else
+	{
+		// But we do have to unlock signals.
+		BC_SIG_UNLOCK;
+	}
 }
 
 #endif // BC_ENABLE_OSSFUZZ
