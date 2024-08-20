@@ -160,7 +160,7 @@ configure() {
 
 	header "$_configure_header"
 	CFLAGS="$_configure_CFLAGS" CC="$_configure_CC" GEN_HOST="$_configure_GEN_HOST" \
-		LONG_BIT="$_configure_LONG_BIT" "$real/configure.sh" $_configure_configure_flags > /dev/null
+		LONG_BIT="$_configure_LONG_BIT" "$real/configure.sh" $_configure_configure_flags > /dev/null 2> /dev/null
 }
 
 # Build with make. This function also captures and outputs any warnings if they
@@ -666,9 +666,14 @@ unset DC_EXPR_EXIT
 unset BC_DIGIT_CLAMP
 unset DC_DIGIT_CLAMP
 
+os=$(uname)
 # Set some strict warning flags. Clang's -Weverything can be way too strict, so
 # we actually have to turn off some things.
-clang_flags="-Weverything -Wno-padded -Wno-unsafe-buffer-usage -Wno-poison-system-directories -Wno-switch-default"
+if [ "$os" = "FreeBSD" ]; then
+	clang_flags="-Weverything -Wno-padded -Wno-poison-system-directories -Wno-switch-default"
+else
+	clang_flags="-Weverything -Wno-padded -Wno-unsafe-buffer-usage -Wno-poison-system-directories -Wno-switch-default"
+fi
 gcc_flags="-Wno-clobbered"
 
 # Common CFLAGS.
