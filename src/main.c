@@ -117,11 +117,12 @@ main(int argc, char* argv[])
 #pragma clang diagnostic pop
 #endif // BC_CLANG
 
-	vm->status = (int) s;
+	vm->status = (sig_atomic_t) s;
 
 exit:
 	BC_SIG_MAYLOCK;
 
-	// Need the cast for FreeBSD.
-	return vm->status == BC_STATUS_QUIT ? BC_STATUS_SUCCESS : (int) vm->status;
+	s = bc_vm_atexit((BcStatus) vm->status);
+
+	return (int) s;
 }
