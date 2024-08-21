@@ -1138,9 +1138,23 @@ err:
 
 	// bc_program_reset(), called by bc_vm_clean(), resets the status.
 	// We want it to clear the sig_pop variable in case it was set.
-	if (vm->status == (sig_atomic_t) BC_STATUS_SUCCESS) BC_LONGJMP_STOP;
+	if (vm->status == (sig_atomic_t) BC_STATUS_SUCCESS ||
+	    vm->status == (sig_atomic_t) BC_STATUS_QUIT)
+	{
+		BC_LONGJMP_STOP;
+	}
 
-	BC_LONGJMP_CONT(vm);
+
+	// We don't want to jump in the case of a plain quit.
+	if (vm->status != (sig_atomic_t) BC_STATUS_QUIT)
+	{
+		BC_LONGJMP_CONT(vm);
+	}
+	else
+	{
+		// But we do have to unlock signals.
+		BC_SIG_UNLOCK;
+	}
 }
 
 #if !BC_ENABLE_OSSFUZZ
@@ -1365,13 +1379,26 @@ err:
 
 	// bc_program_reset(), called by bc_vm_clean(), resets the status.
 	// We want it to clear the sig_pop variable in case it was set.
-	if (vm->status == (sig_atomic_t) BC_STATUS_SUCCESS) BC_LONGJMP_STOP;
+	if (vm->status == (sig_atomic_t) BC_STATUS_SUCCESS ||
+	    vm->status == (sig_atomic_t) BC_STATUS_QUIT)
+	{
+		BC_LONGJMP_STOP;
+	}
 
 	// Since this is tied to this function, free it here. We always free it here
 	// because bc_vm_stdin() may or may not use it later.
 	bc_vec_free(&vm->buffer);
 
-	BC_LONGJMP_CONT(vm);
+	// We don't want to jump in the case of a plain quit.
+	if (vm->status != (sig_atomic_t) BC_STATUS_QUIT)
+	{
+		BC_LONGJMP_CONT(vm);
+	}
+	else
+	{
+		// But we do have to unlock signals.
+		BC_SIG_UNLOCK;
+	}
 }
 
 #if BC_ENABLED
