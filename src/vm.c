@@ -1144,7 +1144,6 @@ err:
 		BC_LONGJMP_STOP;
 	}
 
-
 	// We don't want to jump in the case of a plain quit.
 	if (vm->status != (sig_atomic_t) BC_STATUS_QUIT)
 	{
@@ -1547,7 +1546,11 @@ bc_vm_exec(void)
 		bc_vm_exprs();
 
 		// Sometimes, executing expressions means we need to quit.
-		if (!vm->no_exprs && vm->exit_exprs && BC_EXPR_EXIT) return;
+		if (vm->status != BC_STATUS_SUCCESS ||
+		    (!vm->no_exprs && vm->exit_exprs && BC_EXPR_EXIT))
+		{
+			return;
+		}
 	}
 
 	// Process files.
@@ -1559,6 +1562,8 @@ bc_vm_exec(void)
 		has_file = true;
 #endif // DC_ENABLED
 		bc_vm_file(path);
+
+		if (vm->status != BC_STATUS_SUCCESS) return;
 	}
 
 #if BC_ENABLE_EXTRA_MATH
