@@ -2054,8 +2054,6 @@ bc_parse_expr_err(BcParse* p, uint8_t flags, BcParseNext next)
 		if (BC_ERR(array_last && t != BC_LEX_RPAREN))
 		{
 			bc_parse_err(p, BC_ERR_PARSE_EXPR);
-
-			array_last = false;
 		}
 
 		switch (t)
@@ -2239,8 +2237,6 @@ bc_parse_expr_err(BcParse* p, uint8_t flags, BcParseNext next)
 				if (BC_ERR(array_last))
 				{
 					bc_parse_err(p, BC_ERR_PARSE_EXPR);
-
-					array_last = false;
 				}
 
 				nparens -= 1;
