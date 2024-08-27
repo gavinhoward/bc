@@ -37,7 +37,7 @@
 #
 # For FreeBSD, run using the following:
 #
-# scripts/release.sh 1 1 0 1 0 0 0 0 1 0 1 0 1 0 0 1 1
+# scripts/release.sh 1 1 0 1 1 0 0 0 1 0 1 0 1 0 0 1 1
 #
 # For Linux, run two separate ones (in different checkouts), like so:
 #
