@@ -669,11 +669,7 @@ unset DC_DIGIT_CLAMP
 os=$(uname)
 # Set some strict warning flags. Clang's -Weverything can be way too strict, so
 # we actually have to turn off some things.
-if [ "$os" = "FreeBSD" ]; then
-	clang_flags="-Weverything -Wno-padded -Wno-poison-system-directories -Wno-switch-default"
-else
-	clang_flags="-Weverything -Wno-padded -Wno-unsafe-buffer-usage -Wno-poison-system-directories -Wno-switch-default"
-fi
+clang_flags="-Weverything -Wno-padded -Wno-unsafe-buffer-usage -Wno-poison-system-directories -Wno-switch-default"
 gcc_flags="-Wno-clobbered"
 
 # Common CFLAGS.
