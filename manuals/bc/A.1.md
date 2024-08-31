@@ -1433,7 +1433,7 @@ The extended library is a **non-portable extension**.
 
 **frand(p)**
 
-:   Generates a pseudo-random integer between **0** (inclusive) and **1**
+:   Generates a pseudo-random number between **0** (inclusive) and **1**
     (exclusive) with the number of decimal digits after the decimal point equal
     to the truncated absolute value of **p**. If **p** is not **0**, then
     calling this function will change the value of **seed**. If **p** is **0**,
