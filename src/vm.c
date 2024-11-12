@@ -124,27 +124,6 @@ bc_vm_jmp(void)
 static void
 bc_vm_sig(int sig)
 {
-#if BC_ENABLE_EDITLINE
-	// Editline needs this to resize the terminal. This also needs to come first
-	// because a resize always needs to happen.
-	if (sig == SIGWINCH)
-	{
-		if (BC_TTY)
-		{
-			el_resize(vm->history.el);
-
-			// If the signal was a SIGWINCH, clear it because we don't need to
-			// print a stack trace in that case.
-			if (vm->sig == SIGWINCH)
-			{
-				vm->sig = 0;
-			}
-		}
-
-		return;
-	}
-#endif // BC_ENABLE_EDITLINE
-
 	// There is already a signal in flight if this is true.
 	if (vm->status == (sig_atomic_t) BC_STATUS_QUIT || vm->sig != 0)
 	{
@@ -233,11 +212,6 @@ bc_vm_sigaction(void)
 	sigaction(SIGTERM, &sa, NULL);
 	sigaction(SIGQUIT, &sa, NULL);
 	sigaction(SIGINT, &sa, NULL);
-
-#if BC_ENABLE_EDITLINE
-	// Editline needs this to resize the terminal.
-	if (BC_TTY) sigaction(SIGWINCH, &sa, NULL);
-#endif // BC_ENABLE_EDITLINE
 
 #if BC_ENABLE_HISTORY
 	if (BC_TTY) sigaction(SIGHUP, &sa, NULL);
