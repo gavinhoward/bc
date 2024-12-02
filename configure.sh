@@ -1567,7 +1567,7 @@ if [ "$nls" -ne 0 ]; then
 		printf 'NLS works.\n\n'
 
 		printf 'Testing gencat...\n'
-		gencat "./en_US.cat" "$scriptdir/locales/en_US.msg" > /dev/null
+		gencat "./en_US.cat" "$scriptdir/locales/en_US.msg" 2>&1
 
 		err="$?"
 
