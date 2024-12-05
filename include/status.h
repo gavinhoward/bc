@@ -683,12 +683,7 @@ typedef enum BcMode
 #define BC_NO_SIG_EXC(vm) \
 	BC_LIKELY((vm)->status == (sig_atomic_t) BC_STATUS_SUCCESS && !(vm)->sig)
 
-#ifndef _WIN32
-#define BC_SIG_INTERRUPT(vm) \
-	BC_UNLIKELY((vm)->sig != 0 && (vm)->sig != SIGWINCH)
-#else // _WIN32
 #define BC_SIG_INTERRUPT(vm) BC_UNLIKELY((vm)->sig != 0)
-#endif // _WIN32
 
 #if BC_DEBUG
 
