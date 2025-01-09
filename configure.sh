@@ -777,7 +777,8 @@ predefined_build() {
 
 		GDH)
 			CFLAGS="-Weverything -Wno-padded -Wno-unsafe-buffer-usage -Wno-poison-system-directories"
-			CFLAGS="$CFLAGS -Wno-switch-default -Werror -pedantic -std=c11"
+			CFLAGS="$CFLAGS -Wno-unknown-warning-option -Wno-switch-default -Wno-pre-c11-compat"
+			CFLAGS="$CFLAGS -Werror -pedantic -std=c11"
 			bc_only=0
 			dc_only=0
 			coverage=0
@@ -813,7 +814,8 @@ predefined_build() {
 
 		DBG)
 			CFLAGS="-Weverything -Wno-padded -Wno-unsafe-buffer-usage -Wno-poison-system-directories"
-			CFLAGS="$CFLAGS -Wno-switch-default -Werror -pedantic -std=c11"
+			CFLAGS="$CFLAGS -Wno-unknown-warning-option -Wno-switch-default -Wno-pre-c11-compat"
+			CFLAGS="$CFLAGS -Werror -pedantic -std=c11"
 			bc_only=0
 			dc_only=0
 			coverage=0
