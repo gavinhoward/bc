@@ -171,15 +171,11 @@ bc_read_chars(BcVec* vec, const char* prompt)
 			// If interupted...
 			if (errno == EINTR)
 			{
-				int sig;
-
 				// Jump out if we are supposed to quit, which certain signals
 				// will require.
 				if (vm->status == (sig_atomic_t) BC_STATUS_QUIT) BC_JMP;
 
 				assert(vm->sig != 0);
-
-				sig = (int) vm->sig;
 
 				// Clear the signal and status.
 				vm->sig = 0;
