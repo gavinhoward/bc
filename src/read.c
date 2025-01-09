@@ -186,8 +186,7 @@ bc_read_chars(BcVec* vec, const char* prompt)
 				vm->status = (sig_atomic_t) BC_STATUS_SUCCESS;
 
 				// Print the ready message and prompt again.
-				bc_file_puts(&vm->fout, bc_flush_none,
-					     bc_program_ready_msg);
+				bc_file_puts(&vm->fout, bc_flush_none, bc_program_ready_msg);
 				if (BC_PROMPT)
 				{
 					bc_file_puts(&vm->fout, bc_flush_none, prompt);

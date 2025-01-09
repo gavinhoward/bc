@@ -519,7 +519,7 @@ bc_vm_envArgs(const char* const env_args_name, BcBigDig* scale, BcBigDig* ibase,
 
 	if (env_args == NULL) return;
 
-		// Windows already allocates, so we don't need to.
+	// Windows already allocates, so we don't need to.
 #ifndef _WIN32
 	start = buf = vm->env_args_buffer = bc_vm_strdup(env_args);
 #else // _WIN32
