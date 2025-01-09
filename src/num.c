@@ -1093,6 +1093,7 @@ bc_num_as(BcNum* a, BcNum* b, BcNum* restrict c, size_t sub)
 
 	max_len = max_int + max_rdx;
 
+	// Figure out the max length and also if we need to reverse the operation.
 	if (do_sub)
 	{
 		// Check whether b has to be subtracted from a or a from b.
