@@ -457,28 +457,24 @@ define bunrev(t){
 	scale=s
 	return a
 }
-define band(a, b){
-    auto r,p,s,m[]
-    r=0
-    p=1
-    s=scale
-    scale=0
-
-    a=abs(a)$
-    b=abs(b)$
-
-    while(a&&b) {
+define band(a,b){
+	auto r,p,s,m[]
+	r=0
+	p=1
+	s=scale
+	scale=0
+	a=abs(a)$
+	b=abs(b)$
+	while(a&&b) {
 		a=divmod(a,2,m[])
 		if(m[0]){
 			b=divmod(b,2,m[])
 			if(m[0])r+=p
-        }else{
-			b/=2
-        }
-        p*=2
-    }
-    scale=s
-    return r
+		}else b/=2
+		p*=2
+	}
+	scale=s
+	return r
 }
 define bor(a,b){
 	auto s,t,m[],n[]
