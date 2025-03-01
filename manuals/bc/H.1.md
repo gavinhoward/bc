@@ -1766,16 +1766,6 @@ The extended library is a **non-portable extension**.
     If you want to a use signed two's complement argument, use **s2u(x)** to
     convert.
 
-**bunrev(t)**
-
-:   Assumes **t** is a bitwise-reversed number with an extra set bit one place
-    more significant than the real most significant bit (which was the least
-    significant bit in the original number). This number is reversed and
-    returned without the extra set bit.
-
-    This function is used to implement other bitwise functions; it is not meant
-    to be used by users, but it can be.
-
 **plz(x)**
 
 :   If **x** is not equal to **0** and greater that **-1** and less than **1**,
