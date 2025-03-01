@@ -459,12 +459,12 @@ define bunrev(t){
 }
 define band(a,b){
 	auto r,p,s,m[]
+	a=abs(a)$
+	b=abs(b)$
 	r=0
 	p=1
 	s=scale
 	scale=0
-	a=abs(a)$
-	b=abs(b)$
 	while(a&&b) {
 		a=divmod(a,2,m[])
 		if(m[0]){
@@ -477,56 +477,39 @@ define band(a,b){
 	return r
 }
 define bor(a,b){
-	auto s,t,m[],n[]
+	auto r,p,s,m[]
 	a=abs(a)$
 	b=abs(b)$
-	if(b>a){
-		t=b
-		b=a
-		a=t
-	}
+	r=0
+	p=1
 	s=scale
 	scale=0
-	t=1
-	while(b){
+	while(a&&b){
 		a=divmod(a,2,m[])
-		b=divmod(b,2,n[])
-		t*=2
-		t+=(m[0]||n[0])
-	}
-	while(a){
-		a=divmod(a,2,m[])
-		t*=2
-		t+=m[0]
+		if(!m[0]) b=divmod(b,2,n[])
+		else b/=2
+		if(m[0])r+=p
+		p*=2
 	}
 	scale=s
-	return bunrev(t)
+	return r
 }
 define bxor(a,b){
-	auto s,t,m[],n[]
+	auto r,p,s,m[],n[]
 	a=abs(a)$
 	b=abs(b)$
-	if(b>a){
-		t=b
-		b=a
-		a=t
-	}
+	r=0
+	p=1
 	s=scale
 	scale=0
-	t=1
-	while(b){
+	while(a&&b){
 		a=divmod(a,2,m[])
 		b=divmod(b,2,n[])
-		t*=2
-		t+=(m[0]+n[0]==1)
-	}
-	while(a){
-		a=divmod(a,2,m[])
-		t*=2
-		t+=m[0]
+		if(m[0]+n[0]==1)r+=p
+		p*=2
 	}
 	scale=s
-	return bunrev(t)
+	return r
 }
 define bshl(a,b){return abs(a)$*2^abs(b)$}
 define bshr(a,b){return(abs(a)$/2^abs(b)$)$}
@@ -534,16 +517,17 @@ define bnotn(x,n){
 	auto s,t,m[]
 	s=scale
 	scale=0
-	t=2^(abs(n)$*8)
-	x=abs(x)$%t+t
-	t=1
+	r=2^(abs(n)$*8)
+	x=abs(x)$%r+r
+	r=0
+	p=1
 	while(x!=1){
 		x=divmod(x,2,m[])
-		t*=2
-		t+=!m[0]
+		if(!m[0])r+=p
+		p*=2
 	}
 	scale=s
-	return bunrev(t)
+	return r
 }
 define bnot8(x){return bnotn(x,1)}
 define bnot16(x){return bnotn(x,2)}
