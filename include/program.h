@@ -145,6 +145,9 @@ typedef struct BcProgram
 
 #endif // BC_ENABLED
 
+	/// The number of results that have not been retired.
+	size_t nresults;
+
 	// The BcDig array for strmb. This uses BC_NUM_LONG_LOG10 because it is used
 	// in bc_num_ulong2num(), which attempts to realloc, unless it is big
 	// enough. This is big enough.
@@ -207,11 +210,16 @@ typedef struct BcProgram
  * operands while preserving the result (which we assumed was pushed before the
  * actual operation).
  * @param p     The program.
- * @param nres  The number of results returned by the instruction.
  * @param nops  The number of operands used by the instruction.
  */
-#define bc_program_retire(p, nres, nops) \
-	(bc_vec_npopAt(&(p)->results, (nops), (p)->results.len - (nres + nops)))
+#define bc_program_retire(p, nops)                                \
+	do                                                            \
+	{                                                             \
+		bc_vec_npopAt(&(p)->results, (nops),                      \
+		              (p)->results.len - ((p)->nresults + nops)); \
+		p->nresults = 0;                                          \
+	}                                                             \
+	while (0)
 
 #if DC_ENABLED
 
