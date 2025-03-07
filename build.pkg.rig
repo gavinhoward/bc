@@ -478,7 +478,8 @@ fn c2o(c_file: str) -> str
 
 	target o_file: c_file, HEADERS
 	{
-		$ $CC %(CFLAGS) $OBJOPT $OBJOUTOPT @(tgt) @(file_dep);
+		$ $CC %(config_list["other_cflags"]) %(CFLAGS) $OBJOPT $OBJOUTOPT @(tgt)
+		  @(file_dep);
 	}
 
 	return o_file;
@@ -519,7 +520,8 @@ fn exe(name: str, o_files: []str) -> void
 {
 	target name: o_files
 	{
-		$ $CC %(CFLAGS) %(LDFLAGS) $EXEOUTOPT @(tgt) %(file_deps);
+		$ $CC %(config_list["other_cflags"]) %(CFLAGS) %(LDFLAGS) $EXEOUTOPT
+		  @(tgt) %(file_deps);
 	}
 }
 

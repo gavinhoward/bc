@@ -191,6 +191,12 @@ if OS != "Windows" && !bool(config["debug"]) && !macos && bool(config["strip"])
 	@[ "-s" ];
 };
 
+other_flags: []str = strip_flag +~
+if bool(config["debug"])
+{
+	@[ compiler_db["opt.debug"] ];
+};
+
 // Test OpenBSD. This is not in an if statement because regardless of whatever
 // the user says, we need to know if we are on OpenBSD to activate _BSD_SOURCE.
 // No, I cannot `#define _BSD_SOURCE` in a header because OpenBSD's patched GCC
@@ -223,18 +229,6 @@ if HISTORY != @none
 	HISTORY_C_FILES;
 };
 
-gen_o_files: []str =
-if BUILD_MODE != @library
-{
-	@[
-		txt2o("gen/lib.bc", "bc_lib", "bc_lib_name", "BC_ENABLED", true),
-		txt2o("gen/lib2.bc", "bc_lib2", "bc_lib2_name",
-		      "BC_ENABLED && BC_ENABLE_EXTRA_MATH", true),
-		txt2o("gen/bc_help.txt", "bc_help", "", "BC_ENABLED", false),
-		txt2o("gen/dc_help.txt", "dc_help", "", "DC_ENABLED", false),
-	];
-};
-
 c_files: []str =
 if BUILD_MODE == @both
 {
@@ -253,47 +247,62 @@ else
 	COMMON_C_FILES +~ LIBRARY_C_FILES;
 };
 
-obj_files: []str = gen_o_files +~
-for f: c_files
-{
-	c2o(f);
-};
-
-if BUILD_MODE == @both || BUILD_MODE == @bc
-{
-	exe(bc_bin, obj_files);
-}
-
-if BUILD_MODE == @both
-{
-	ln(dc_bin, bc_bin);
-}
-else if BUILD_MODE == @dc
-{
-	exe(dc_bin, obj_files);
-}
-
-if BUILD_MODE == @library
-{
-	lib(library, obj_files);
-}
-
 targets: []str =
-if BUILD_MODE == @both
+push @(gaml){ other_cflags: $other_flags }: config_stack
 {
-	@[ bc_bin, dc_bin ];
-}
-else if BUILD_MODE == @bc
-{
-	@[ bc_bin ];
-}
-else if BUILD_MODE == @dc
-{
-	@[ dc_bin ];
-}
-else
-{
-	@[ library ];
+	gen_o_files: []str =
+	if BUILD_MODE != @library
+	{
+		@[
+			txt2o("gen/lib.bc", "bc_lib", "bc_lib_name", "BC_ENABLED", true),
+			txt2o("gen/lib2.bc", "bc_lib2", "bc_lib2_name",
+			      "BC_ENABLED && BC_ENABLE_EXTRA_MATH", true),
+			txt2o("gen/bc_help.txt", "bc_help", "", "BC_ENABLED", false),
+			txt2o("gen/dc_help.txt", "dc_help", "", "DC_ENABLED", false),
+		];
+	};
+
+	obj_files: []str = gen_o_files +~
+	for f: c_files
+	{
+		c2o(f);
+	};
+
+	if BUILD_MODE == @both || BUILD_MODE == @bc
+	{
+		exe(bc_bin, obj_files);
+	}
+
+	if BUILD_MODE == @both
+	{
+		ln(dc_bin, bc_bin);
+	}
+	else if BUILD_MODE == @dc
+	{
+		exe(dc_bin, obj_files);
+	}
+
+	if BUILD_MODE == @library
+	{
+		lib(library, obj_files);
+	}
+
+	if BUILD_MODE == @both
+	{
+		@[ bc_bin, dc_bin ];
+	}
+	else if BUILD_MODE == @bc
+	{
+		@[ bc_bin ];
+	}
+	else if BUILD_MODE == @dc
+	{
+		@[ dc_bin ];
+	}
+	else
+	{
+		@[ library ];
+	}
 };
 
 target @all: targets;
