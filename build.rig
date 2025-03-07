@@ -38,6 +38,11 @@ if OS == "Windows" && NLS_ENABLED != "0"
 	error("Locales are not supported on Windows");
 }
 
+if OS == "Windows" && bool(config["lto"])
+{
+	error("Link-time optimization is not supported on Windows");
+}
+
 if LIBRARY_ENABLED == "0"
 {
 	if OS != "Windows" && NLS_ENABLED != "0"
@@ -191,7 +196,48 @@ if OS != "Windows" && !bool(config["debug"]) && !macos && bool(config["strip"])
 	@[ "-s" ];
 };
 
-other_flags: []str = strip_flag +~
+lto_flag: []str =
+if bool(config["lto"])
+{
+	@[ "-flto" ];
+};
+
+strict_flags: []str =
+if bool(config["strict"])
+{
+	// Strict build only works for GCC and Clang, so we do want to set that
+	// here.
+	if CC contains "gcc" || CC contains "clang"
+	{
+		// These are the standard strict build flags for both compilers.
+		std_strict: []str = @[ "-Wall", "-Wextra", "-Werror", "-pedantic" ];
+
+		// Clang has -Weverything, which I ensure Yc builds under.
+		//
+		// I also want unlimited errors because Clang is my development
+		// compiler; it caps at 20 by default.
+		compiler_strict: []str =
+		if CC contains "clang"
+		{
+			// Oh, and add the standard.
+			@[ "-Weverything", "-ferror-limit=100000", "-Wno-padded",
+			   "-Wno-unknown-warning-option", "-Wno-unsafe-buffer-usage",
+			   "-Wno-documentation-unknown-command", "-Wno-pre-c11-compat",
+			   "-Wno-enum-enum-conversion", "-Wno-switch-default" ];
+		};
+
+		// Return the combination of the sets.
+		std_strict +~ compiler_strict;
+	}
+	else if OS == "Windows"
+	{
+		// Return the combo of the strict options, the standard, and the
+		// sanitizer defines.
+		@[ "/W4", "/WX", "/wd\"4996\"", "/permissive-" ];
+	}
+};
+
+other_flags: []str = strip_flag +~ lto_flag +~ strict_flags +~
 if bool(config["debug"])
 {
 	@[ compiler_db["opt.debug"] ];
