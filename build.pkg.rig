@@ -169,6 +169,8 @@ CFLAGS2: []str = @[
 	DEFOPT +~ "BC_ENABLE_NLS=" +~ NLS_ENABLED,
 	DEFOPT +~ "BC_ENABLE_EXTRA_MATH=" +~ EXTRA_MATH_ENABLED,
 	DEFOPT +~ "BC_ENABLE_HISTORY=" +~ HISTORY_ENABLED,
+	DEFOPT +~ "BC_ENABLE_EDITLINE=" +~ EDITLINE_ENABLED,
+	DEFOPT +~ "BC_ENABLE_READLINE=" +~ READLINE_ENABLED,
 	DEFOPT +~ "BC_ENABLE_MEMCHECK=" +~ str(uint(bool(config["memcheck"]))),
 	DEFOPT +~ "BC_ENABLE_AFL=" +~ str(uint(bool(config["afl"]))),
 	DEFOPT +~ "BC_ENABLE_OSSFUZZ=" +~ str(uint(bool(config["ossfuzz"]))),
@@ -538,7 +540,7 @@ fn ln(name: str, exec: str) -> void
 	{
 		target name: exec
 		{
-			$ ln -s @("./" +~ path.basename(file_dep)) @(tgt);
+			$ ln -fs @("./" +~ path.basename(file_dep)) @(tgt);
 		}
 	}
 }
