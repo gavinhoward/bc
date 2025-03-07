@@ -1,0 +1,516 @@
+/*
+ * *****************************************************************************
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ *
+ * Copyright (c) 2018-2025 Gavin D. Howard and contributors.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * * Redistributions of source code must retain the above copyright notice, this
+ *   list of conditions and the following disclaimer.
+ *
+ * * Redistributions in binary form must reproduce the above copyright notice,
+ *   this list of conditions and the following disclaimer in the documentation
+ *   and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ *
+ * *****************************************************************************
+ *
+ * The build package file.
+ *
+ */
+
+// Save this.
+OS: str = platform.os;
+
+fn exe_name(name: str) -> str
+{
+	temp: str = str(config["execprefix"]) +~ name +~ str(config["execsuffix"]);
+	return if OS == "Windows" { temp +~ ".exe"; } else { temp; };
+}
+
+fn lib_name(name: str) -> str
+{
+	return if OS == "Windows" { name +~ ".lib"; } else { name +~ ".a"; };
+}
+
+HEADERS: []str = find_src_ext("include", "h");
+
+FORCE: bool = bool(config["force"]);
+
+EXECPREFIX: str = str(config["execprefix"]);
+EXECSUFFIX: str = str(config["execsuffix"]);
+
+BUILD_MODE: sym = sym(config["build_mode"]);
+
+BC_ENABLED: str = str(uint(BUILD_MODE == @both || BUILD_MODE == @bc));
+DC_ENABLED: str = str(uint(BUILD_MODE == @both || BUILD_MODE == @dc));
+LIBRARY_ENABLED: str = str(uint(BUILD_MODE == @library));
+
+EXTRA_MATH_ENABLED: str = str(uint(bool(config["extra_math"])));
+
+HISTORY: sym = sym(config["history"]);
+HISTORY_ENABLED: str = str(uint(HISTORY != @none));
+EDITLINE_ENABLED: str = str(uint(HISTORY == @editline));
+READLINE_ENABLED: str = str(uint(HISTORY == @readline));
+
+NLS_ENABLED: str = str(uint(sym(config["locales"]) != @none));
+
+BUILD_TYPE: str =
+if EXTRA_MATH_ENABLED != "0" && HISTORY_ENABLED != "0" && NLS_ENABLED != "0"
+{
+	"A";
+}
+else
+{
+	t: str = if EXTRA_MATH_ENABLED != "0" { ""; } else { "E"; } +~
+	         if HISTORY_ENABLED != "0" { ""; } else { "H"; } +~
+	         if NLS_ENABLED != "0" { ""; } else { "N"; };
+
+	t;
+};
+
+OPTIMIZE: str = str(config["optimization"]);
+
+VALGRIND_ARGS: []str = @[
+	"--error-exitcode=100",
+	"--leak-check=full",
+	"--show-leak-kinds=all",
+	"--errors-for-leak-kinds=all",
+	"--track-fds=yes",
+];
+
+// Get the compiler. The user might have set one at the command line.
+CC: str = language.compiler;
+
+// Set optimization to "0" if it is empty.
+CFLAGS_OPT: str = if OPTIMIZE == "" { "0"; } else { OPTIMIZE; };
+
+// Get the command-line option for defining a preprocessor variable.
+DEFOPT: str = compiler_db["opt.define"];
+
+// Get the command-line string for the optimization option for the compiler.
+OPTOPT: str = compiler_db["opt.optimization"] +~ CFLAGS_OPT;
+
+// Get the compiler option for the object file to output to.
+OBJOUTOPT: str = compiler_db["opt.objout"];
+EXEOUTOPT: str = compiler_db["opt.exeout"];
+
+// Get the compiler option for outputting an object file rather than an
+// executable.
+OBJOPT: str = compiler_db["opt.obj"];
+
+// Get the compiler option for setting an include directory.
+INCOPT: str = compiler_db["opt.include"] +~ path.join(src_dir, "include");
+
+COVERAGE_CFLAGS: []str =
+if bool(config["coverage"])
+{
+	@[ "-fprofile-arcs", "-ftest-coverage", "-g", "-O0", DEFOPT +~ "NDEBUG" ];
+};
+
+MAINEXEC: []str =
+if BUILD_MODE == @both || BUILD_MODE == @bc
+{
+	@[ DEFOPT +~ "MAINEXEC=" +~ exe_name("bc") ];
+}
+else if BUILD_MODE == @dc
+{
+	@[ DEFOPT +~ "MAINEXEC=" +~ exe_name("dc") ];
+};
+
+// XXX: Library needs these defines to be true.
+BC_DEF: str = if LIBRARY_ENABLED == "0" { BC_ENABLED; } else { "1"; };
+DC_DEF: str = if LIBRARY_ENABLED == "0" { DC_ENABLED; } else { "1"; };
+
+CFLAGS1: []str = config_list["cflags"] +~ @[ OPTOPT, INCOPT ] +~
+                 COVERAGE_CFLAGS +~ MAINEXEC;
+CFLAGS2: []str = @[
+	DEFOPT +~ "BC_ENABLED=" +~ BC_DEF,
+	DEFOPT +~ "DC_ENABLED=" +~ DC_DEF,
+	DEFOPT +~ "BUILD_TYPE=" +~ BUILD_TYPE,
+	DEFOPT +~ "EXECPREFIX=" +~ str(config["execprefix"]),
+	DEFOPT +~ "BC_NUM_KARATSUBA_LEN=" +~ str(num(config["karatsuba_len"])),
+	DEFOPT +~ "BC_ENABLE_LIBRARY=" +~ LIBRARY_ENABLED,
+	DEFOPT +~ "BC_ENABLE_NLS=" +~ NLS_ENABLED,
+	DEFOPT +~ "BC_ENABLE_EXTRA_MATH=" +~ EXTRA_MATH_ENABLED,
+	DEFOPT +~ "BC_ENABLE_HISTORY=" +~ HISTORY_ENABLED,
+	DEFOPT +~ "BC_ENABLE_MEMCHECK=" +~ str(uint(bool(config["memcheck"]))),
+	DEFOPT +~ "BC_ENABLE_AFL=" +~ str(uint(bool(config["afl"]))),
+	DEFOPT +~ "BC_ENABLE_OSSFUZZ=" +~ str(uint(bool(config["ossfuzz"]))),
+];
+CFLAGS: []str = CFLAGS1 +~ CFLAGS2;
+
+LDFLAGS: []str = config_list["ldflags"];
+
+COMMON_C_FILES: []str = @[
+	"src/data.c",
+	"src/num.c",
+	"src/rand.c",
+	"src/vector.c",
+	"src/vm.c",
+];
+
+EXEC_C_FILES: []str = @[
+	"src/args.c",
+	"src/file.c",
+	"src/lang.c",
+	"src/lex.c",
+	"src/main.c",
+	"src/opt.c",
+	"src/parse.c",
+	"src/program.c",
+	"src/read.c",
+];
+
+BC_C_FILES: []str = @[
+	"src/bc.c",
+	"src/bc_lex.c",
+	"src/bc_parse.c",
+];
+
+DC_C_FILES: []str = @[
+	"src/dc.c",
+	"src/dc_lex.c",
+	"src/dc_parse.c",
+];
+
+HISTORY_C_FILES: []str = @[
+	"src/history.c",
+];
+
+LIBRARY_C_FILES: []str = @[
+	"src/library.c",
+];
+
+GEN_HEADER1: str =
+    "// Copyright (c) 2018-2025 Gavin D. Howard and contributors.\n" +~
+    "// Licensed under the 2-clause BSD license.\n" +~
+    "// *** AUTOMATICALLY GENERATED FROM ";
+GEN_HEADER2: str = ". DO NOT MODIFY. ***\n\n";
+
+GEN_LABEL1: str = "const char *";
+GEN_LABEL2: str = " = \"";
+GEN_LABEL3: str = "\";\n\n";
+GEN_NAME1: str = "const char ";
+GEN_NAME2: str = "[] = {\n";
+
+GEN_LABEL_EXTERN1: str = "extern const char *";
+GEN_LABEL_EXTERN2: str = ";\n\n";
+GEN_NAME_EXTERN1: str = "extern const char ";
+GEN_NAME_EXTERN2: str = "[];\n\n";
+
+GEN_IFDEF1: str = "#if ";
+GEN_IFDEF2: str = "\n";
+GEN_ENDIF1: str = "#endif // ";
+GEN_ENDIF2: str = "\n";
+
+GEN_EX_START: str = "{{ A H N HN }}";
+GEN_EX_END: str = "{{ end }}";
+
+/// This is the max width to print characters to strgen files. This is to ensure
+/// that lines don't go much over 80 characters.
+MAX_WIDTH: usize = usize(72);
+
+fn strgen(
+	input: str,
+	output: str,
+	exclude: bool,
+	name: str,
+	label: str,
+	def: str,
+	remove_tabs: bool,
+) -> void
+{
+	in: str = io.read_file(input);
+
+	io.open(output, "w"): f
+	{
+		f.print(GEN_HEADER1 +~ input +~ GEN_HEADER2);
+
+		if label != ""
+		{
+			f.print(GEN_LABEL_EXTERN1 +~ label +~ GEN_LABEL_EXTERN2);
+		}
+
+		f.print(GEN_NAME_EXTERN1 +~ name +~ GEN_NAME_EXTERN2);
+
+		if def != ""
+		{
+			f.print(GEN_IFDEF1 +~ def +~ GEN_IFDEF2);
+		}
+
+		if label != ""
+		{
+			f.print(GEN_LABEL1 +~ label +~ GEN_LABEL2 +~ name +~ GEN_LABEL3);
+		}
+
+		f.print(GEN_NAME1 +~ name +~ GEN_NAME2);
+
+		i: !usize = usize(0);
+		count: !usize = usize(0);
+		slashes: !usize = usize(0);
+
+		// This is where the end of the license comment is found.
+		while slashes < 2 && in[i] > 0
+		{
+			if slashes == 1 && in[i] == '*' && in[i + 1] == '/' &&
+			   (in[i + 2] == '\n' || in[i + 2] == '\r')
+			{
+				slashes! = slashes + usize(1);
+				i! = i + usize(2);
+			}
+			else if slashes == 0 && in[i] == '/' && in[i + 1] == '*'
+			{
+				slashes! = slashes + usize(1);
+				i! = i + usize(1);
+			}
+
+			i! = i + usize(1);
+		}
+
+		// The file is invalid if the end of the license comment could not be
+		// found.
+		if i == in.len
+		{
+			error("Could not find end of license comment");
+		}
+
+		i! = i + usize(1);
+
+		// Do not put extra newlines at the beginning of the char array.
+		while in[i] == '\n' || in[i] == '\r'
+		{
+			i! = i + usize(1);
+		}
+
+		// This loop is what generates the actual char array. It counts how many
+		// chars it has printed per line in order to insert newlines at
+		// appropriate places. It also skips tabs if they should be removed.
+		while i < in.len
+		{
+			if in[i] == '\r'
+			{
+				i! = i + usize(1);
+				continue;
+			}
+
+			// If we should output the character, i.e., it is not a tab or we
+			// can remove tabs...
+			if !remove_tabs || in[i] != '\t'
+			{
+				// Check for excluding something for extra math.
+				if in[i] == '{'
+				{
+					if in.slice(i, i + GEN_EX_START.len) == GEN_EX_START
+					{
+						if exclude
+						{
+							// Get past the braces.
+							i! = i + usize(2);
+
+							// Find the end of the end.
+							while in[i] != '{' &&
+							      in.slice(i, GEN_EX_END.len) != GEN_EX_END
+							{
+								i! = i + usize(1);
+							}
+
+							i! = i + GEN_EX_END.len;
+
+							// Skip the last newline.
+							if in[i] == '\r'
+							{
+								i! = i + usize(1);
+							}
+
+							i! = i + usize(1);
+
+							continue;
+						}
+					}
+					else if !exclude &&
+					        in.slice(i, i + GEN_EX_END.len) == GEN_EX_END
+					{
+						i! = i + GEN_EX_END.len;
+
+						// Skip the last newline.
+						if in[i] == '\r'
+						{
+							i! = i + usize(1);
+						}
+
+						i! = i + usize(1);
+
+						continue;
+					}
+				}
+
+				// Print a tab if we are at the beginning of a line.
+				if count == 0
+				{
+					f.print("\t");
+				}
+
+				val: str = str(in[i]) +~ ",";
+
+				// Print the character.
+				f.print(val);
+
+				// Adjust the count.
+				count! = count + val.len;
+
+				if count > MAX_WIDTH
+				{
+					count! = usize(0);
+					f.print("\n");
+				}
+			}
+
+			i! = i + usize(1);
+		}
+
+		// Make sure the end looks nice.
+		if count == 0
+		{
+			f.print("  ");
+		}
+
+		// Insert the NUL byte at the end.
+		f.print("0\n};\n");
+
+		if def != ""
+		{
+			f.print(GEN_ENDIF1 +~ def +~ GEN_ENDIF2);
+		}
+	}
+}
+
+fn test_os(
+	name: str,
+	def: str,
+	yes_msg: str,
+	no_msg: str,
+) -> bool
+{
+	io.eprint("Testing for " +~ name +~ "...\n");
+
+	flags: []str = @[
+		DEFOPT +~ def,
+		DEFOPT +~ "BC_ENABLE_AFL=0",
+		INCOPT,
+	];
+
+	res := $ $CC %(flags) -E @(path.join(src_dir, "scripts/os.c"));
+
+	ret: bool = (res.exitcode != 0);
+
+	if ret
+	{
+		io.eprint(str(res.stderr) +~ "\n");
+		io.eprint(yes_msg +~ "\n\n");
+	}
+	else
+	{
+		io.eprint(no_msg +~ "\n\n");
+	}
+
+	return ret;
+}
+
+fn c2o(c_file: str) -> str
+{
+	o_file: str = c_file +~ (if OS == "Windows" { ".obj"; } else { ".o"; });
+
+	target o_file: c_file, HEADERS
+	{
+		$ $CC %(CFLAGS) $OBJOPT $OBJOUTOPT @(tgt) @(file_dep);
+	}
+
+	return o_file;
+}
+
+fn txt2o(
+	txt_file: str,
+	name: str,
+	label: str,
+	def: str,
+	remove_tabs: bool,
+) -> str
+{
+	c_file: str = txt_file +~ ".c";
+
+	c_config: Gaml = @(gaml){
+		strgen_name: $name
+		strgen_label: $label
+		strgen_define: $def
+		strgen_remove_tabs: $remove_tabs
+	};
+
+	push c_config: config_stack
+	{
+		target c_file: txt_file
+		{
+			strgen(file_dep, tgt, EXTRA_MATH_ENABLED == "0",
+			       str(config["strgen_name"]), str(config["strgen_label"]),
+			       str(config["strgen_define"]),
+			       bool(config["strgen_remove_tabs"]));
+		}
+	}
+
+	return c2o(c_file);
+}
+
+fn exe(name: str, o_files: []str) -> void
+{
+	target name: o_files
+	{
+		$ $CC %(CFLAGS) %(LDFLAGS) $EXEOUTOPT @(tgt) %(file_deps);
+	}
+}
+
+fn ln(name: str, exec: str) -> void
+{
+	if OS == "Windows"
+	{
+		target name: exec
+		{
+			$ copy /v /y /b @(file_dep) @(tgt);
+		}
+	}
+	else
+	{
+		target name: exec
+		{
+			$ ln -s @("./" +~ path.basename(file_dep)) @(tgt);
+		}
+	}
+}
+
+fn lib(name: str, o_files: []str) -> void
+{
+	if OS == "WINDOWS"
+	{
+		exe(name, o_files);
+	}
+	else
+	{
+		target name: o_files
+		{
+			$ ar -r -cu @(tgt) %(file_deps);
+		}
+	}
+}

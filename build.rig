@@ -1,0 +1,299 @@
+/*
+ * *****************************************************************************
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ *
+ * Copyright (c) 2018-2025 Gavin D. Howard and contributors.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * * Redistributions of source code must retain the above copyright notice, this
+ *   list of conditions and the following disclaimer.
+ *
+ * * Redistributions in binary form must reproduce the above copyright notice,
+ *   this list of conditions and the following disclaimer in the documentation
+ *   and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ *
+ * *****************************************************************************
+ *
+ * The build script file.
+ *
+ */
+
+if OS == "Windows" && NLS_ENABLED != "0"
+{
+	error("Locales are not supported on Windows");
+}
+
+if LIBRARY_ENABLED == "0"
+{
+	if OS != "Windows" && NLS_ENABLED != "0"
+	{
+		io.eprint("Testing NLS...\n");
+
+		clang_flags: []str =
+		if CC contains "clang"
+		{
+			@[ "-Wno_unreachable-code" ];
+		};
+
+		flags: []str = clang_flags +~ @[
+			DEFOPT +~ "BC_ENABLE_NLS=1",
+			DEFOPT +~ "BC_ENABLED=" +~ BC_ENABLED,
+			DEFOPT +~ "DC_ENABLED=" +~ DC_ENABLED,
+			DEFOPT +~ "BC_ENABLE_HISTORY=0",
+			DEFOPT +~ "BC_ENABLE_LIBRARY=0",
+			DEFOPT +~ "BC_ENABLE_AFL=0",
+			DEFOPT +~ "BC_ENABLE_EXTRA_MATH=" +~ EXTRA_MATH_ENABLED,
+			DEFOPT +~ "BC_ENABLE_OSSFUZZ=0",
+			DEFOPT +~ "_POSIX_C_SOURCE=200809L",
+			DEFOPT +~ "_XOPEN_SOURCE=700",
+			INCOPT,
+		];
+
+		res := $ $CC %(flags) -c @(path.join(src_dir, "src/vm.c")) -E;
+
+		if res.exitcode != 0
+		{
+			if FORCE
+			{
+				io.eprint("Forcing NLS...\n");
+			}
+			else
+			{
+				error("NLS does not work\n");
+			}
+		}
+		else
+		{
+			if path.isfile("vm.o")
+			{
+				path.rm("vm.o");
+			}
+
+			io.eprint("NLS works.\n\n");
+			io.eprint("Testing gencat...\n");
+
+			res2 := $ gencat ./en_US.cat
+			          @(path.join(src_dir, "locales/en_US.msg"));
+
+			if res2.exitcode != 0
+			{
+				if FORCE
+				{
+					io.eprint("Forcing NLS...\n");
+				}
+				else
+				{
+					error("gencat does not work\n");
+				}
+			}
+			else
+			{
+				io.eprint("gencat works.\n\n");
+
+				if platform != host
+				{
+					error("Cross compiles will not work!\n\n");
+				}
+			}
+		}
+	}
+
+	if OS != "Windows" && sym(config["history"]) != @none
+	{
+		io.eprint("Testing history...\n");
+
+		flags: []str = @[
+			DEFOPT +~ "BC_ENABLE_HISTORY=1",
+			DEFOPT +~ "BC_ENABLED=" +~ BC_ENABLED,
+			DEFOPT +~ "DC_ENABLED=" +~ DC_ENABLED,
+			DEFOPT +~ "BC_ENABLE_NLS=" +~ NLS_ENABLED,
+			DEFOPT +~ "BC_ENABLE_LIBRARY=0",
+			DEFOPT +~ "BC_ENABLE_AFL=0",
+			DEFOPT +~ "BC_ENABLE_EDITLINE=" +~ EDITLINE_ENABLED,
+			DEFOPT +~ "BC_ENABLE_READLINE=" +~ READLINE_ENABLED,
+			DEFOPT +~ "BC_ENABLE_EXTRA_MATH=" +~ EXTRA_MATH_ENABLED,
+			DEFOPT +~ "BC_ENABLE_OSSFUZZ=0",
+			DEFOPT +~ "_POSIX_C_SOURCE=200809L",
+			DEFOPT +~ "_XOPEN_SOURCE=700",
+			INCOPT,
+		];
+
+		res := $ $CC %(flags) -c @(path.join(src_dir, "src/history.c")) -E;
+
+		if res.exitcode != 0
+		{
+			if FORCE
+			{
+				io.eprint("Forcing history...\n");
+			}
+			else
+			{
+				error("History does not work\n");
+			}
+		}
+		else
+		{
+			if path.isfile("history.o")
+			{
+				path.rm("history.o");
+			}
+
+			io.eprint("History works.\n\n");
+		}
+	}
+}
+
+// Test FreeBSD. This is not in an if statement because regardless of whatever
+// the user says, we need to know if we are on FreeBSD. If we are, we cannot set
+// _POSIX_C_SOURCE and _XOPEN_SOURCE. The FreeBSD headers turn *off* stuff when
+// that is done.
+freebsd: bool = test_os(
+	"FreeBSD", "BC_TEST_FREEBSD",
+	"On FreeBSD. Not using _POSIX_C_SOURCE and _XOPEN_SOURCE.",
+	"Not on FreeBSD. Using _POSIX_C_SOURCE and _XOPEN_SOURCE.");
+
+freebsd_flags: []str =
+if !freebsd
+{
+	@[ DEFOPT +~ "_POSIX_C_SOURCE=200809L", DEFOPT +~ "_XOPEN_SOURCE=700" ];
+};
+
+// Test macOS. This is not in an if statement because regardless of whatever the
+// user says, we need to know if we are on macOS. If we are, we have to set
+// _DARWIN_C_SOURCE.
+macos: bool = test_os("macOS", "BC_TEST_APPLE",
+                      "On macOS. Using _DARWIN_C_SOURCE.", "Not on macOS.");
+
+macos_flags: []str =
+if macos
+{
+	@[ DEFOPT +~ "_DARWIN_C_SOURCE" ];
+};
+
+strip_flag: []str =
+if OS != "Windows" && !bool(config["debug"]) && !macos && bool(config["strip"])
+{
+	@[ "-s" ];
+};
+
+// Test OpenBSD. This is not in an if statement because regardless of whatever
+// the user says, we need to know if we are on OpenBSD to activate _BSD_SOURCE.
+// No, I cannot `#define _BSD_SOURCE` in a header because OpenBSD's patched GCC
+// and Clang complain that that is only allowed for system headers. Sigh....So
+// we have to check at configure time and set it on the compiler command-line.
+// And we have to set it because we also set _POSIX_C_SOURCE, which OpenBSD
+// headers detect, and when they detect it, they turn off _BSD_SOURCE unless it
+// is specifically requested.
+openbsd: bool = test_os("OpenBSD", "BC_TEST_OPENBSD",
+                        "On OpenBSD. Using _BSD_SOURCE.", "Not on OpenBSD.");
+
+openbsd_flags: []str =
+if openbsd
+{
+	if READLINE_ENABLED != "0"
+	{
+		error("Cannot use readline on OpenBSD");
+	}
+
+	@[ DEFOPT +~ "_BSD_SOURCE" ];
+};
+
+bc_bin: str = exe_name(EXECPREFIX +~ "bc" +~ EXECSUFFIX);
+dc_bin: str = exe_name(EXECPREFIX +~ "dc" +~ EXECSUFFIX);
+library: str = lib_name("libbcl");
+
+history_files: []str =
+if HISTORY != @none
+{
+	HISTORY_C_FILES;
+};
+
+gen_o_files: []str =
+if BUILD_MODE != @library
+{
+	@[
+		txt2o("gen/lib.bc", "bc_lib", "bc_lib_name", "BC_ENABLED", true),
+		txt2o("gen/lib2.bc", "bc_lib2", "bc_lib2_name",
+		      "BC_ENABLED && BC_ENABLE_EXTRA_MATH", true),
+		txt2o("gen/bc_help.txt", "bc_help", "", "BC_ENABLED", false),
+		txt2o("gen/dc_help.txt", "dc_help", "", "DC_ENABLED", false),
+	];
+};
+
+c_files: []str =
+if BUILD_MODE == @both
+{
+	COMMON_C_FILES +~ EXEC_C_FILES +~ BC_C_FILES +~ DC_C_FILES +~ history_files;
+}
+else if BUILD_MODE == @bc
+{
+	COMMON_C_FILES +~ EXEC_C_FILES +~ BC_C_FILES +~ history_files;
+}
+else if BUILD_MODE == @dc
+{
+	COMMON_C_FILES +~ EXEC_C_FILES +~ DC_C_FILES +~ history_files;
+}
+else
+{
+	COMMON_C_FILES +~ LIBRARY_C_FILES;
+};
+
+obj_files: []str = gen_o_files +~
+for f: c_files
+{
+	c2o(f);
+};
+
+if BUILD_MODE == @both || BUILD_MODE == @bc
+{
+	exe(bc_bin, obj_files);
+}
+
+if BUILD_MODE == @both
+{
+	ln(dc_bin, bc_bin);
+}
+else if BUILD_MODE == @dc
+{
+	exe(dc_bin, obj_files);
+}
+
+if BUILD_MODE == @library
+{
+	lib(library, obj_files);
+}
+
+targets: []str =
+if BUILD_MODE == @both
+{
+	@[ bc_bin, dc_bin ];
+}
+else if BUILD_MODE == @bc
+{
+	@[ bc_bin ];
+}
+else if BUILD_MODE == @dc
+{
+	@[ dc_bin ];
+}
+else
+{
+	@[ library ];
+};
+
+target @all: targets;
