@@ -47,6 +47,27 @@ fn lib_name(name: str) -> str
 	return if OS == "Windows" { name +~ ".lib"; } else { name +~ ".a"; };
 }
 
+fn prompt(name: str) -> str
+{
+	opt: sym = sym(config[name +~ "/default_prompt"]);
+
+	ret: str =
+	if opt == @off
+	{
+		"0";
+	}
+	else if opt == @tty_mode
+	{
+		str(uint(bool(config[name +~ "/default_tty_mode"])));
+	}
+	else
+	{
+		"1";
+	};
+
+	return ret;
+}
+
 HEADERS: []str = find_src_ext("include", "h");
 
 FORCE: bool = bool(config["force"]);
@@ -151,6 +172,26 @@ CFLAGS2: []str = @[
 	DEFOPT +~ "BC_ENABLE_MEMCHECK=" +~ str(uint(bool(config["memcheck"]))),
 	DEFOPT +~ "BC_ENABLE_AFL=" +~ str(uint(bool(config["afl"]))),
 	DEFOPT +~ "BC_ENABLE_OSSFUZZ=" +~ str(uint(bool(config["ossfuzz"]))),
+	DEFOPT +~ "BC_DEFAULT_BANNER=" +~
+	    str(uint(bool(config["bc/default_banner"]))),
+	DEFOPT +~ "BC_DEFAULT_SIGINT_RESET=" +~
+	    str(uint(bool(config["bc/default_sigint_reset"]))),
+	DEFOPT +~ "BC_DEFAULT_TTY_MODE=" +~
+	    str(uint(bool(config["bc/default_tty_mode"]))),
+	DEFOPT +~ "BC_DEFAULT_PROMPT=" +~ prompt("bc"),
+	DEFOPT +~ "BC_DEFAULT_EXPR_EXIT=" +~
+	    str(uint(bool(config["bc/default_expr_exit"]))),
+	DEFOPT +~ "BC_DEFAULT_DIGIT_CLAMP=" +~
+	    str(uint(bool(config["bc/default_digit_clamp"]))),
+	DEFOPT +~ "DC_DEFAULT_SIGINT_RESET=" +~
+	    str(uint(bool(config["dc/default_sigint_reset"]))),
+	DEFOPT +~ "DC_DEFAULT_TTY_MODE=" +~
+	    str(uint(bool(config["dc/default_tty_mode"]))),
+	DEFOPT +~ "DC_DEFAULT_PROMPT=" +~ prompt("dc"),
+	DEFOPT +~ "DC_DEFAULT_EXPR_EXIT=" +~
+	    str(uint(bool(config["dc/default_expr_exit"]))),
+	DEFOPT +~ "DC_DEFAULT_DIGIT_CLAMP=" +~
+	    str(uint(bool(config["dc/default_digit_clamp"]))),
 ];
 CFLAGS: []str = CFLAGS1 +~ CFLAGS2;
 
