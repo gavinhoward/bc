@@ -95,9 +95,7 @@ fi
 # We want the absolute path for later.
 repo=$(pwd)
 
-# This convoluted mess does pull the version out. If you change the format of
-# include/version.h, you may have to change this line.
-version=$(cat include/version.h | grep "VERSION " - | awk '{ print $3 }' -)
+version=$(cat "$scriptdir/VERSION.txt" | head -n1)
 
 tag_msg="Version $version"
 projver="${proj}-${version}"

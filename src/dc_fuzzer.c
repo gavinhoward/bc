@@ -36,7 +36,6 @@
 #include <setjmp.h>
 #include <string.h>
 
-#include <version.h>
 #include <status.h>
 #include <ossfuzz.h>
 #include <vm.h>

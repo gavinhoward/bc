@@ -499,7 +499,7 @@ configuration.
 ### `NEWS.md`
 
 A running changelog with an entry for each version. This should be updated at
-the same time that [`include/version.h`][75] is.
+the same time that [`VERSION.txt`][75] is.
 
 ### `NOTICE.md`
 
@@ -508,6 +508,10 @@ The `NOTICE` file with proper attributions.
 ### `README.md`
 
 The `README`. Read it.
+
+### `VERSION.txt`
+
+The version.
 
 ### `benchmarks/`
 
@@ -917,12 +921,6 @@ Vectors are what do the heavy lifting in almost all of `bc`'s data structures.
 Even the maps of identifiers and arrays use vectors.
 
 The code associated with this header is in [`src/vector.c`][228].
-
-#### `version.h`
-
-This header defines the version of `bc`.
-
-There is no code associated with this header.
 
 #### `vm.h`
 

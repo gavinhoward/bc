@@ -483,6 +483,7 @@ Files:
 	Makefile.in          The Makefile template.
 	NEWS.md              The changelog.
 	NOTICE.md            List of contributors and copyright owners.
+	VERSION.txt          A file containing the version.
 
 Folders:
 

@@ -47,7 +47,6 @@
 
 #include <setjmp.h>
 
-#include <version.h>
 #include <status.h>
 #include <vm.h>
 #include <bc.h>

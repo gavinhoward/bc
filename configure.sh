@@ -1850,9 +1850,7 @@ else
 	headers="$headers \$(DC_HEADERS)"
 fi
 
-# This convoluted mess does pull the version out. If you change the format of
-# include/version.h, you may have to change this line.
-version=$(cat "$scriptdir/include/version.h" | grep "VERSION " - | awk '{ print $3 }' -)
+version=$(cat "$scriptdir/VERSION.txt" | head -n1)
 
 if [ "$library" -ne 0 ]; then
 
@@ -2047,6 +2045,8 @@ contents=$(replace "$contents" "ROOTDIR" "$scriptdir")
 contents=$(replace "$contents" "BUILDDIR" "$builddir")
 
 contents=$(replace "$contents" "HEADERS" "$headers")
+
+contents=$(replace "$contents" "VERSION" "$version")
 
 contents=$(replace "$contents" "BC_ENABLED" "$bc")
 contents=$(replace "$contents" "DC_ENABLED" "$dc")

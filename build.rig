@@ -237,7 +237,13 @@ if bool(config["strict"])
 	}
 };
 
-other_flags: []str = strip_flag +~ lto_flag +~ strict_flags +~
+version_contents: str = io.read_file(path.join(src_dir, "VERSION.txt"));
+version_lines: []str = version_contents.split("\n");
+version: str = version_lines[0];
+
+version_flag: []str = @[ DEFOPT +~ "VERSION=" +~ version ];
+
+other_flags: []str = strip_flag +~ lto_flag +~ strict_flags +~ version_flag +~
 if bool(config["debug"])
 {
 	@[ compiler_db["opt.debug"] ];
