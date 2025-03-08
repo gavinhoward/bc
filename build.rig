@@ -33,11 +33,6 @@
  *
  */
 
-if OS == "Windows" && NLS_ENABLED != "0"
-{
-	error("Locales are not supported on Windows");
-}
-
 if OS == "Windows" && bool(config["lto"])
 {
 	error("Link-time optimization is not supported on Windows");
@@ -163,31 +158,29 @@ if LIBRARY_ENABLED == "0"
 	}
 }
 
-// Test FreeBSD. This is not in an if statement because regardless of whatever
-// the user says, we need to know if we are on FreeBSD. If we are, we cannot set
-// _POSIX_C_SOURCE and _XOPEN_SOURCE. The FreeBSD headers turn *off* stuff when
-// that is done.
-freebsd: bool = test_os(
-	"FreeBSD", "BC_TEST_FREEBSD",
-	"On FreeBSD. Not using _POSIX_C_SOURCE and _XOPEN_SOURCE.",
-	"Not on FreeBSD. Using _POSIX_C_SOURCE and _XOPEN_SOURCE.");
-
 freebsd_flags: []str =
-if !freebsd
+if OS != "FreeBSD"
 {
 	@[ DEFOPT +~ "_POSIX_C_SOURCE=200809L", DEFOPT +~ "_XOPEN_SOURCE=700" ];
 };
 
-// Test macOS. This is not in an if statement because regardless of whatever the
-// user says, we need to know if we are on macOS. If we are, we have to set
-// _DARWIN_C_SOURCE.
-macos: bool = test_os("macOS", "BC_TEST_APPLE",
-                      "On macOS. Using _DARWIN_C_SOURCE.", "Not on macOS.");
+macos: bool = (OS == "Darwin");
 
 macos_flags: []str =
 if macos
 {
 	@[ DEFOPT +~ "_DARWIN_C_SOURCE" ];
+};
+
+openbsd_flags: []str =
+if OS == "OpenBSD"
+{
+	if READLINE_ENABLED != "0"
+	{
+		error("Cannot use readline on OpenBSD");
+	}
+
+	@[ DEFOPT +~ "_BSD_SOURCE" ];
 };
 
 strip_flag: []str =
@@ -243,37 +236,12 @@ version: str = version_lines[0];
 
 version_flag: []str = @[ DEFOPT +~ "VERSION=" +~ version ];
 
-other_flags: []str = strip_flag +~ lto_flag +~ strict_flags +~ version_flag +~
+other_flags: []str = freebsd_flags +~ macos_flags +~ openbsd_flags +~
+                     strip_flag +~ lto_flag +~ strict_flags +~ version_flag +~
 if bool(config["debug"])
 {
 	@[ compiler_db["opt.debug"] ];
 };
-
-// Test OpenBSD. This is not in an if statement because regardless of whatever
-// the user says, we need to know if we are on OpenBSD to activate _BSD_SOURCE.
-// No, I cannot `#define _BSD_SOURCE` in a header because OpenBSD's patched GCC
-// and Clang complain that that is only allowed for system headers. Sigh....So
-// we have to check at configure time and set it on the compiler command-line.
-// And we have to set it because we also set _POSIX_C_SOURCE, which OpenBSD
-// headers detect, and when they detect it, they turn off _BSD_SOURCE unless it
-// is specifically requested.
-openbsd: bool = test_os("OpenBSD", "BC_TEST_OPENBSD",
-                        "On OpenBSD. Using _BSD_SOURCE.", "Not on OpenBSD.");
-
-openbsd_flags: []str =
-if openbsd
-{
-	if READLINE_ENABLED != "0"
-	{
-		error("Cannot use readline on OpenBSD");
-	}
-
-	@[ DEFOPT +~ "_BSD_SOURCE" ];
-};
-
-bc_bin: str = exe_name(EXECPREFIX +~ "bc" +~ EXECSUFFIX);
-dc_bin: str = exe_name(EXECPREFIX +~ "dc" +~ EXECSUFFIX);
-library: str = lib_name("libbcl");
 
 history_files: []str =
 if HISTORY != @none
@@ -322,39 +290,222 @@ push @(gaml){ other_cflags: $other_flags }: config_stack
 
 	if BUILD_MODE == @both || BUILD_MODE == @bc
 	{
-		exe(bc_bin, obj_files);
+		if OS != "Windows" && bool(config["install_manpages"])
+		{
+			src: str = path.join("manuals/bc", BUILD_TYPE +~ ".1");
+
+			target BC_MANPAGE: src
+			{
+				$ cp -f @(file_dep) @(tgt);
+			}
+		}
+
+		exe(BC_BIN, obj_files);
 	}
 
-	if BUILD_MODE == @both
+	if BUILD_MODE == @both || BUILD_MODE == @dc
 	{
-		ln(dc_bin, bc_bin);
-	}
-	else if BUILD_MODE == @dc
-	{
-		exe(dc_bin, obj_files);
+		if OS != "Windows" && bool(config["install_manpages"])
+		{
+			src: str = path.join("manuals/dc", BUILD_TYPE +~ ".1");
+
+			target DC_MANPAGE: src
+			{
+				$ cp -f @(file_dep) @(tgt);
+			}
+		}
+
+		if BUILD_MODE == @both
+		{
+			ln(DC_BIN, BC_BIN);
+		}
+		else
+		{
+			exe(DC_BIN, obj_files);
+		}
 	}
 
 	if BUILD_MODE == @library
 	{
-		lib(library, obj_files);
+		lib(LIBRARY, obj_files);
 	}
 
 	if BUILD_MODE == @both
 	{
-		@[ bc_bin, dc_bin ];
+		@[ BC_BIN, DC_BIN ];
 	}
 	else if BUILD_MODE == @bc
 	{
-		@[ bc_bin ];
+		@[ DC_BIN ];
 	}
 	else if BUILD_MODE == @dc
 	{
-		@[ dc_bin ];
+		@[ DC_BIN ];
 	}
 	else
 	{
-		@[ library ];
+		includedir: str = get_includedir();
+		libdir: str = get_libdir();
+
+		pc_config: Gaml = @(gaml){
+			INCLUDEDIR: $includedir
+			LIBDIR: $libdir
+			VERSION: $version
+		};
+
+		push pc_config: config_stack
+		{
+			target PC_FILE: PC_FILE +~ ".in"
+			{
+				configure_file(file_dep, tgt, "%%");
+			}
+		}
+
+		@[ LIBRARY, PC_FILE ];
 	}
 };
+
+if OS != "Windows"
+{
+	if LIBRARY_ENABLED == "0"
+	{
+		target @install: targets
+		{
+			bindir: str = get_bindir();
+
+			if BC_ENABLED != "0"
+			{
+				$ $SAFE_INSTALL $EXEC_INSTALL_MODE $BC_BIN
+				  @(path.join(bindir, BC_BIN));
+			}
+
+			if DC_ENABLED != "0"
+			{
+				if BC_ENABLED != "0"
+				{
+					$ ln -sf @("./" +~ BC_BIN) @(path.join(bindir, DC_BIN));
+				}
+				else
+				{
+					$ $SAFE_INSTALL $EXEC_INSTALL_MODE $BC_BIN
+					  @(path.join(bindir, BC_BIN));
+				}
+			}
+
+			if NLS_ENABLED != "0"
+			{
+				locale_install_args: []str =
+				if sym(config["locales"]) == @all
+				{
+					@[ "-l" ];
+				};
+
+				if DESTDIR != ""
+				{
+					$ @(path.join(src_dir, "scripts/locale_install.sh"))
+					  %(locale_install_args) @(str(config["nls_path"]))
+					  $MAINEXEC $DESTDIR;
+				}
+				else
+				{
+					$ @(path.join(src_dir, "scripts/locale_install.sh"))
+					  %(locale_install_args) @(str(config["nls_path"]))
+					  $MAINEXEC;
+				}
+			}
+
+			if bool(config["install_manpages"])
+			{
+				man1dir: str = get_man1dir();
+
+				if BC_ENABLED != "0"
+				{
+					$ rm -rf @(path.join(man1dir, BC_MANPAGE));
+				}
+
+				if DC_ENABLED != "0"
+				{
+					$ rm -rf @(path.join(man1dir, DC_MANPAGE));
+				}
+			}
+		}
+
+		target @uninstall
+		{
+			bindir: str = get_bindir();
+
+			if BC_ENABLED != "0"
+			{
+				$ rm -rf @(path.join(bindir, BC_BIN));
+			}
+
+			if DC_ENABLED != "0"
+			{
+				$ rm -rf @(path.join(bindir, DC_BIN));
+			}
+
+			if NLS_ENABLED != "0"
+			{
+				if DESTDIR != ""
+				{
+					$ @(path.join(src_dir, "scripts/locale_uninstall.sh"))
+					  @(str(config["nls_path"])) $MAINEXEC $DESTDIR;
+				}
+				else
+				{
+					$ @(path.join(src_dir, "scripts/locale_uninstall.sh"))
+					  @(str(config["nls_path"])) $MAINEXEC;
+				}
+			}
+
+			if bool(config["install_manpages"])
+			{
+				man1dir: str = get_man1dir();
+				$ rm -rf @(path.join(man1dir, BC_MANPAGE))
+				  @(path.join(man1dir, DC_MANPAGE));
+			}
+		}
+	}
+	else
+	{
+		target @install: targets, BCL_HEADER_PATH
+		{
+			full_libdir: str = get_libdir();
+
+			$ $SAFE_INSTALL $EXEC_INSTALL_MODE @(file_dep)
+			  @(path.join(full_libdir, file_dep));
+
+			full_pc_path: str = get_pc_path();
+			bcl_pc: str = file_deps[1];
+
+			$ $SAFE_INSTALL $MANPAGE_INSTALL_MODE $bcl_pc
+			  @(path.join(full_pc_path, bcl_pc));
+
+			full_includedir: str = get_includedir();
+
+			$ $SAFE_INSTALL $MANPAGE_INSTALL_MODE @(file_deps[2])
+			  @(path.join(full_includedir, BCL_HEADER));
+
+			if bool(config["install_manpages"])
+			{
+				$ $SAFE_INSTALL $MANPAGE_INSTALL_MODE
+				  @(path.join(src_dir, path.join("manuals", BCL_MANPAGE)))
+				  @(path.join(get_man3dir(), BCL_MANPAGE));
+			}
+		}
+
+		target @uninstall
+		{
+			$ rm -rf @(path.join(get_libdir(), LIBRARY))
+			  @(path.join(get_pc_path(), PC_FILE))
+			  @(path.join(get_includedir(), BCL_HEADER));
+
+			if bool(config["install_manpages"])
+			{
+				$ rm -rf @(path.join(get_man3dir(), BCL_MANPAGE));
+			}
+		}
+	}
+}
 
 target @all: targets;

@@ -33,20 +33,65 @@
  *
  */
 
+/// The path to the safe install script.
+SAFE_INSTALL: str = path.join(src_dir, "scripts/safe-install.sh");
+
+/// The file mode for executables, as an argument to the safe install script.
+EXEC_INSTALL_MODE: str = "-Dm755";
+
+/// The file mode for man pages and other files, as an argument to the safe
+/// install script.
+MANPAGE_INSTALL_MODE: str = "-Dm644";
+
 // Save this.
 OS: str = platform.os;
 
+DESTDIR: str = str(config["destdir"]);
+
+EXECPREFIX: str = str(config["execprefix"]);
+EXECSUFFIX: str = str(config["execsuffix"]);
+
+/**
+ * Generates the true executable name for the given base name.
+ * @param name  The base name of the executable.
+ * @return      The true name of the executable, including prefix, suffix, and
+                extension.
+ */
 fn exe_name(name: str) -> str
 {
-	temp: str = str(config["execprefix"]) +~ name +~ str(config["execsuffix"]);
+	temp: str = EXECPREFIX +~ name +~ EXECSUFFIX;
 	return if OS == "Windows" { temp +~ ".exe"; } else { temp; };
 }
 
+/**
+ * Generates the true library name for the given base name.
+ * @param name  The base name of the library.
+ * @return      The true name of the library, including prefix and extension.
+ */
 fn lib_name(name: str) -> str
 {
-	return if OS == "Windows" { name +~ ".lib"; } else { name +~ ".a"; };
+	ext: str = if OS == "Windows" { ".lib"; } else { ".a"; };
+	return "lib" +~ name +~ ext;
 }
 
+BC_BIN: str = exe_name("bc");
+DC_BIN: str = exe_name("dc");
+LIBRARY: str = lib_name("libbcl");
+
+BC_MANPAGE: str = EXECPREFIX +~ "bc" +~ EXECSUFFIX +~ ".1";
+DC_MANPAGE: str = EXECPREFIX +~ "dc" +~ EXECSUFFIX +~ ".1";
+BCL_MANPAGE: str = "bcl.3";
+
+BCL_HEADER: str = "bcl.h";
+BCL_HEADER_PATH: str = path.join(src_dir, path.join("include", BCL_HEADER));
+PC_FILE: str = "bcl.pc";
+
+/**
+ * Returns the string value of the define for a prompt default define for an
+ * executable.
+ * @param name  The base name of the executable.
+ * @return      The string value of the compiler define for the prompt default.
+ */
 fn prompt(name: str) -> str
 {
 	opt: sym = sym(config[name +~ "/default_prompt"]);
@@ -72,9 +117,6 @@ HEADERS: []str = find_src_ext("include", "h");
 
 FORCE: bool = bool(config["force"]);
 
-EXECPREFIX: str = str(config["execprefix"]);
-EXECSUFFIX: str = str(config["execsuffix"]);
-
 BUILD_MODE: sym = sym(config["build_mode"]);
 
 BC_ENABLED: str = str(uint(BUILD_MODE == @both || BUILD_MODE == @bc));
@@ -88,7 +130,15 @@ HISTORY_ENABLED: str = str(uint(HISTORY != @none));
 EDITLINE_ENABLED: str = str(uint(HISTORY == @editline));
 READLINE_ENABLED: str = str(uint(HISTORY == @readline));
 
-NLS_ENABLED: str = str(uint(sym(config["locales"]) != @none));
+NLS_ENABLED: str =
+if OS == "Windows" || BUILD_MODE == @library
+{
+	"0";
+}
+else
+{
+	str(uint(sym(config["locales"]) != @none));
+};
 
 BUILD_TYPE: str =
 if EXTRA_MATH_ENABLED != "0" && HISTORY_ENABLED != "0" && NLS_ENABLED != "0"
@@ -143,22 +193,24 @@ if bool(config["coverage"])
 	@[ "-fprofile-arcs", "-ftest-coverage", "-g", "-O0", DEFOPT +~ "NDEBUG" ];
 };
 
-MAINEXEC: []str =
-if BUILD_MODE == @both || BUILD_MODE == @bc
+MAINEXEC: str =
+if BUILD_MODE == @both || BUILD_MODE == @bc || BUILD_MODE == @library
 {
-	@[ DEFOPT +~ "MAINEXEC=" +~ exe_name("bc") ];
+	BC_BIN;
 }
-else if BUILD_MODE == @dc
+else
 {
-	@[ DEFOPT +~ "MAINEXEC=" +~ exe_name("dc") ];
+	DC_BIN;
 };
+
+MAINEXEC_FLAGS: []str = @[ DEFOPT +~ "MAINEXEC=" +~ MAINEXEC ];
 
 // XXX: Library needs these defines to be true.
 BC_DEF: str = if LIBRARY_ENABLED == "0" { BC_ENABLED; } else { "1"; };
 DC_DEF: str = if LIBRARY_ENABLED == "0" { DC_ENABLED; } else { "1"; };
 
 CFLAGS1: []str = config_list["cflags"] +~ @[ OPTOPT, INCOPT ] +~
-                 COVERAGE_CFLAGS +~ MAINEXEC;
+                 COVERAGE_CFLAGS +~ MAINEXEC_FLAGS;
 CFLAGS2: []str = @[
 	DEFOPT +~ "BC_ENABLED=" +~ BC_DEF,
 	DEFOPT +~ "DC_ENABLED=" +~ DC_DEF,
@@ -268,6 +320,23 @@ GEN_EX_END: str = "{{ end }}";
 /// that lines don't go much over 80 characters.
 MAX_WIDTH: usize = usize(72);
 
+/**
+ * A function to generate a C file that contains a C character array with the
+ * contents of a text file. For more detail, see the `gen/strgen.c` program;
+ * this function is exactly equivalent to that or should be.
+ * @param input        The input file name.
+ * @param output       The output file name.
+ * @param exclude      True if extra math stuff should be excluded, false if
+ *                     they should be included.
+ * @param name         The name of the array.
+ * @param label        If not equal to "", this is the label for the array,
+ *                     which is essentially the "file name" in `bc` and `dc`.
+ * @param define       If not equal to "", this is the preprocessor define
+ *                     expression that should be used to guard the array with a
+ *                     `#if`/`#endif` combo.
+ * @param remove_tabs  True if tabs should be ignored, false if they should be
+ *                     included.
+ */
 fn strgen(
 	input: str,
 	output: str,
@@ -442,38 +511,12 @@ fn strgen(
 	}
 }
 
-fn test_os(
-	name: str,
-	def: str,
-	yes_msg: str,
-	no_msg: str,
-) -> bool
-{
-	io.eprint("Testing for " +~ name +~ "...\n");
-
-	flags: []str = @[
-		DEFOPT +~ def,
-		DEFOPT +~ "BC_ENABLE_AFL=0",
-		INCOPT,
-	];
-
-	res := $ $CC %(flags) -E @(path.join(src_dir, "scripts/os.c"));
-
-	ret: bool = (res.exitcode != 0);
-
-	if ret
-	{
-		io.eprint(str(res.stderr) +~ "\n");
-		io.eprint(yes_msg +~ "\n\n");
-	}
-	else
-	{
-		io.eprint(no_msg +~ "\n\n");
-	}
-
-	return ret;
-}
-
+/**
+ * Creates a target to generate an object file from the given C file and returns
+ * the target name of the new target.
+ * @param c_file  The name of the C file target.
+ * @return        The name of the object file target.
+ */
 fn c2o(c_file: str) -> str
 {
 	o_file: str = c_file +~ (if OS == "Windows" { ".obj"; } else { ".o"; });
@@ -487,6 +530,20 @@ fn c2o(c_file: str) -> str
 	return o_file;
 }
 
+/**
+ * Generates a target to turn a text file into a C file with the text file's
+ * contents as a char array, then generates a target to generate an object file
+ * from that C file, then returns the name of the object file target.
+ * @param txt_file     The name of the text file.
+ * @param name         The name of the char array in the C file.
+ * @param label        The label for the array, if any. (See the @a strgen()
+ *                     function for more information.)
+ * @param def          The preprocessor define(s) to guard the array, if any.
+ *                     (See the @a strgen() function for more information.)
+ * @param remove_tabs  True if tabs should be ignored, false otherwise. (See the
+ *                     @a strgen() function for more information.)
+ * @return             The name of the object file target.
+ */
 fn txt2o(
 	txt_file: str,
 	name: str,
@@ -518,6 +575,12 @@ fn txt2o(
 	return c2o(c_file);
 }
 
+/**
+ * Generates a target for an executable and returns its name.
+ * @param name     The name of the executable.
+ * @param o_files  The object files for the executable.
+ * @return         The name of the generated target.
+ */
 fn exe(name: str, o_files: []str) -> void
 {
 	target name: o_files
@@ -527,6 +590,11 @@ fn exe(name: str, o_files: []str) -> void
 	}
 }
 
+/**
+ * Generates a target for a link.
+ * @param name  The name of the link.
+ * @param exec  The name of the executable target.
+ */
 fn ln(name: str, exec: str) -> void
 {
 	if OS == "Windows"
@@ -545,6 +613,11 @@ fn ln(name: str, exec: str) -> void
 	}
 }
 
+/**
+ * Generates a target for a library.
+ * @param name  The name of the library.
+ * @param exec  The name of the executable target.
+ */
 fn lib(name: str, o_files: []str) -> void
 {
 	if OS == "WINDOWS"
@@ -558,4 +631,202 @@ fn lib(name: str, o_files: []str) -> void
 			$ ar -r -cu @(tgt) %(file_deps);
 		}
 	}
+}
+
+/**
+ * Gets the `$BINDIR`, including the `$DESTDIR`. This generates the default
+ * value if it wasn't set.
+ * @return  The `$BINDIR`, with the `$DESTDIR`.
+ */
+fn get_bindir() -> str
+{
+	temp: str = str(config["bindir"]);
+
+	bindir: str =
+	if temp == ""
+	{
+		path.join(str(config["prefix"]), "bin");
+	}
+	else
+	{
+		temp;
+	};
+
+	return path.join(DESTDIR, bindir);
+}
+
+/**
+ * Gets the `$LIBDIR`, including the `$DESTDIR`. This generates the default
+ * value if it wasn't set.
+ * @return  The `$LIBDIR`, with the `$DESTDIR`.
+ */
+fn get_libdir() -> str
+{
+	temp: str = str(config["libdir"]);
+
+	libdir: str =
+	if temp == ""
+	{
+		path.join(str(config["prefix"]), "lib");
+	}
+	else
+	{
+		temp;
+	};
+
+	return path.join(DESTDIR, libdir);
+}
+
+/**
+ * Gets the `$INCLUDEDIR`, including the `$DESTDIR`. This generates the default
+ * value if it wasn't set.
+ * @return  The `$INCLUDEDIR`, with the `$DESTDIR`.
+ */
+fn get_includedir() -> str
+{
+	temp: str = str(config["includedir"]);
+
+	includedir: str =
+	if temp == ""
+	{
+		path.join(str(config["prefix"]), "include");
+	}
+	else
+	{
+		temp;
+	};
+
+	return path.join(DESTDIR, includedir);
+}
+
+/**
+ * Gets the `$PC_PATH`, including the `$DESTDIR`. This generates the default
+ * value if it wasn't set.
+ * @return  The `$PC_PATH`, with the `$DESTDIR`.
+ */
+fn get_pc_path() -> str
+{
+	pc_path: str =
+	if str(config["pc_path"]) == ""
+	{
+		res := $ pkg-config --variable=pc_path pkg-config;
+
+		str(res.stdout);
+	}
+	else
+	{
+		str(config["pc_path"]);
+	};
+
+	return path.join(DESTDIR, pc_path);
+}
+
+/**
+ * Gets the `$DATAROOTDIR`, including the `$DESTDIR`. This generates the default
+ * value if it wasn't set.
+ * @return  The `$DATAROOTDIR`, with the `$DESTDIR`.
+ */
+fn get_datarootdir() -> str
+{
+	temp: str = str(config["datarootdir"]);
+
+	datarootdir: str =
+	if temp == ""
+	{
+		path.join(str(config["prefix"]), "share");
+	}
+	else
+	{
+		temp;
+	};
+
+	return path.join(DESTDIR, datarootdir);
+}
+
+/**
+ * Gets the `$DATADIR`, including the `$DESTDIR`. This generates the default
+ * value if it wasn't set.
+ * @return  The `$DATADIR`, with the `$DESTDIR`.
+ */
+fn get_datadir() -> str
+{
+	temp: str = str(config["datadir"]);
+
+	datadir: str =
+	if temp == ""
+	{
+		get_datarootdir();
+	}
+	else
+	{
+		temp;
+	};
+
+	return path.join(DESTDIR, datadir);
+}
+
+/**
+ * Gets the `$MANDIR`, including the `$DESTDIR`. This generates the default
+ * value if it wasn't set.
+ * @return  The `$MANDIR`, with the `$DESTDIR`.
+ */
+fn get_mandir() -> str
+{
+	temp: str = str(config["mandir"]);
+
+	mandir: str =
+	if temp == ""
+	{
+		path.join(get_datadir(), "man");
+	}
+	else
+	{
+		temp;
+	};
+
+	return path.join(DESTDIR, mandir);
+}
+
+/**
+ * Gets the `$MAN1DIR`, including the `$DESTDIR`. This generates the default
+ * value if it wasn't set.
+ * @return  The `$MAN1DIR`, with the `$DESTDIR`.
+ */
+fn get_man1dir() -> str
+{
+	temp: str = str(config["man1dir"]);
+
+	man1dir: str =
+	if temp == ""
+	{
+		path.join(get_mandir(), "man1");
+	}
+	else
+	{
+		temp;
+	};
+
+	return path.join(DESTDIR, man1dir);
+}
+
+/**
+ * Gets the `$MAN3DIR`, including the `$DESTDIR`. This generates the default
+ * value if it wasn't set.
+ * @return  The `$MAN3DIR`, with the `$DESTDIR`.
+ */
+fn get_man3dir() -> str
+{
+	temp: str = str(config["man3dir"]);
+
+	man3dir: str =
+	if temp == ""
+	{
+		path.join(get_mandir(), "man3");
+	}
+	else
+	{
+		temp;
+	};
+
+	return path.join(DESTDIR, man3dir);
 }

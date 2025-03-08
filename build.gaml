@@ -177,7 +177,7 @@ options: {
 			@system
 			@all
 		]
-		default: @none
+		default: @system
 		desc: "Whether to disable locales, use just the system ones, or use all (for building a package)."
 	}
 	bc/default_banner: {
@@ -347,18 +347,18 @@ options: {
 	}
 	bindir: {
 		type: @path
-		default: "/usr/local/bin"
-		desc: "The directory to install executables into."
+		default: ""
+		desc: "The directory to install executables into. Defaults to \"$prefix/bin\"."
 	}
 	libdir: {
 		type: @path
-		default: "/usr/local/lib"
-		desc: "The directory to install libraries into."
+		default: ""
+		desc: "The directory to install libraries into. Defaults to \"$prefix/lib\"."
 	}
 	includedir: {
 		type: @path
-		default: "/usr/local/include"
-		desc: "The location to install headers in."
+		default: ""
+		desc: "The location to install headers in. Defaults to \"$prefix/include\"."
 	}
 	nlspath: {
 		type: @path
@@ -369,5 +369,30 @@ options: {
 		type: @path
 		default: ""
 		desc: "The location to pkg-config files to. Defaults to the output of `pkg-config --variable=pc_path pkg-config`."
+	}
+	datarootdir: {
+		type: @path
+		default: ""
+		desc: "The root directory for data files. Defaults to `$prefix/share`."
+	}
+	datadir: {
+		type: @path
+		default: ""
+		desc: "The directory for data files. Defaults to `$datarootdir`."
+	}
+	mandir: {
+		type: @path
+		default: ""
+		desc: "The root directory for manpages. Defaults to `$datadir/man`."
+	}
+	man1dir: {
+		type: @path
+		default: ""
+		desc: "The directory for manpages in section 1. Defaults to `$mandir/man1`."
+	}
+	man3dir: {
+		type: @path
+		default: ""
+		desc: "The directory for manpages in section 3. Defaults to `$mandir/man3`."
 	}
 }
