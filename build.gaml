@@ -295,6 +295,11 @@ options: {
 		default: false
 		desc: "Enable memcheck mode, to check for memory leaks."
 	}
+	valgrind: {
+		type: @bool
+		default: false
+		desc: "Enable Valgrind mode, to check for memory bugs."
+	}
 	afl: {
 		type: @bool
 		default: false

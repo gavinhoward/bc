@@ -508,4 +508,35 @@ if OS != "Windows"
 	}
 }
 
+// If the platform matches the host, we can run the test suite.
+if platform == host
+{
+	// If we have the library, build and run that test.
+	if BUILD_MODE == @library
+	{
+		libtesto: str = c2o("tests/bcl.c");
+
+		libtest: str = "bcl";
+
+		exe(libtest, @[ libtesto, targets[0] ]);
+
+		test @bcl: libtest
+		{
+			$ @(str(tgt_name));
+		}
+	}
+	else
+	{
+		if BUILD_MODE != @dc
+		{
+			exe_tests("bc");
+		}
+
+		if BUILD_MODE != @bc
+		{
+			exe_tests("dc");
+		}
+	}
+}
+
 target @all: targets;

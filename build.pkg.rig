@@ -157,11 +157,13 @@ else
 OPTIMIZE: str = str(config["optimization"]);
 
 VALGRIND_ARGS: []str = @[
+	"valgrind",
 	"--error-exitcode=100",
 	"--leak-check=full",
 	"--show-leak-kinds=all",
 	"--errors-for-leak-kinds=all",
 	"--track-fds=yes",
+	"--track-origins=yes",
 ];
 
 // Get the compiler. The user might have set one at the command line.
@@ -629,6 +631,80 @@ fn lib(name: str, o_files: []str) -> void
 		target name: o_files
 		{
 			$ ar -r -cu @(tgt) %(file_deps);
+		}
+	}
+}
+
+/**
+ * Generates all of the test targets for an executable.
+ * @param name  The base name of the executable.
+ * @param targets  The targets that tests should depend on.
+ */
+fn exe_tests(name: str) -> void
+{
+	// XXX: Must always unset these so that the tests run correctly.
+	env.unset "BC_ENV_ARGS", "BC_LINE_LENGTH", "DC_ENV_ARGS",
+	          "DC_LINE_LENGTH"
+	{
+		bin: str = exe_name(name);
+
+		testdir: str = path.join("tests", name);
+		src_testdir: str = path.join(src_dir, testdir);
+		all_file: str = path.join(src_testdir, "all.txt");
+		tests: []str = io.read_file(all_file).split("\n");
+
+		halt: str = if name == "bc" { "halt"; } else { "q"; };
+		gen_options: []str = if name == "bc" { @[ "-lq" ]; };
+		options: []str = if name == "bc" { @[ "-lqc" ]; } else { @[ "-xc" ]; };
+		var: str = name.toupper() +~ "_LINE_LENGTH";
+
+		args: []str =
+		if bool(config["valgrind"])
+		{
+			VALGRIND_ARGS +~ @[ "./" +~ bin ];
+		}
+		else
+		{
+			@[ "./" +~ bin ];
+		};
+
+		test_config: Gaml = @(gaml){
+			args: $args
+			halt: $halt
+			gen_options: $gen_options
+			options: $options
+			var: $var
+		};
+
+		push test_config: config_stack
+		{
+			for t: tests
+			{
+				if t == ""
+				{
+					continue;
+				}
+
+				test sym(path.join(testdir, t)): bin
+				{
+					test_file: str = tgt_name +~ ".txt";
+					test_result_file: str = tgt_name +~ "_results.txt";
+
+					path.mkdirp(path.dirname(test_result_file));
+
+					$ %(config_list["args"]) %(config_list["options"])
+					  @(path.join(src_dir, test_file)) > $test_result_file;
+
+					exp_path: str = path.join(src_dir, test_result_file);
+					exp := io.read_file_bytes(exp_path);
+					actual := io.read_file_bytes(test_result_file);
+
+					if exp != actual
+					{
+						error("Test \"" +~ tgt_name +~ "\" failed");
+					}
+				}
+			}
 		}
 	}
 }
