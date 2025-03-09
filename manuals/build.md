@@ -6,6 +6,9 @@ POSIX-compliant system.
 To accomplish that, a POSIX-compatible, custom `configure.sh` script is used to
 select build options, compiler, and compiler flags and generate a `Makefile`.
 
+The rest of this document talks about that, *not* the build system using
+[Rig][12], which is much simpler to understand, change, and use.
+
 The general form of configuring, building, and installing this `bc` is as
 follows:
 
@@ -993,3 +996,4 @@ Both commands are equivalent.
 [9]: #nls-locale-support
 [10]: #extra-math
 [11]: #settings
+[12]: https://rigbuild.dev/

@@ -539,4 +539,24 @@ if platform == host
 	}
 }
 
+target "bitfuncgen"
+{
+	error("TODO: Make this");
+}
+
+target @bitfuncgen: "bitfuncgen"
+{
+	error("TODO: Make this");
+}
+
+target "ministat"
+{
+	error("TODO: Make this");
+}
+
+target @ministat: "ministat"
+{
+	error("TODO: Make this");
+}
+
 target @all: targets;

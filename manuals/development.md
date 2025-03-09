@@ -1,6 +1,6 @@
 # Development
 
-Updated: 22 Dec 2023
+Updated: 08 Mar 2025
 
 This document is meant for the day when I (Gavin D. Howard) get [hit by a
 bus][1]. In other words, it's meant to make the [bus factor][1] a non-issue.
@@ -230,9 +230,6 @@ I have a few tools external to `bc` that are useful:
 My `bash` aliases are these:
 
 ```sh
-alias makej='make -j16'
-alias mcmake='make clean && make'
-alias mcmakej='make clean && make -j16'
 alias bcdebug='CPPFLAGS="-DBC_DEBUG_CODE=1" CFLAGS="-Weverything -Wno-padded \
     -Wno-switch-enum -Wno-format-nonliteral -Wno-cast-align \
     -Wno-unreachable-code-return -Wno-missing-noreturn \
@@ -255,13 +252,6 @@ alias bcdebugnoassert='CPPFLAGS="-DNDEBUG -DBC_DEBUG_CODE=1" \
 alias bcunset='unset BC_LINE_LENGTH && unset BC_ENV_ARGS'
 ```
 
-`makej` runs `make` with all of my cores.
-
-`mcmake` runs `make clean` before running `make`. It will take a target on the
-command-line.
-
-`mcmakej` is a combination of `makej` and `mcmake`.
-
 `bcdebug` configures `bc` for a full debug build, including `BC_DEBUG_CODE` (see
 [Debugging][134] below).
 
@@ -281,7 +271,7 @@ export BC_LINE_LENGTH="74"
 ```
 
 Unsetting these environment variables are necessary for running
-[`scripts/release.sh`][83] because otherwise, it will error when attempting to
+[`scripts/release.yao`][83] because otherwise, it will error when attempting to
 run `bc -s` on my `$HOME/.bcrc`.
 
 Speaking of which, the contents of that file are:
@@ -418,6 +408,18 @@ Functions are documented with Doxygen-style doc comments. Functions that appear
 in headers are documented in the headers, while static functions are documented
 where they are defined.
 
+### `build.gaml`
+
+The GAML file defining build options for building under [Rig][230].
+
+### `build.pkg.rig`
+
+The package file for the [Rig][230] build.
+
+### `build.rig`
+
+The script file for the [Rig][230] build.
+
 ### `configure`
 
 A symlink to [`configure.sh`][69].
@@ -440,6 +442,8 @@ A user that wants to build `bc` on a POSIX system (not Windows) first runs
 `configure.sh` with the options he wants. `configure.sh` uses those options and
 the `Makefile` template ([`Makefile.in`][70]) to generate an actual valid
 `Makefile`. Then `make` can do the rest.
+
+When using [Rig][230], the build process is the same on both platforms.
 
 For more information about the build process, see the [Build System][142]
 section and the [build manual][14].
@@ -1111,8 +1115,8 @@ For more information, see the [Benchmarks][144] section.
 
 A source file for an executable to generate tests for `bc`'s bitwise functions
 in [`gen/lib2.bc`][26]. The executable is `scripts/bitfuncgen`, and it is built
-with `make bitfuncgen`. It produces the test on `stdout` and the expected
-results on `stderr`. This means that to generat tests, use the following
+with `rig bitfuncgen`. It produces the test on `stdout` and the expected
+results on `stderr`. This means that to generate tests, use the following
 invokation:
 
 ```
@@ -1184,7 +1188,7 @@ of `KARATSUBA_LEN`. Package maintainers will want to run the [test suite][124],
 right?
 
 Yes, but this script is not part of the [test suite][124]; it's used for testing
-in the [`scripts/release.sh`][83] script, which is maintainer use only.
+in the [`scripts/release.yao`][83] script, which is maintainer use only.
 
 However, there is one snare with `karatsuba.py`: I didn't want the user to have
 to install any Python libraries to run it. Keep that in mind if you change it.
@@ -1234,7 +1238,7 @@ obtained from a file.
 For more information, see the [FreeBSD ministat(1) manpage][222].
 
 This file allows `bc` to build the `scripts/ministat` executable using the
-command `make ministat`, and this executable helps programmers evaluate the
+command `rig ministat`, and this executable helps programmers evaluate the
 results of [benchmarks][144] more accurately.
 
 #### `package.sh`
@@ -1306,11 +1310,11 @@ test cases, which it does automatically to the appropriate test file.
 
 #### `release_settings.txt`
 
-A text file of settings combinations that [`release.sh`][83] uses to ensure that
-`bc` and `dc` build and work with various default settings. [`release.sh`][83]
+A text file of settings combinations that [`release.yao`][83] uses to ensure that
+`bc` and `dc` build and work with various default settings. [`release.yao`][83]
 simply reads it line by line and uses each line for one build.
 
-#### `release.sh`
+#### `release.yao`
 
 This script is for `bc` maintainers only. It runs `bc`, `dc`, and [`bcl`][156]
 through a gauntlet that is mostly meant to be used in preparation for a release.
@@ -1332,6 +1336,8 @@ It does the following:
 7.	Runs the [test suite][124] for both calculators, `bc` alone, and `dc` alone
 	under [valgrind][20] and errors if there are any memory bugs or memory
 	leaks.
+
+This script requires [Yao][232].
 
 #### `safe-install.sh`
 
@@ -1404,8 +1410,8 @@ is that file.
 There is no code in this file, but a lot of the const data has a heavy influence
 on code, including the order of data in arrays because that order has to
 correspond to the order of other things elsewhere in the codebase. If you change
-the order of something in this file, run `make test`, and get errors, you
-changed something that depends on the order that you messed up.
+the order of something in this file, run `rig test`, and get errors, you changed
+something that depends on the order that you messed up.
 
 Almost all headers have `extern` references to items in this file.
 
@@ -1549,8 +1555,8 @@ This directory contains the entire [test suite][124] and its infrastructure.
 
 #### `all.sh`
 
-A convenience script for the `make run_all_tests` target (see the [Group
-Tests][141] section for more information).
+The script for running the test suite under a pure POSIX system, without
+[Rig][230].
 
 #### `all.txt`
 
@@ -1599,6 +1605,11 @@ This script also re-runs the test three times if it fails. This is because
 The script to run the "other" (miscellaneous) tests for each calculator. For
 more information, see the [Other Tests][154] section.
 
+#### `other.yao`
+
+The script to run the "other" (miscellaneous) tests for each calculator, but in
+[Yao][232]. For more information, see the [Other Tests][154] section.
+
 #### `read.sh`
 
 The script to run the read tests for each calculator. For more information, see
@@ -1616,8 +1627,7 @@ Tests][150] section.
 
 #### `scripts.sh`
 
-The script to help the `make run_all_tests` (see the [Group Tests][141] section)
-run all of the script tests.
+The script to help the [`tests/all.sh`][225] script run all of the script tests.
 
 #### `stdin.sh`
 
@@ -1636,9 +1646,8 @@ Tests][149] section.
 
 ##### `all.txt`
 
-The file to tell the build system and `make run_all_tests` (see the [Group
-Tests][141] section) what standard tests to run for `bc`, as well as in what
-order.
+The file to tell the build system and [`tests/all.sh`][225] what standard tests
+to run for `bc`, as well as in what order.
 
 This file just lists the test names, one per line.
 
@@ -1670,9 +1679,8 @@ Tests][150] section.
 
 ###### `all.txt`
 
-A file to tell the build system and `make run_all_tests` (see the [Group
-Tests][141] section) what script tests to run for `bc`, as well as in what
-order.
+A file to tell the build system and [`tests/all.sh`][225] what script tests to
+run for `bc`, as well as in what order.
 
 This file just lists the test names, one per line.
 
@@ -1683,9 +1691,8 @@ Tests][149] section.
 
 ##### `all.txt`
 
-The file to tell the build system and `make run_all_tests` (see the [Group
-Tests][141] section) what standard tests to run for `dc`, as well as in what
-order.
+The file to tell the build system and [`tests/all.sh`][225] what standard tests
+to run for `dc`, as well as in what order.
 
 This file just lists the test names, one per line.
 
@@ -1712,9 +1719,8 @@ Tests][150] section.
 
 ###### `all.txt`
 
-The file to tell the build system and `make run_all_tests` (see the [Group
-Tests][141] section) what script tests to run for `dc`, as well as in what
-order.
+The file to tell the build system and [`tests/all.sh`][225] what script tests to
+run for `dc`, as well as in what order.
 
 This file just lists the test names, one per line.
 
@@ -1837,11 +1843,6 @@ are other clean targets that may be useful:
   [`configure.sh`][69] copied in preparation for install. It also depends on
   `make clean` and `make clean_benchmarks`, so it cleans those items too. This
   is the target that [`configure.sh`][69] uses before it does its work.
-* `make clean_coverage` cleans the generated coverage files for the [test
-  suite][124]'s [code coverage][146] capabilities. It has no prerequisites. This
-  is useful if the code coverage tools are giving errors.
-* `make clean_tests` cleans *everything*. It has prerequisites on all previous
-  clean targets, but it also cleans all of the [generated tests][143].
 
 When adding more generated files, you may need to add them to one of these
 targets and/or add a target for them especially.
@@ -1995,29 +1996,13 @@ To use the test suite (assuming `bc` and/or `dc` are already built), run the
 following command:
 
 ```
-make test
+rig test
 ```
 
 That's it. That's all.
 
 It will return an error code if the test suite failed. It will also print out
 information about the failure.
-
-If you want the test suite to go fast, then run the following command:
-
-```
-make -j<cores> test
-```
-
-Where `<cores>` is the number of cores that your computer has. Of course, this
-requires a `make` implementation that supports that option, but most do. (And I
-will use this convention throughout the rest of this section.)
-
-I have even tried as much as possible, to put longer-running tests near the
-beginning of the run so that the entire suite runs as fast as possible.
-
-However, if you want to be sure which test is failing, then running a bare
-`make test` is a great way to do that.
 
 But enough about how you have no excuses to use the test suite as much as
 possible; let's talk about how it works and what you *can* do with it.
@@ -2043,9 +2028,7 @@ are generated by a GNU-compatible `bc` or `dc`. See the [Generated Tests][143]
 section.
 
 The `all.txt` file in each standard tests directory is what tells the test suite
-and [build system][142] what tests there are, and the tests are either run in
-that order, or in the case of parallel `make`, that is the order that the
-targets are listed as prerequisites of `make test`.
+and [build system][142] what tests there are.
 
 If the test exists in the `all.txt` file but does not *actually* exist, the test
 and its results are generated by a GNU-compatible `bc` or `dc`. See the
@@ -2058,9 +2041,7 @@ To add a non-generated standard test, do the following:
   You can skip this step if just the results file needs to be generated. See the
   [Generated Tests][147] section for more information.
 * Add the name of the test to the `all.txt` file in the standard tests
-  directory, putting it in the order it should be in. If possible, I would put
-  longer tests near the beginning because they will start running earlier with
-  parallel `make`. I always keep `decimal` first, though, as a smoke test.
+  directory.
 
 If you need to add a generated standard test, see the [Generated Tests][147]
 section for how to do that.
@@ -2472,10 +2453,7 @@ To add a script test, do the following:
 * Add the results file (`<test>.txt` in the script tests directory). You can
   skip this step if just the results file needs to be generated. See the
   [Generated Tests][147] section for more information.
-* Add the name of the test to the `all.txt` file in the script tests directory,
-  putting it in the order it should be in. If possible, I would put longer tests
-  near the beginning because they will start running earlier with parallel
-  `make`.
+* Add the name of the test to the `all.txt` file in the script tests directory.
 
 Some script tests need to be skipped in certain cases. That is handled by the
 [build system][142]. See the [Integration with the Build System][147] section
@@ -2483,7 +2461,7 @@ for more details.
 
 Another unique thing about the script tests, at least for `bc`: they test the
 `-g` and `--global-stacks` flags. This means that all of the script tests for
-`bc` are written assuming the `-g` flag was given on the command-line
+`bc` are written assuming the `-g` flag was given on the command-line.
 
 There is one extra piece of script tests: [`tests/script.sed`][190]. This `sed`
 script is used to remove an incompatibility with GNU `bc`.
@@ -2716,9 +2694,9 @@ other types of tests. They usually include things like command-line parsing and
 environment variable testing.
 
 To add an other test, it requires adding the programming for it to
-[`tests/other.sh`][195] because all of the tests are written specifically in
-that script. It would be best to use the infrastructure in
-[`scripts/functions.sh`][105].
+[`tests/other.sh`][195] and [`tests/other.yao`][231] because all of the tests
+are written specifically in those scripts. It would be best to use the
+infrastructure in [`scripts/functions.sh`][105] for the shell script.
 
 ### Linux `timeconst.bc` Script
 
@@ -2753,15 +2731,14 @@ possible. I guess I could have done more, but doing so would have required a lot
 of time.
 
 I have tried to make it as easy as possible to run the history tests. They will
-run automatically if you use the `make test_history` command, and they will also
-use parallel execution with `make -j<cores> test_history`.
+run automatically if you use the `rig test_history` command.
 
 However, the history tests are meant only to be run by maintainers of `bc`; they
 are *not* meant to be run by users and packagers. The reason for this is that
 they only seem to work reliably on Linux; `pexpect` seems to have issues on
 other platforms, especially timeout issues.
 
-Thus, they are excluded from running with `make test` and [`tests/all.sh`][225].
+Thus, they are excluded from running with `rig test` and [`tests/all.sh`][225].
 However, they can be run from the [`scripts/release.sh`][83] script.
 
 All of the tests are contained in [`tests/history.py`][139]. The reason for this
@@ -2800,7 +2777,7 @@ If you need to add more history tests, you need to do the following:
 1.	Add the function for that test to [`tests/history.py`][139].
 2.	Add the function to the proper array of tests.
 3.	Add the expected error code to the proper array of error codes.
-4.	Add a target for the test to [`Makefile.in`][70].
+4.	Add a target for the test to [Rig][230].
 5.	Add that target as a prerequisite to either `test_bc_history` or
 	`test_dc_history`.
 
@@ -2814,9 +2791,9 @@ Some tests are *large*, and as such, it is impractical to check them into `git`.
 Instead, the tests depend on the existence of a GNU-compatible `bc` in the
 `PATH`, which is then used to generate the tests.
 
-If [`configure.sh`][69] was run with the `-G` argument, which disables generated
-tests, then `make test` and friends will automatically skip generated tests.
-This is useful to do on platforms that are not guaranteed to have a
+If [`rig`][230] was run with the `-Dgenerated_tests=0` argument, which disables
+generated tests, then `rig test` and friends will automatically skip generated
+tests. This is useful to do on platforms that are not guaranteed to have a
 GNU-compatible `bc` installed.
 
 However, adding a generated test is a complicated because you have to figure out
@@ -2848,72 +2825,13 @@ test suite returns an error. If it *does* exist, but no corresponding
 `<test>.txt` file exists in the [script tests][150] directory, then a
 GNU-compatible `bc` is used to generate the `<test>.txt` results file.
 
-If generated tests are disabled through [`configure.sh`][69], then these tests
-are not generated if they do not exist. However, if they *do* exist, then they
-are run. This can happen if a `make clean_tests` was not run between a build
-that generated tests and a build that will not.
-
-### Group Tests
-
-While the test suite has a lot of targets in order to get parallel execution,
-there are five targets that allow you to run each section, or all, of the test
-suite as one unit:
-
-* `bc_all_tests` (`bc` tests)
-* `timeconst_all_tests` ([Linux `timeconst.bc` script][6] tests)
-* `dc_all_tests` (`dc` tests)
-* `history_all_tests` (history tests)
-* `run_all_tests` (combination of the previous four)
-
-In addition, there are more fine-grained targets available:
-
-* `test_bc` runs all `bc` tests (except history tests).
-* `test_dc` runs all `dc` tests (except history tests).
-* `test_bc_tests` runs all `bc` [standard tests][149].
-* `test_dc_tests` runs all `dc` [standard tests][149].
-* `test_bc_scripts` runs all `bc` [script tests][150].
-* `test_dc_scripts` runs all `dc` [script tests][150].
-* `test_bc_stdin` runs the `bc` [`stdin` tests][152].
-* `test_dc_stdin` runs the `dc` [`stdin` tests][152].
-* `test_bc_read` runs the `bc` [`read()` tests][153].
-* `test_dc_read` runs the `dc` [`read()` tests][153].
-* `test_bc_errors` runs the `bc` [error tests][151].
-* `test_dc_errors` runs the `dc` [error tests][151].
-* `test_bc_other` runs the `bc` [other tests][151].
-* `test_dc_other` runs the `dc` [other tests][151].
-* `timeconst` runs the tests for the [Linux `timeconst.bc` script][6].
-* `test_history` runs all history tests.
-* `test_bc_history` runs all `bc` history tests.
-* `test_dc_history` runs all `dc` history tests.
-
-All of the above tests are parallelizable.
-
-### Individual Tests
-
-In addition to all of the above, individual test targets are available. These
-are mostly useful for attempting to fix a singular test failure.
-
-These tests are:
-
-* `test_bc_<test>`, where `<test>` is the name of a `bc` [standard test][149].
-  The name is the name of the test file without the `.txt` extension. It is the
-  name printed by the test suite when running the test.
-* `test_dc_<test>`, where `<test>` is the name of a `dc` [standard test][149].
-  The name is the name of the test file without the `.txt` extension. It is the
-  name printed by the test suite when running the test.
-* `test_bc_script_<test>`, where `<test>` is the name of a `bc` [script
-  test][150]. The name of the test is the name of the script without the `.bc`
-  extension.
-* `test_dc_script_<test>`, where `<test>` is the name of a `dc` [script
-  test][150]. The name of the test is the name of the script without the `.dc`
-  extension.
-* `test_bc_history<idx>` runs the `bc` history test with index `<idx>`.
-* `test_dc_history<idx>` runs the `dc` history test with index `<idx>`.
+If generated tests are disabled through [Rig][230], then these tests are not
+generated if they do not exist.
 
 ### [`bcl`][156] Test
 
 When [`bcl`][156] is built, the [build system][142] automatically ensures that
-`make test` runs the [`bcl`][156] test instead of the `bc` and `dc` tests.
+`rig test` runs the [`bcl`][156] test instead of the `bc` and `dc` tests.
 
 There is only one test, and it is built from [`tests/bcl.c`][158].
 
@@ -2938,7 +2856,7 @@ that all memory is freed because that test is run through [Valgrind][159] and
 
 If it was not obvious by now, the test suite is heavily integrated into the
 [build system][142], but the integration goes further than just making the test
-suite easy to run from `make` and generating individual and group tests.
+suite easy to run from `rig` and generating individual and group tests.
 
 The big problem the test suite has is that some `bc` code, stuff that is
 important to test, is only in *some* builds. This includes all of the extra math
@@ -2954,7 +2872,7 @@ suite to turn off the tests that do not apply.
 It does this with arguments to the test scripts that are either a `1` or a `0`,
 depending on whether tests of that type should be enabled or not. These
 arguments are why I suggest, in the [Test Scripts][148] section, to always use a
-`make` target to run the test suite or any individual test. I have added a lot
+`rig` target to run the test suite or any individual test. I have added a lot
 of targets to make this easy and as fast as possible.
 
 In addition to all of that, the build system is responsible for selecting the
@@ -2981,13 +2899,14 @@ install process.
 This puts some constraints on the test suite, but the biggest is that the test
 suite must be as [portable as `bc` itself][136].
 
-This means that the test suite must be implemented in pure POSIX `make`, `sh`,
-and C99.
+This means that the test suite must be implemented in pure POSIX `sh` and C99,
+as well as in [Rig][230].
 
 #### Test Scripts
 
-To accomplish the portability, the test suite is run by a bunch of `sh` scripts
-that have the constraints laid out in [POSIX Shell Scripts][76].
+To accomplish the portability, the test suite is either run by [Rig][230] or by
+`tests/all.sh`, which uses a bunch of `sh` scripts that have the constraints
+laid out in [POSIX Shell Scripts][76].
 
 However, that means they have some quirks, made worse by the fact that there are
 [generated tests][143] and [tests that need to be skipped, but only
@@ -2995,12 +2914,11 @@ sometimes][147].
 
 This means that a lot of the scripts take an awkward number and type of
 arguments. Some arguments are strings, but most are integers, like
-[`scripts/release.sh`][83].
+[`scripts/release.yao`][83].
 
 It is for this reason that I do not suggest running the test scripts directly.
-Instead, always use an appropriate `make` target, which already knows the
-correct arguments for the test because of the [integration with the build
-system][147].
+Instead, always use an appropriate `rig` target, which already knows the correct
+arguments for the test because of the [integration with the build system][147].
 
 ### Test Coverage
 
@@ -3009,13 +2927,9 @@ In order to get test coverage information, you need `gcc`, `gcov`, and `gcovr`.
 If you have them, run the following commands:
 
 ```
-CC=gcc ./configure -gO3 -c
-make -j<cores>
-make coverage
+rig --compiler=gcc -Ddebug=1 -Doptimization=3 -Dcoverage=1
+rig coverage
 ```
-
-Note that `make coverage` does not have a `-j<cores>` part; it cannot be run in
-parallel. If you try, you will get errors. And note that `CC=gcc` is used.
 
 After running those commands, you can open your web browser and open the
 `index.html` file in the root directory of the repo. From there, you can explore
@@ -3025,12 +2939,12 @@ If you see lines or branches that you think you could hit with a manual
 execution, do such manual execution, and then run the following command:
 
 ```
-make coverage_output
+rig coverage_output
 ```
 
 and the coverage output will be updated.
 
-If you want to rerun `make coverage`, you must do a `make clean` and build
+If you want to rerun `rig coverage`, you must do a `rig clean` and build
 first, like this:
 
 ```
@@ -3165,8 +3079,8 @@ that only maintainers should care about: [Pandoc][92]. Because users [should not
 have to install *any* dependencies][136], the files are generated, checked into
 version control, and included in distribution tarballs.
 
-If you run [`configure.sh`][69], you have an easy way of generating the markdown
-manuals and manpages: just run `make manpages`. This target calls
+If you run [Rig][230], you have an easy way of generating the markdown manuals
+and manpages: just run `rig manpages`. This target calls
 [`scripts/manpage.sh`][60] appropriately for `bc`, `dc`, and `bcl`.
 
 For more on how generating manuals and manpages works, see
@@ -4909,7 +4823,7 @@ First, in order to easily run benchmarks, I created
 Second, I copied and adapted [`ministat.c`][223] [from FreeBSD][221], to make it
 easier to judge whether the results are significant or not.
 
-Third, I made the `make` clean target `make clean_benchmarks`, to clean
+Third, I made the `rig` clean target `rig clean_benchmarks`, to clean
 `scripts/ministat` and the generated benchmark files.
 
 Fourth, I made it so [`scripts/benchmark.sh`][220] outputs the timing and memory
@@ -5101,7 +5015,7 @@ However, where possible, errors are returned directly.
 [80]: #dc-1
 [81]: ./build.md#build-type
 [82]: #fuzzing-1
-[83]: #releasesh
+[83]: #releaseyao
 [84]: https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap08.html#tag_08_02
 [85]: #locales-1
 [86]: #manuals-1
@@ -5250,3 +5164,6 @@ However, where possible, errors are returned directly.
 [227]: #errorsh
 [228]: #vectorc
 [229]: https://github.com/gavinhoward/bc/pull/72
+[230]: https://rigbuild.dev/
+[231]: #otheryao
+[232]: https://rigbuild.dev/yao-tutorial/

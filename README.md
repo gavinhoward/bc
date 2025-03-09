@@ -477,6 +477,9 @@ Files:
 	.gitignore           The git ignore file (maintainer use only).
 	.gitattributes       The git attributes file (maintainer use only).
 	bcl.pc.in            A template pkg-config file for bcl.
+	build.gaml           The GAML file with options for building under Rig.
+	build.pkg.rig        The Rig build package file.
+	build.rig            The Rig build script.
 	configure            A symlink to configure.sh to make packaging easier.
 	configure.sh         The configure script.
 	LICENSE.md           A Markdown form of the BSD 2-clause License.
