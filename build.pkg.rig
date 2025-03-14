@@ -692,8 +692,15 @@ fn exe_tests(name: str) -> void
 
 					path.mkdirp(path.dirname(test_result_file));
 
-					$ %(config_list["args"]) %(config_list["options"])
-					  @(path.join(src_dir, test_file)) > $test_result_file;
+					res := $ %(config_list["args"]) %(config_list["options"])
+					         @(path.join(src_dir, test_file))
+					         > $test_result_file;
+
+					if res.exitcode != 0
+					{
+						error("Test \"" +~ tgt_name +~ "\" failed\n" +~
+						      str(res.stderr));
+					}
 
 					exp_path: str = path.join(src_dir, test_result_file);
 					exp := io.read_file_bytes(exp_path);
@@ -701,7 +708,8 @@ fn exe_tests(name: str) -> void
 
 					if exp != actual
 					{
-						error("Test \"" +~ tgt_name +~ "\" failed");
+						error("Test \"" +~ tgt_name +~ "\" failed\n" +~
+						      str(res.stderr));
 					}
 				}
 			}
