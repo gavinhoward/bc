@@ -687,14 +687,64 @@ fn exe_tests(name: str) -> void
 
 				test sym(path.join(testdir, t)): bin
 				{
+					halt: str = str(config["halt"]);
+
+					name: str = path.basename(tgt_name);
+					testdir: str = path.dirname(tgt_name);
+					calc: str = path.basename(testdir);
+
 					test_file: str = tgt_name +~ ".txt";
 					test_result_file: str = tgt_name +~ "_results.txt";
 
+					src_test_file: str = path.join(src_dir, test_file);
+					src_test_result_file: str = path.join(src_dir,
+					                                      test_result_file);
+
 					path.mkdirp(path.dirname(test_result_file));
 
+					actual_test_file: str =
+					if !path.isfile(src_test_file)
+					{
+						// If we shouldn't generate tests, skip.
+						if !bool(config["generated_tests"])
+						{
+							io.eprint("Skipping test " +~ tgt_name +~ "\n");
+							return;
+						}
+
+						script_name: str = name +~ "." +~ calc;
+
+						scriptdir: str = path.join(testdir, "scripts");
+						src_scriptdir: str = path.join(src_dir, scriptdir);
+						src_script_name: str = path.join(src_scriptdir,
+						                                 script_name);
+
+						$ $calc $src_script_name > $test_file;
+
+						test_file;
+					}
+					else
+					{
+						src_test_file;
+					};
+
+					actual_result_file: str =
+					if !path.isfile(src_test_result_file)
+					{
+						tmpfile: str = path.tmp(calc +~ "_test_result");
+
+						$ $calc %(config_list["options"]) $actual_test_file
+						  << $halt > $tmpfile;
+
+						tmpfile;
+					}
+					else
+					{
+						src_test_result_file;
+					};
+
 					res := $ %(config_list["args"]) %(config_list["options"])
-					         @(path.join(src_dir, test_file))
-					         > $test_result_file;
+					         $actual_test_file << $halt > $test_result_file;
 
 					if res.exitcode != 0
 					{
@@ -702,8 +752,7 @@ fn exe_tests(name: str) -> void
 						      str(res.stderr));
 					}
 
-					exp_path: str = path.join(src_dir, test_result_file);
-					exp := io.read_file_bytes(exp_path);
+					exp := io.read_file_bytes(actual_result_file);
 					actual := io.read_file_bytes(test_result_file);
 
 					if exp != actual
