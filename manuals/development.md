@@ -2062,20 +2062,17 @@ decimal
 
 :   Tests decimal parsing and printing.
 
-print
+print_{base}
 
-:   Tests printing in every base from decimal. This is near the top for
-    performance of parallel testing.
+:   Tests printing in the specified base from decimal.
 
-parse
+parse_{base}
 
-:   Tests parsing in any base and outputting in decimal. This is near the top
-    for performance of parallel testing.
+:   Tests parsing in the specified base and outputting in decimal.
 
 lib2
 
-:   Tests the extended math library. This is near the top for performance of
-    parallel testing.
+:   Tests the extended math library.
 
 print2
 
@@ -2477,9 +2474,9 @@ to put it on the same line as others.
 
 The list of current (27 February 2023) script tests for `bc` is below:
 
-print.bc
+print_{base}.bc
 
-:   Tests printing even harder than the print standard test.
+:   Tests printing even harder than the print standard tests.
 
 print2
 
@@ -2501,9 +2498,9 @@ add.bc
 
 :   Tests addition even harder than the add standard test.
 
-parse.bc
+parse_{base}.bc
 
-:   Tests parsing even harder than the parse standard test.
+:   Tests parsing even harder than the parse standard tests.
 
 root.bc
 
