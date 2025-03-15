@@ -679,9 +679,20 @@ fn exe_tests(name: str) -> void
 
 		push test_config: config_stack
 		{
+			extra: bool = bool(config["extra_math"]);
+
+			extra_path := path.join(src_dir, "tests/extra_required.txt");
+			extra_required: []str = io.read_file(extra_path).split("\n");
+
 			for t: tests
 			{
 				if t == ""
+				{
+					continue;
+				}
+
+				// Skip extra math tests if it is not enabled.
+				if !extra && extra_required contains t
 				{
 					continue;
 				}
