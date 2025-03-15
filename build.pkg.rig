@@ -650,10 +650,13 @@ fn lib(name: str, o_files: []str) -> void
 fn register_standard_tests(
 	bin: str,
 	testdir: str,
-	tests: []str,
+	src_testdir: str,
 	extra: bool,
 ) -> void
 {
+	all_file: str = path.join(src_testdir, "all.txt");
+	tests: []str = io.read_file(all_file).split("\n");
+
 	extra_path := path.join(src_dir, "tests/extra_required.txt");
 	extra_required: []str = io.read_file(extra_path).split("\n");
 
@@ -716,7 +719,7 @@ fn register_standard_tests(
 			{
 				tmpfile: str = path.tmp(calc +~ "_test_result");
 
-				$ @(default_exe_name(calc)) %(config_list["options"])
+				$ @(default_exe_name(calc)) %(config_list["gen_options"])
 				  $actual_test_file << $halt > $tmpfile;
 
 				tmpfile;
@@ -747,6 +750,134 @@ fn register_standard_tests(
 	}
 }
 
+fn register_script_tests(
+	bin: str,
+	testdir: str,
+	src_testdir: str,
+	extra: bool,
+) -> void
+{
+	scriptdir: str = path.join(testdir, "scripts");
+	src_scriptdir: str = path.join(src_testdir, "scripts");
+	all_file: str = path.join(src_scriptdir, "all.txt");
+	tests: []str = io.read_file(all_file).split("\n");
+
+	for t: tests
+	{
+		if t == ""
+		{
+			continue;
+		}
+
+		// Skip extra math tests if it is not enabled.
+		if !extra && (t == "rand.bc" || t == "root.bc" || t == "i2rand.bc")
+		{
+			continue;
+		}
+
+		test sym(path.join(scriptdir, t)): bin
+		{
+			halt: str = str(config["halt"]);
+
+			name: str = path.basename(tgt_name);
+			testdir: str = path.dirname(tgt_name);
+			testdir2: str = path.dirname(testdir);
+			calc: str = path.basename(testdir2);
+
+			test_file: str = tgt_name;
+			test_file_dir: str = path.dirname(tgt_name);
+			test_file_name: str = path.basename(tgt_name, "." +~ calc);
+			test_result_file: str = path.join(test_file_dir,
+			                                  test_file_name +~ ".txt");
+
+			src_test_file: str = path.join(src_dir, test_file);
+			src_test_result_file: str = path.join(src_dir, test_result_file);
+
+			path.mkdirp(path.dirname(test_result_file));
+
+			actual_result_file: str =
+			if !path.isfile(src_test_result_file)
+			{
+				tmpfile: str = path.tmp(calc +~ "_script_test_result");
+
+				// This particular test needs to be generated straight. Also, on
+				// Windows, we don't have `sed`, and the `bc`/`dc` there is
+				// probably this one anyway.
+				if name == "stream.dc" || host.os == "Windows"
+				{
+					$ @(default_exe_name(calc)) $src_test_file << $halt
+					  > $tmpfile;
+				}
+				else
+				{
+					root_testdir: str = path.join(src_dir, "tests");
+
+					// This sed and the script are to remove an incompatibility
+					// with GNU bc, where GNU bc is wrong. See the development
+					// manual (manuals/development.md#script-tests) for more
+					// information.
+					$ @(default_exe_name(calc)) $src_test_file << $halt |
+					  sed -n -f @(path.join(root_testdir, "script.sed"))
+					  > $tmpfile;
+				}
+
+				tmpfile;
+			}
+			else
+			{
+				src_test_result_file;
+			};
+
+			if calc == "bc"
+			{
+				res1 := $ %(config_list["args"]) -g
+				          %(config_list["script_options"]) $src_test_file
+				          << $halt > $test_result_file;
+
+				if res1.exitcode != 0
+				{
+					error("Test \"" +~ tgt_name +~ "\" failed\n" +~
+					      str(res1.stderr));
+				}
+
+				exp1 := io.read_file_bytes(actual_result_file);
+				actual1 := io.read_file_bytes(test_result_file);
+
+				if exp1 != actual1
+				{
+					error("Test \"" +~ tgt_name +~ "\" failed\n" +~
+					      str(res1.stderr));
+				}
+			}
+
+			// These tests do not need to run without global stacks.
+			if name == "globals.bc" || name == "references.bc" ||
+			   name == "rand.bc"
+			{
+				return;
+			}
+
+			res2 := $ %(config_list["args"]) %(config_list["script_options"])
+			          $src_test_file << $halt > $test_result_file;
+
+			if res2.exitcode != 0
+			{
+				error("Test \"" +~ tgt_name +~ "\" failed\n" +~
+				      str(res2.stderr));
+			}
+
+			exp2 := io.read_file_bytes(actual_result_file);
+			actual2 := io.read_file_bytes(test_result_file);
+
+			if exp2 != actual2
+			{
+				error("Test \"" +~ tgt_name +~ "\" failed\n" +~
+				      str(res2.stderr));
+			}
+		}
+	}
+}
+
 /**
  * Generates all of the test targets for an executable.
  * @param name  The base name of the executable.
@@ -768,6 +899,16 @@ fn exe_tests(name: str) -> void
 		options: []str = if name == "bc" { @[ "-lqc" ]; } else { @[ "-xc" ]; };
 		var: str = name.toupper() +~ "_LINE_LENGTH";
 
+		script_options: []str =
+		if name == "bc"
+		{
+			@[ "-lqC" ];
+		}
+		else
+		{
+			@[ "-xC" ];
+		};
+
 		args: []str =
 		if bool(config["valgrind"])
 		{
@@ -783,6 +924,7 @@ fn exe_tests(name: str) -> void
 			halt: $halt
 			gen_options: $gen_options
 			options: $options
+			script_options: $script_options
 			var: $var
 		};
 
@@ -790,10 +932,8 @@ fn exe_tests(name: str) -> void
 		{
 			extra: bool = bool(config["extra_math"]);
 
-			all_file: str = path.join(src_testdir, "all.txt");
-			tests: []str = io.read_file(all_file).split("\n");
-
-			register_standard_tests(bin, testdir, tests, extra);
+			register_standard_tests(bin, testdir, src_testdir, extra);
+			register_script_tests(bin, testdir, src_testdir, extra);
 		}
 	}
 }
