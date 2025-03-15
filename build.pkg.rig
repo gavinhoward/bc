@@ -647,6 +647,61 @@ fn lib(name: str, o_files: []str) -> void
 	}
 }
 
+fn check_test(
+	name: str,
+	res: CmdResult,
+	exp_path: str,
+	actual_path: str,
+	err: bool,
+) -> void
+{
+
+	if err
+	{
+		err_output: str = io.read_file(actual_path);
+
+		if res.exitcode > 127
+		{
+			error("Test \"" +~ name +~ "\" crashed\n" +~ str(res.stderr));
+		}
+
+		if res.exitcode == 0
+		{
+			error("Test \"" +~ name +~ "\" returned no error");
+		}
+
+		if res.exitcode == 100
+		{
+			if !(err_output contains "Fatal error")
+			{
+				error("Test \"" +~ name +~
+				      "\" had memory errors on non-fatal error\n" +~
+				      str(res.stderr));
+			}
+		}
+
+		if err_output == "" || err_output == "\n"
+		{
+			error("Test \"" +~ name +~ "\" produced no error message");
+		}
+	}
+	else
+	{
+		if res.exitcode != 0
+		{
+			error("Test \"" +~ name +~ "\" failed\n" +~ str(res.stderr));
+		}
+
+		exp := io.read_file_bytes(exp_path);
+		actual := io.read_file_bytes(actual_path);
+
+		if exp != actual
+		{
+			error("Test \"" +~ name +~ "\" failed\n" +~ str(res.stderr));
+		}
+	}
+}
+
 fn register_standard_tests(
 	bin: str,
 	testdir: str,
@@ -714,7 +769,7 @@ fn register_standard_tests(
 				src_test_file;
 			};
 
-			actual_result_file: str =
+			exp_result_file: str =
 			if !path.isfile(src_test_result_file)
 			{
 				tmpfile: str = path.tmp(calc +~ "_test_result");
@@ -732,20 +787,7 @@ fn register_standard_tests(
 			res := $ %(config_list["args"]) %(config_list["options"])
 			         $actual_test_file << $halt > $test_result_file;
 
-			if res.exitcode != 0
-			{
-				error("Test \"" +~ tgt_name +~ "\" failed\n" +~
-				      str(res.stderr));
-			}
-
-			exp := io.read_file_bytes(actual_result_file);
-			actual := io.read_file_bytes(test_result_file);
-
-			if exp != actual
-			{
-				error("Test \"" +~ tgt_name +~ "\" failed\n" +~
-				      str(res.stderr));
-			}
+			check_test(tgt_name, res, exp_result_file, test_result_file, false);
 		}
 	}
 }
@@ -795,7 +837,7 @@ fn register_script_tests(
 
 			path.mkdirp(path.dirname(test_result_file));
 
-			actual_result_file: str =
+			exp_result_file: str =
 			if !path.isfile(src_test_result_file)
 			{
 				tmpfile: str = path.tmp(calc +~ "_script_test_result");
@@ -834,20 +876,8 @@ fn register_script_tests(
 				          %(config_list["script_options"]) $src_test_file
 				          << $halt > $test_result_file;
 
-				if res1.exitcode != 0
-				{
-					error("Test \"" +~ tgt_name +~ "\" failed\n" +~
-					      str(res1.stderr));
-				}
-
-				exp1 := io.read_file_bytes(actual_result_file);
-				actual1 := io.read_file_bytes(test_result_file);
-
-				if exp1 != actual1
-				{
-					error("Test \"" +~ tgt_name +~ "\" failed\n" +~
-					      str(res1.stderr));
-				}
+				check_test(tgt_name, res1, exp_result_file, test_result_file,
+				           false);
 			}
 
 			// These tests do not need to run without global stacks.
@@ -860,20 +890,8 @@ fn register_script_tests(
 			res2 := $ %(config_list["args"]) %(config_list["script_options"])
 			          $src_test_file << $halt > $test_result_file;
 
-			if res2.exitcode != 0
-			{
-				error("Test \"" +~ tgt_name +~ "\" failed\n" +~
-				      str(res2.stderr));
-			}
-
-			exp2 := io.read_file_bytes(actual_result_file);
-			actual2 := io.read_file_bytes(test_result_file);
-
-			if exp2 != actual2
-			{
-				error("Test \"" +~ tgt_name +~ "\" failed\n" +~
-				      str(res2.stderr));
-			}
+			check_test(tgt_name, res2, exp_result_file, test_result_file,
+			           false);
 		}
 	}
 }
