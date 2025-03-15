@@ -2482,19 +2482,19 @@ print2
 
 :   Tests printing at the extreme edge of line length in various bases.
 
-multiply.bc
+multiply_{range}.bc
 
 :   Tests multiplication even harder than the multiply standard test.
 
-divide.bc
+divide_{range}.bc
 
 :   Tests division even harder than the divide standard test.
 
-subtract.bc
+subtract_{range}.bc
 
 :   Tests subtraction even harder than the subtract standard test.
 
-add.bc
+add_{range}.bc
 
 :   Tests addition even harder than the add standard test.
 
