@@ -536,6 +536,14 @@ if platform == host
 		{
 			exe_tests("dc");
 		}
+
+		target @clean_tests
+		{
+			for f: path.find_ext(build_dir, "txt")
+			{
+				path.rm(f);
+			}
+		}
 	}
 }
 
