@@ -429,7 +429,8 @@ fn strgen(
 				// Check for excluding something for extra math.
 				if in[i] == '{'
 				{
-					if in.slice(i, i + GEN_EX_START.len) == GEN_EX_START
+					if i + GEN_EX_START.len <= in.len &&
+					   in.slice(i, i + GEN_EX_START.len) == GEN_EX_START
 					{
 						if exclude
 						{
@@ -438,7 +439,7 @@ fn strgen(
 
 							// Find the end of the end.
 							while in[i] != '{' &&
-							      in.slice(i, GEN_EX_END.len) != GEN_EX_END
+							      in.slice(i, i + GEN_EX_END.len) != GEN_EX_END
 							{
 								i! = i + usize(1);
 							}
