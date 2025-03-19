@@ -237,7 +237,7 @@ version: str = version_lines[0];
 version_flag: []str = @[ DEFOPT +~ "VERSION=" +~ version ];
 
 other_flags: []str = freebsd_flags +~ macos_flags +~ openbsd_flags +~
-                     strip_flag +~ lto_flag +~ strict_flags +~ version_flag +~
+                     lto_flag +~ strict_flags +~ version_flag +~
 if bool(config["debug"])
 {
 	@[ compiler_db["opt.debug"] ];
@@ -267,8 +267,13 @@ else
 	COMMON_C_FILES +~ LIBRARY_C_FILES;
 };
 
+build_config: Gaml = @(gaml){
+	other_cflags: $other_flags
+	strip_flag: $strip_flag
+};
+
 targets: []str =
-push @(gaml){ other_cflags: $other_flags }: config_stack
+push build_config: config_stack
 {
 	gen_o_files: []str =
 	if BUILD_MODE != @library
@@ -403,13 +408,13 @@ if OS != "Windows"
 				if DESTDIR != ""
 				{
 					$ @(path.join(src_dir, "scripts/locale_install.sh"))
-					  %(locale_install_args) @(str(config["nls_path"]))
+					  %(locale_install_args) @(str(config["nlspath"]))
 					  $MAINEXEC $DESTDIR;
 				}
 				else
 				{
 					$ @(path.join(src_dir, "scripts/locale_install.sh"))
-					  %(locale_install_args) @(str(config["nls_path"]))
+					  %(locale_install_args) @(str(config["nlspath"]))
 					  $MAINEXEC;
 				}
 			}
@@ -449,12 +454,12 @@ if OS != "Windows"
 				if DESTDIR != ""
 				{
 					$ @(path.join(src_dir, "scripts/locale_uninstall.sh"))
-					  @(str(config["nls_path"])) $MAINEXEC $DESTDIR;
+					  @(str(config["nlspath"])) $MAINEXEC $DESTDIR;
 				}
 				else
 				{
 					$ @(path.join(src_dir, "scripts/locale_uninstall.sh"))
-					  @(str(config["nls_path"])) $MAINEXEC;
+					  @(str(config["nlspath"])) $MAINEXEC;
 				}
 			}
 

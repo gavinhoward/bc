@@ -100,8 +100,6 @@ fi
 if [ "$d" = "bc" ]; then
 	opts="-l"
 	halt="halt"
-	read_call="read()"
-	read_expr="${read_call}\n5+5;"
 else
 	opts="-x"
 	halt="q"

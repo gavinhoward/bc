@@ -2690,10 +2690,9 @@ The "other" tests are just random tests that I could not easily classify under
 other types of tests. They usually include things like command-line parsing and
 environment variable testing.
 
-To add an other test, it requires adding the programming for it to
-[`tests/other.sh`][195] and [`tests/other.yao`][231] because all of the tests
-are written specifically in those scripts. It would be best to use the
-infrastructure in [`scripts/functions.sh`][105] for the shell script.
+To add an other test, it requires adding the programming for it to the
+`register_other_tests()` function in `build.pkg.rig` because all of the tests
+are written specifically there.
 
 ### Linux `timeconst.bc` Script
 

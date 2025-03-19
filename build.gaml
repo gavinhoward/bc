@@ -75,8 +75,8 @@ presets: {
 		dc_default_sigint_reset: true
 		bc_default_tty_mode: true
 		dc_default_tty_mode: false
-		bc_default_prompt: ""
-		dc_default_prompt: ""
+		bc_default_prompt: @off
+		dc_default_prompt: @off
 		bc_default_expr_exit: true
 		dc_default_expr_exit: true
 		bc_default_digit_clamp: false
@@ -94,8 +94,8 @@ presets: {
 		dc_default_sigint_reset: false
 		bc_default_tty_mode: true
 		dc_default_tty_mode: false
-		bc_default_prompt: ""
-		dc_default_prompt: ""
+		bc_default_prompt: @tty_mode
+		dc_default_prompt: @tty_mode
 		bc_default_expr_exit: true
 		dc_default_expr_exit: true
 		bc_default_digit_clamp: false
@@ -111,8 +111,8 @@ presets: {
 		dc/default_sigint_reset: true
 		bc/default_tty_mode: true
 		dc/default_tty_mode: true
-		bc/default_prompt: ""
-		dc/default_prompt: ""
+		bc/default_prompt: @tty_mode
+		dc/default_prompt: @tty_mode
 		bc/default_expr_exit: false
 		dc/default_expr_exit: false
 		bc/default_digit_clamp: true
@@ -130,8 +130,8 @@ presets: {
 		dc/default_sigint_reset: true
 		bc/default_tty_mode: true
 		dc/default_tty_mode: true
-		bc/default_prompt: ""
-		dc/default_prompt: ""
+		bc/default_prompt: @tty_mode
+		dc/default_prompt: @tty_mode
 		bc/default_expr_exit: false
 		dc/default_expr_exit: false
 		bc/default_digit_clamp: true

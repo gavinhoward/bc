@@ -44,7 +44,7 @@ usage() {
 	if [ $# -eq 1 ]; then
 		printf '%s\n\n' "$1"
 	fi
-	printf 'usage: %s dir script [run_extra_tests] [run_stack_tests] [generate_tests] [time_tests] [exec args...]\n' "$script"
+	printf 'usage: %s dir script [run_extra_tests] [run_stack_tests] [generate_tests] [exec args...]\n' "$script"
 	exit 1
 }
 
@@ -87,15 +87,6 @@ if [ "$#" -gt 0 ]; then
 	check_bool_arg "$generate"
 else
 	generate=1
-	check_bool_arg "$generate"
-fi
-
-if [ "$#" -gt 0 ]; then
-	time_tests="$1"
-	shift
-	check_bool_arg "$time_tests"
-else
-	time_tests=0
 	check_bool_arg "$generate"
 fi
 
@@ -209,16 +200,8 @@ set +e
 
 printf 'Running %s script %s...' "$d" "$f"
 
-# Yes this is poor timing, but it works.
-if [ "$time_tests" -ne 0 ]; then
-	printf '\n'
-	printf '%s\n' "$halt" 2> /dev/null | /usr/bin/time -p "$exe" "$@" $options "$s" > "$out"
-	err="$?"
-	printf '\n'
-else
-	printf '%s\n' "$halt" 2> /dev/null | "$exe" "$@" $options "$s" > "$out"
-	err="$?"
-fi
+printf '%s\n' "$halt" 2> /dev/null | "$exe" "$@" $options "$s" > "$out"
+err="$?"
 
 checktest "$d" "$err" "script $f" "$res" "$out"
 
