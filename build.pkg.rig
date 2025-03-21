@@ -695,7 +695,7 @@ fn check_test(
 
 	exp := io.read_file_bytes(exp_path);
 
-	if exp != res.stdout
+	if exp != res.stdout_full
 	{
 		error("Test \"" +~ name +~ "\" failed\n" +~ str(res.stderr));
 	}
@@ -1258,7 +1258,7 @@ fn register_other_tests(
 
 			check_test_retcode(tgt_name, res.exitcode);
 
-			if str(res.stdout) != "2\n"
+			if str(res.stdout) != "2"
 			{
 				error("Test \"" +~ tgt_name +~
 				      "\" did not have the right output");
