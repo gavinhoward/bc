@@ -1969,7 +1969,7 @@ fn register_other_tests(
 	}
 }
 
-fn register_timeconst_test(
+fn register_timeconst_tests(
 	bin: str,
 	testdir: str,
 	src_testdir: str,
@@ -1989,13 +1989,12 @@ fn register_timeconst_test(
 		return;
 	}
 
-	test sym(timeconst): bin
+	for i: range(1001)
 	{
-		file: str = path.join(src_dir, tgt_name);
-
-		for i: range(1001)
+		test sym(path.join(timeconst, str(i)))
 		{
-			idx: str = str(i) +~ "\n";
+			idx: str = path.basename(tgt_name) +~ "\n";
+			file: str = path.join(src_dir, path.dirname(tgt_name));
 
 			// Generate.
 			res1 := $ bc -q $file << $idx;
@@ -2137,7 +2136,7 @@ fn exe_tests(name: str) -> void
 		if name == "bc" && bool(config["generated_tests"]) &&
 		   path.isfile(path.join(src_testdir, "scripts/timeconst.bc"))
 		{
-			register_timeconst_test(bin, testdir, src_testdir);
+			register_timeconst_tests(bin, testdir, src_testdir);
 		}
 
 		if host.os != "Windows" && sym(config["history"]) == @builtin
