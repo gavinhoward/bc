@@ -73,7 +73,8 @@ bc_func_insert(BcFunc* f, BcProgram* p, char* name, BcType type, size_t line)
 		BcAuto* aptr = bc_vec_item(&f->autos, i);
 
 		// If they match, barf.
-		if (BC_ERR(idx == aptr->idx && BC_IS_ARRAY(type) == BC_IS_ARRAY(aptr->type)))
+		if (BC_ERR(idx == aptr->idx &&
+		           BC_IS_ARRAY(type) == BC_IS_ARRAY(aptr->type)))
 		{
 			const char* array = BC_IS_ARRAY(type) ? "[]" : "";
 
