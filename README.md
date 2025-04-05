@@ -1,9 +1,7 @@
 # `bc`
 
-***WARNING: New user registration for <https://git.gavinhoward.com/> is disabled
-because of spam. If you need to report a bug with `bc`, email gavin at this site
-minus the `git.` part for an account, and I will create one for you. Or you can
-report an issue at [GitHub][29].***
+***WARNING: This project has moved back to GitHub temporarily; self-hosted Git
+forges are not working for me, so I am trying to replace them.
 
 ***WARNING: This project has moved to [https://git.gavinhoward.com/][20] for
 [these reasons][21], though GitHub will remain a mirror.***
