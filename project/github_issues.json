@@ -3437,5 +3437,48 @@
     "title": "Additional arguments",
     "updatedAt": "2021-09-29T23:02:02Z",
     "url": "https://github.com/gavinhoward/bc/issues/43"
+  },
+  {
+    "assignees": [],
+    "author": {
+      "id": "MDQ6VXNlcjQ2Njg2NTY1",
+      "is_bot": false,
+      "login": "rubyFeedback",
+      "name": ""
+    },
+    "body": "Hey there.\n\nI am using this configure line:\n\n    CC=gcc ./configure --prefix=/home/Programs/Bc/7.0.3/  -G -O3 -r\n\nThis is what LFS (Linux from Scratch) recommends, but they use the conventional\n/usr/ prefix.\n\nNow interestingly, when I use the above, I get this result - a warning:\n\n    WARNING: Locales will *NOT* be installed in $PREFIX (/home/Programs/Bc/7.0.3/).\n\n         This is because they *MUST* be installed at a fixed location to even\n         work, and that fixed location is $NLSPATH (/usr/share/locale/%L/%N).\n\n         This location is *outside* of $PREFIX. If you do not wish to install\n         locales outside of $PREFIX, you must disable NLS with the -N or the\n         --disable-nls options.\n\n         The author apologizes for the inconvenience, but the need to install\n         the locales at a fixed location is mandated by POSIX, and it is not\n         possible for the author to change that requirement.\n\nThe warning makes sense on traditional systems that use /usr/ as prefix.\nGoboLinux uses versioned appdirs instead. (I am not using GoboLinux\nright now, as they use /Programs/ dir; I use a slightly modified self-compiled\nvariant instead. At the least currently.)\n\nI do not believe that POSIX mandates that /usr/share/local/ must be in\nthe way described. For instance, I am about 100% certain that symlinks \nare allowed; at the least not forbidden, so I would reason that POSIX\ncan not be cited here. GoboLinux also uses symlinks by the way; they\neven still have /usr/ etc... despite versioned appdirs.\n\nMy question is: is this warning really needed? I can install all glibc-related\nlocales into /home/Programs/Glibc/2.41/share/local/ etc... and I do not\nget any warning about this. I believe the warning has had good intentions,\nbut the explanation is a bit shaky to me, and does not seem to account\nfor e. g. alternative ways to handle a linux system. Does POSIX really\nsay that symlinks are forbidden?\n\n(Also, is it true that locales must be at a fixed location per se? Because in\nprinciple, whatever is searching for the file, could also have another \nlocation. I use the example of symlinks, but even without symlinks we \nhave things such as --libdir and various other flags that allow fine-tuning\nof various things here. Even meson-build systems allow for quite some\nflexibility here.)\n",
+    "closed": true,
+    "closedAt": "2025-04-10T16:47:30Z",
+    "comments": [
+      {
+        "id": "IC_kwDOCL0xJc6mkMkS",
+        "author": {
+          "login": "gavinhoward"
+        },
+        "authorAssociation": "OWNER",
+        "body": "Yes, it is necessary. I have had more people ask why locales don't work than people like you asking why there is a warning. In fact, you're the first.\n\nTo remove the warning, set `NLSPATH` on the call to `configure`, like so:\n\n```\nCC=gcc NLSPATH=/home/Programs/Bc/7.0.3/%L/%N \\\n    ./configure --prefix=/home/Programs/Bc/7.0.3/  -G -O3 -r\n```\n\nThen yes, you can set up symlinks; POSIX does allow that.",
+        "createdAt": "2025-04-10T16:47:30Z",
+        "includesCreatedEdit": false,
+        "isMinimized": false,
+        "minimizedReason": "",
+        "reactionGroups": [],
+        "url": "https://github.com/gavinhoward/bc/issues/90#issuecomment-2794506514",
+        "viewerDidAuthor": true
+      }
+    ],
+    "createdAt": "2025-04-10T11:40:10Z",
+    "id": "I_kwDOCL0xJc6x8Vgk",
+    "isPinned": false,
+    "labels": [],
+    "milestone": null,
+    "number": 90,
+    "projectCards": [],
+    "projectItems": [],
+    "reactionGroups": [],
+    "state": "CLOSED",
+    "stateReason": "COMPLETED",
+    "title": "locales - is the warning for non-standard prefixes still necessary?",
+    "updatedAt": "2025-04-10T16:47:30Z",
+    "url": "https://github.com/gavinhoward/bc/issues/90"
   }
 ]
