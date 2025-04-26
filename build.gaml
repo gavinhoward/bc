@@ -54,7 +54,6 @@ presets: {
 		debug: true
 		optimization: "0"
 		memcheck: true
-		valgrind: true
 		devtools: true
 		strip: false
 	}
