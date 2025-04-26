@@ -3480,5 +3480,130 @@
     "title": "locales - is the warning for non-standard prefixes still necessary?",
     "updatedAt": "2025-04-10T16:47:30Z",
     "url": "https://github.com/gavinhoward/bc/issues/90"
+  },
+  {
+    "assignees": [],
+    "author": {
+      "id": "U_kgDOBxD9gQ",
+      "is_bot": false,
+      "login": "tungstengmd",
+      "name": "harlow foxworthy"
+    },
+    "body": "this might have been excluded for a reason but can you add the \"!\" command back ? only reason being that i wanna clear the screen on certain events",
+    "closed": true,
+    "closedAt": "2025-04-18T20:43:24Z",
+    "comments": [
+      {
+        "id": "IC_kwDOCL0xJc6n20Uz",
+        "author": {
+          "login": "gavinhoward"
+        },
+        "authorAssociation": "OWNER",
+        "body": "It was excluded for a reason, and no, I will not add it. Have your shell clear the screen.",
+        "createdAt": "2025-04-18T20:43:23Z",
+        "includesCreatedEdit": false,
+        "isMinimized": false,
+        "minimizedReason": "",
+        "reactionGroups": [],
+        "url": "https://github.com/gavinhoward/bc/issues/91#issuecomment-2816165171",
+        "viewerDidAuthor": true
+      },
+      {
+        "id": "IC_kwDOCL0xJc6n25O1",
+        "author": {
+          "login": "tungstengmd"
+        },
+        "authorAssociation": "NONE",
+        "body": "had a feeling, and damn you're fast",
+        "createdAt": "2025-04-18T20:58:15Z",
+        "includesCreatedEdit": false,
+        "isMinimized": false,
+        "minimizedReason": "",
+        "reactionGroups": [],
+        "url": "https://github.com/gavinhoward/bc/issues/91#issuecomment-2816185269",
+        "viewerDidAuthor": false
+      },
+      {
+        "id": "IC_kwDOCL0xJc6n3ljG",
+        "author": {
+          "login": "drawkula"
+        },
+        "authorAssociation": "NONE",
+        "body": "You can hardcode the sequence to clear the screen.\nTo be a bit independent of the terminal, catching what `clear` will send may be the way.\n```\n$ clear | xxd -C -p -u -\n1B5B481B5B324A\n```\nSo this ...\n```\n$ clear | xxd -C -p -u - | dc -e '16i ? P'\n```\n... demonstrates it.  Capture the value, in base10 if you prefer.\n\nTBH, I miss `!` too.\n",
+        "createdAt": "2025-04-18T23:55:14Z",
+        "includesCreatedEdit": true,
+        "isMinimized": false,
+        "minimizedReason": "",
+        "reactionGroups": [],
+        "url": "https://github.com/gavinhoward/bc/issues/91#issuecomment-2816366790",
+        "viewerDidAuthor": false
+      },
+      {
+        "id": "IC_kwDOCL0xJc6n4p5E",
+        "author": {
+          "login": "tungstengmd"
+        },
+        "authorAssociation": "NONE",
+        "body": "oh wait you're onto something",
+        "createdAt": "2025-04-19T10:18:42Z",
+        "includesCreatedEdit": false,
+        "isMinimized": false,
+        "minimizedReason": "",
+        "reactionGroups": [],
+        "url": "https://github.com/gavinhoward/bc/issues/91#issuecomment-2816646724",
+        "viewerDidAuthor": false
+      },
+      {
+        "id": "IC_kwDOCL0xJc6n5dwl",
+        "author": {
+          "login": "tungstengmd"
+        },
+        "authorAssociation": "NONE",
+        "body": "ok so basically you can just catch command output [as hex form] in xxd and input it to dc with the input radix as 16\ntherefore bypassing the need for `!`\nthanks @drawkula",
+        "createdAt": "2025-04-19T20:40:25Z",
+        "includesCreatedEdit": false,
+        "isMinimized": false,
+        "minimizedReason": "",
+        "reactionGroups": [],
+        "url": "https://github.com/gavinhoward/bc/issues/91#issuecomment-2816859173",
+        "viewerDidAuthor": false
+      },
+      {
+        "id": "IC_kwDOCL0xJc6n-PJv",
+        "author": {
+          "login": "drawkula"
+        },
+        "authorAssociation": "NONE",
+        "body": "Sure you can read ™somewhere™ which control sequence your `$TERM` will use to clear the screen and then manually turn that into this string alike integer, but you'd have to do that anew everywhere you run your code attached to a differently behaving terminal emulation.  So catching the sequence from `clear`, similar `tput` commands or directly looking it up in Terminfo or Termcap terminal definitions makes it portable and I assumed catching the output of `clear` would be the easiest of these alternatives.\n\nUsing `xxd` may limit portability a bit.  That's probably the weak spot of this idea.  There are alternatives, but if available, `xxd` seems to fit this job best.",
+        "createdAt": "2025-04-21T10:18:17Z",
+        "includesCreatedEdit": false,
+        "isMinimized": false,
+        "minimizedReason": "",
+        "reactionGroups": [],
+        "url": "https://github.com/gavinhoward/bc/issues/91#issuecomment-2818110063",
+        "viewerDidAuthor": false
+      }
+    ],
+    "createdAt": "2025-04-18T20:41:22Z",
+    "id": "I_kwDOCL0xJc6zJ4VJ",
+    "isPinned": false,
+    "labels": [],
+    "milestone": null,
+    "number": 91,
+    "projectCards": [],
+    "projectItems": [],
+    "reactionGroups": [
+      {
+        "content": "THUMBS_UP",
+        "users": {
+          "totalCount": 1
+        }
+      }
+    ],
+    "state": "CLOSED",
+    "stateReason": "COMPLETED",
+    "title": "add ! command",
+    "updatedAt": "2025-04-21T10:18:18Z",
+    "url": "https://github.com/gavinhoward/bc/issues/91"
   }
 ]
