@@ -3605,5 +3605,63 @@
     "title": "add ! command",
     "updatedAt": "2025-04-21T10:18:18Z",
     "url": "https://github.com/gavinhoward/bc/issues/91"
+  },
+  {
+    "assignees": [],
+    "author": {
+      "id": "U_kgDOB8YAUQ",
+      "is_bot": false,
+      "login": "tkb-github",
+      "name": ""
+    },
+    "body": "With the release of RHEL 10 and Fedora 42, we’ve tried to build 7.0.3 on both. No issues with Clang.\n\nWith GCC (v14 for RHEL 10, v15 for Fedora 42), though, the build succeeded under the [epel-10-aarch64](https://download.copr.fedorainfracloud.org/results/tkbcopr/bc-gh/epel-10-aarch64/09140402-bc-gh/) chroot but failed with [epel-10-x86_64](https://download.copr.fedorainfracloud.org/results/tkbcopr/bc-gh/epel-10-x86_64/09140402-bc-gh/), [fedora-42-x86_64](https://download.copr.fedorainfracloud.org/results/tkbcopr/bc-gh/fedora-42-x86_64/09140402-bc-gh/) and [fedora-42-aarch64](https://download.copr.fedorainfracloud.org/results/tkbcopr/bc-gh/fedora-42-aarch64/09140402-bc-gh/). Here’s excerpts from the failed builds.\n\nepel-10-x86_64:\n\n```sh\n\ngcc -DBC_ENABLED=1 -DDC_ENABLED=1 -I./include/ -DBUILD_TYPE=A  -DEXECPREFIX= -DMAINEXEC=bc   -DBC_NUM_KARATSUBA_LEN=34 -DBC_ENABLE_NLS=1 -DBC_ENABLE_EXTRA_MATH=1 -DBC_ENABLE_HISTORY=1 -DBC_ENABLE_LIBRARY=0 -DBC_ENABLE_MEMCHECK=0 -DBC_ENABLE_AFL=0 -DBC_ENABLE_OSSFUZZ=0 -DBC_DEFAULT_BANNER=0 -DBC_DEFAULT_SIGINT_RESET=1 -DBC_DEFAULT_TTY_MODE=1 -DBC_DEFAULT_PROMPT=1 -DBC_DEFAULT_EXPR_EXIT=1 -DBC_DEFAULT_DIGIT_CLAMP=0 -DDC_DEFAULT_SIGINT_RESET=1 -DDC_DEFAULT_TTY_MODE=0 -DDC_DEFAULT_PROMPT=0 -DDC_DEFAULT_EXPR_EXIT=1 -DDC_DEFAULT_DIGIT_CLAMP=0  -DBC_ENABLE_EDITLINE=0 -DBC_ENABLE_READLINE=0 -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -O3 -g -flto ./gen/dc_help.o ./gen/bc_help.o ./gen/lib.o ./gen/lib2.o src/args.o src/bc.o src/bc_lex.o src/bc_parse.o src/data.o src/dc.o src/dc_lex.o src/dc_parse.o src/file.o src/history.o src/lang.o src/lex.o src/main.o src/num.o src/opt.o src/parse.o src/program.o src/rand.o src/read.o src/vector.o src/vm.o -Wl,-z,relro -Wl,--as-needed  -Wl,-z,pack-relative-relocs -Wl,-z,now -specs=/usr/lib/rpm/redhat/redhat-hardened-ld -specs=/usr/lib/rpm/redhat/redhat-hardened-ld-errors -specs=/usr/lib/rpm/redhat/redhat-annobin-cc1  -Wl,--build-id=sha1 -specs=/usr/lib/rpm/redhat/redhat-package-notes  -o bin/bc\n/usr/bin/ld: /tmp/ccMAotuu.ltrans0.ltrans.o: relocation R_X86_64_32 against `.rodata' can not be used when making a PIE object; recompile with -fPIE\n/usr/bin/ld: failed to set dynamic section sizes: bad value\ncollect2: error: ld returned 1 exit status\nmake: *** [Makefile:241: bin/bc] Error 1\nerror: Bad exit status from /var/tmp/rpm-tmp.G7xvMo (%build)\n\nRPM build errors:\n    Bad exit status from /var/tmp/rpm-tmp.G7xvMo (%build)\n\n```\n\nfedora-42-x86_64\n\n```sh\n\ngcc -DBC_ENABLED=1 -DDC_ENABLED=1 -I./include/ -DBUILD_TYPE=A  -DEXECPREFIX= -DMAINEXEC=bc   -DBC_NUM_KARATSUBA_LEN=34 -DBC_ENABLE_NLS=1 -DBC_ENABLE_EXTRA_MATH=1 -DBC_ENABLE_HISTORY=1 -DBC_ENABLE_LIBRARY=0 -DBC_ENABLE_MEMCHECK=0 -DBC_ENABLE_AFL=0 -DBC_ENABLE_OSSFUZZ=0 -DBC_DEFAULT_BANNER=0 -DBC_DEFAULT_SIGINT_RESET=1 -DBC_DEFAULT_TTY_MODE=1 -DBC_DEFAULT_PROMPT=1 -DBC_DEFAULT_EXPR_EXIT=1 -DBC_DEFAULT_DIGIT_CLAMP=0 -DDC_DEFAULT_SIGINT_RESET=1 -DDC_DEFAULT_TTY_MODE=0 -DDC_DEFAULT_PROMPT=0 -DDC_DEFAULT_EXPR_EXIT=1 -DDC_DEFAULT_DIGIT_CLAMP=0  -DBC_ENABLE_EDITLINE=0 -DBC_ENABLE_READLINE=0 -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -O3 -g -flto -o src/data.o -c ./src/data.c\nIn file included from /usr/lib/gcc/x86_64-redhat-linux/15/include/stdint.h:11,\n                 from ./include/status.h:46,\n                 from ./include/args.h:39,\n                 from ./src/data.c:39:\n./src/data.c:920:29: error: â^@^XfalseULâ^@^Y undeclared here (not in a function)\n  920 |         BC_PARSE_EXPR_ENTRY(false, false, true, true, true, true, true, true),\n      |                             ^~~~~\n./src/data.c:920:9: note: in expansion of macro â^@^XBC_PARSE_EXPR_ENTRYâ^@^Y\n  920 |         BC_PARSE_EXPR_ENTRY(false, false, true, true, true, true, true, true),\n      |         ^~~~~~~~~~~~~~~~~~~\n./src/data.c:920:43: error: â^@^XtrueULâ^@^Y undeclared here (not in a function)\n  920 |         BC_PARSE_EXPR_ENTRY(false, false, true, true, true, true, true, true),\n      |                                           ^~~~\n./src/data.c:920:9: note: in expansion of macro â^@^XBC_PARSE_EXPR_ENTRYâ^@^Y\n  920 |         BC_PARSE_EXPR_ENTRY(false, false, true, true, true, true, true, true),\n      |         ^~~~~~~~~~~~~~~~~~~\nmake: *** [Makefile:668: src/data.o] Error 1\ngcc -DBC_ENABLED=1 -DDC_ENABLED=1 -I./include/ -DBUILD_TYPE=A  -DEXECPREFIX= -DMAINEXEC=bc   -DBC_NUM_KARATSUBA_LEN=34 -DBC_ENABLE_NLS=1 -DBC_ENABLE_EXTRA_MATH=1 -DBC_ENABLE_HISTORY=1 -DBC_ENABLE_LIBRARY=0 -DBC_ENABLE_MEMCHECK=0 -DBC_ENABLE_AFL=0 -DBC_ENABLE_OSSFUZZ=0 -DBC_DEFAULT_BANNER=0 -DBC_DEFAULT_SIGINT_RESET=1 -DBC_DEFAULT_TTY_MODE=1 -DBC_DEFAULT_PROMPT=1 -DBC_DEFAULT_EXPR_EXIT=1 -DBC_DEFAULT_DIGIT_CLAMP=0 -DDC_DEFAULT_SIGINT_RESET=1 -DDC_DEFAULT_TTY_MODE=0 -DDC_DEFAULT_PROMPT=0 -DDC_DEFAULT_EXPR_EXIT=1 -DDC_DEFAULT_DIGIT_CLAMP=0  -DBC_ENABLE_EDITLINE=0 -DBC_ENABLE_READLINE=0 -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -O3 -g -flto -o src/dc.o -c ./src/dc.c\nmake: *** Waiting for unfinished jobs....\ngcc -DBC_ENABLE_AFL=0 -DBC_ENABLE_OSSFUZZ=0 -I./include/ -flto -o ./gen/strgen ./gen/strgen.c\ngcc -DBC_ENABLED=1 -DDC_ENABLED=1 -I./include/ -DBUILD_TYPE=A  -DEXECPREFIX= -DMAINEXEC=bc   -DBC_NUM_KARATSUBA_LEN=34 -DBC_ENABLE_NLS=1 -DBC_ENABLE_EXTRA_MATH=1 -DBC_ENABLE_HISTORY=1 -DBC_ENABLE_LIBRARY=0 -DBC_ENABLE_MEMCHECK=0 -DBC_ENABLE_AFL=0 -DBC_ENABLE_OSSFUZZ=0 -DBC_DEFAULT_BANNER=0 -DBC_DEFAULT_SIGINT_RESET=1 -DBC_DEFAULT_TTY_MODE=1 -DBC_DEFAULT_PROMPT=1 -DBC_DEFAULT_EXPR_EXIT=1 -DBC_DEFAULT_DIGIT_CLAMP=0 -DDC_DEFAULT_SIGINT_RESET=1 -DDC_DEFAULT_TTY_MODE=0 -DDC_DEFAULT_PROMPT=0 -DDC_DEFAULT_EXPR_EXIT=1 -DDC_DEFAULT_DIGIT_CLAMP=0  -DBC_ENABLE_EDITLINE=0 -DBC_ENABLE_READLINE=0 -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -O3 -g -flto -o src/bc_parse.o -c ./src/bc_parse.c\nerror: Bad exit status from /var/tmp/rpm-tmp.hRViel (%build)\n\nRPM build errors:\n    Bad exit status from /var/tmp/rpm-tmp.hRViel (%build)\n\n```\n\nfedora-42-aarch64\n\n```sh\n\ngcc -DBC_ENABLED=1 -DDC_ENABLED=1 -I./include/ -DBUILD_TYPE=A  -DEXECPREFIX= -DMAINEXEC=bc   -DBC_NUM_KARATSUBA_LEN=34 -DBC_ENABLE_NLS=1 -DBC_ENABLE_EXTRA_MATH=1 -DBC_ENABLE_HISTORY=1 -DBC_ENABLE_LIBRARY=0 -DBC_ENABLE_MEMCHECK=0 -DBC_ENABLE_AFL=0 -DBC_ENABLE_OSSFUZZ=0 -DBC_DEFAULT_BANNER=0 -DBC_DEFAULT_SIGINT_RESET=1 -DBC_DEFAULT_TTY_MODE=1 -DBC_DEFAULT_PROMPT=1 -DBC_DEFAULT_EXPR_EXIT=1 -DBC_DEFAULT_DIGIT_CLAMP=0 -DDC_DEFAULT_SIGINT_RESET=1 -DDC_DEFAULT_TTY_MODE=0 -DDC_DEFAULT_PROMPT=0 -DDC_DEFAULT_EXPR_EXIT=1 -DDC_DEFAULT_DIGIT_CLAMP=0  -DBC_ENABLE_EDITLINE=0 -DBC_ENABLE_READLINE=0 -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -O3 -g -flto -o src/data.o -c ./src/data.c\nIn file included from /usr/lib/gcc/aarch64-redhat-linux/15/include/stdint.h:11,\n                 from ./include/status.h:46,\n                 from ./include/args.h:39,\n                 from ./src/data.c:39:\n./src/data.c:920:29: error: â^@^XfalseULâ^@^Y undeclared here (not in a function)\n  920 |         BC_PARSE_EXPR_ENTRY(false, false, true, true, true, true, true, true),\n      |                             ^~~~~\n./src/data.c:920:9: note: in expansion of macro â^@^XBC_PARSE_EXPR_ENTRYâ^@^Y\n  920 |         BC_PARSE_EXPR_ENTRY(false, false, true, true, true, true, true, true),\n      |         ^~~~~~~~~~~~~~~~~~~\n./src/data.c:920:43: error: â^@^XtrueULâ^@^Y undeclared here (not in a function)\n  920 |         BC_PARSE_EXPR_ENTRY(false, false, true, true, true, true, true, true),\n      |                                           ^~~~\n./src/data.c:920:9: note: in expansion of macro â^@^XBC_PARSE_EXPR_ENTRYâ^@^Y\n  920 |         BC_PARSE_EXPR_ENTRY(false, false, true, true, true, true, true, true),\n      |         ^~~~~~~~~~~~~~~~~~~\nmake: *** [Makefile:668: src/data.o] Error 1\nmake: *** Waiting for unfinished jobs....\ngcc -DBC_ENABLED=1 -DDC_ENABLED=1 -I./include/ -DBUILD_TYPE=A  -DEXECPREFIX= -DMAINEXEC=bc   -DBC_NUM_KARATSUBA_LEN=34 -DBC_ENABLE_NLS=1 -DBC_ENABLE_EXTRA_MATH=1 -DBC_ENABLE_HISTORY=1 -DBC_ENABLE_LIBRARY=0 -DBC_ENABLE_MEMCHECK=0 -DBC_ENABLE_AFL=0 -DBC_ENABLE_OSSFUZZ=0 -DBC_DEFAULT_BANNER=0 -DBC_DEFAULT_SIGINT_RESET=1 -DBC_DEFAULT_TTY_MODE=1 -DBC_DEFAULT_PROMPT=1 -DBC_DEFAULT_EXPR_EXIT=1 -DBC_DEFAULT_DIGIT_CLAMP=0 -DDC_DEFAULT_SIGINT_RESET=1 -DDC_DEFAULT_TTY_MODE=0 -DDC_DEFAULT_PROMPT=0 -DDC_DEFAULT_EXPR_EXIT=1 -DDC_DEFAULT_DIGIT_CLAMP=0  -DBC_ENABLE_EDITLINE=0 -DBC_ENABLE_READLINE=0 -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -O3 -g -flto -o src/dc.o -c ./src/dc.c\ngcc -DBC_ENABLED=1 -DDC_ENABLED=1 -I./include/ -DBUILD_TYPE=A  -DEXECPREFIX= -DMAINEXEC=bc   -DBC_NUM_KARATSUBA_LEN=34 -DBC_ENABLE_NLS=1 -DBC_ENABLE_EXTRA_MATH=1 -DBC_ENABLE_HISTORY=1 -DBC_ENABLE_LIBRARY=0 -DBC_ENABLE_MEMCHECK=0 -DBC_ENABLE_AFL=0 -DBC_ENABLE_OSSFUZZ=0 -DBC_DEFAULT_BANNER=0 -DBC_DEFAULT_SIGINT_RESET=1 -DBC_DEFAULT_TTY_MODE=1 -DBC_DEFAULT_PROMPT=1 -DBC_DEFAULT_EXPR_EXIT=1 -DBC_DEFAULT_DIGIT_CLAMP=0 -DDC_DEFAULT_SIGINT_RESET=1 -DDC_DEFAULT_TTY_MODE=0 -DDC_DEFAULT_PROMPT=0 -DDC_DEFAULT_EXPR_EXIT=1 -DDC_DEFAULT_DIGIT_CLAMP=0  -DBC_ENABLE_EDITLINE=0 -DBC_ENABLE_READLINE=0 -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -O3 -g -flto -o src/bc_parse.o -c ./src/bc_parse.c\ngcc -DBC_ENABLE_AFL=0 -DBC_ENABLE_OSSFUZZ=0 -I./include/ -flto -o ./gen/strgen ./gen/strgen.c\nerror: Bad exit status from /var/tmp/rpm-tmp.5cLuhE (%build)\n\nRPM build errors:\n    Bad exit status from /var/tmp/rpm-tmp.5cLuhE (%build)\n\n```",
+    "closed": true,
+    "closedAt": "2025-06-08T22:18:49Z",
+    "comments": [
+      {
+        "id": "IC_kwDOCL0xJc6v8kNF",
+        "author": {
+          "login": "gavinhoward"
+        },
+        "authorAssociation": "OWNER",
+        "body": "For epel-10-x86_64, just add `-fPIE` to the `CFLAGS`, like so:\n\n```\n$ CFLAGS=-fpie ./configure.sh\n$ make\n```\n\nFor the other two, it appears `stdbool.h` does not properly define `false` and `true`.",
+        "createdAt": "2025-06-07T05:46:33Z",
+        "includesCreatedEdit": false,
+        "isMinimized": false,
+        "minimizedReason": "",
+        "reactionGroups": [],
+        "url": "https://github.com/gavinhoward/bc/issues/92#issuecomment-2951889733",
+        "viewerDidAuthor": true
+      },
+      {
+        "id": "IC_kwDOCL0xJc6wDPLy",
+        "author": {
+          "login": "tkb-github"
+        },
+        "authorAssociation": "NONE",
+        "body": "Thanks!",
+        "createdAt": "2025-06-08T06:52:46Z",
+        "includesCreatedEdit": false,
+        "isMinimized": false,
+        "minimizedReason": "",
+        "reactionGroups": [],
+        "url": "https://github.com/gavinhoward/bc/issues/92#issuecomment-2953638642",
+        "viewerDidAuthor": false
+      }
+    ],
+    "createdAt": "2025-06-07T03:51:28Z",
+    "id": "I_kwDOCL0xJc66WQa1",
+    "isPinned": false,
+    "labels": [],
+    "milestone": null,
+    "number": 92,
+    "projectCards": [],
+    "projectItems": [],
+    "reactionGroups": [],
+    "state": "CLOSED",
+    "stateReason": "COMPLETED",
+    "title": "Build failures under RHEL 10 & Fedora 42 with GCC",
+    "updatedAt": "2025-06-08T22:18:49Z",
+    "url": "https://github.com/gavinhoward/bc/issues/92"
   }
 ]
