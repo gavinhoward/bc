@@ -1885,8 +1885,8 @@ There are a couple of cases where I went with standard stuff instead.
 
 :   The macro expands to the build type, which is one of: `A`, `E`, `H`, `N`,
     `EH`, `EN`, `HN`, `EHN`. This build type is used in the help text to direct
-    the user to the correct markdown manual in the `git.gavinhoward.com`
-    website.
+    the user to the correct markdown manual in the `github.com/gavinhoward/bc`
+    repo.
 
 `EXECPREFIX`
 

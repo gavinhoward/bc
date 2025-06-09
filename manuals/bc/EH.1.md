@@ -1483,7 +1483,7 @@ This bc(1) supports error messages for different locales, and thus, it supports
 Before version **6.1.0**, this bc(1) had incorrect behavior for the **quit**
 statement.
 
-No other bugs are known. Report bugs at https://git.gavinhoward.com/gavin/bc .
+No other bugs are known. Report bugs at https://github.com/gavinhoward/bc .
 
 # AUTHORS
 

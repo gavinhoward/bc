@@ -1532,7 +1532,7 @@ use a period (**.**) as a radix point, regardless of the value of
 
 # BUGS
 
-None are known. Report bugs at https://git.gavinhoward.com/gavin/bc.
+None are known. Report bugs at https://github.com/gavinhoward/bc .
 
 # AUTHORS
 

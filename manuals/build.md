@@ -43,7 +43,7 @@ accepted build options.
 ## Windows
 
 For releases, Windows builds of `bc`, `dc`, and `bcl` are available for download
-from <https://git.gavinhoward.com/gavin/bc> and GitHub.
+from GitHub.
 
 However, if you wish to build it yourself, this `bc` can be built using Visual
 Studio or MSBuild.

@@ -1517,7 +1517,7 @@ https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html .
 
 # BUGS
 
-None are known. Report bugs at https://git.gavinhoward.com/gavin/bc .
+None are known. Report bugs at https://github.com/gavinhoward/bc .
 
 # AUTHOR
 
