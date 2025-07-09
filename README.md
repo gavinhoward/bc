@@ -1,7 +1,7 @@
 # `bc`
 
 ***WARNING: This project has moved back to GitHub temporarily; self-hosted Git
-forges are not working for me, so I am trying to replace them.
+forges are not working for me, so I am trying to replace them.***
 
 ***WARNING: This project has moved to [https://git.gavinhoward.com/][20] for
 [these reasons][21], though GitHub will remain a mirror.***
