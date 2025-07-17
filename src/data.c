@@ -895,6 +895,7 @@ const BcLexKeyword bc_lex_kws[] = {
 	BC_LEX_KW_ENTRY("leading_zero", 12, false),
 	BC_LEX_KW_ENTRY("stream", 6, false),
 	BC_LEX_KW_ENTRY("else", 4, false),
+	BC_LEX_KW_ENTRY("global_pop", 11, false),
 };
 
 /// The length of the list of bc keywords.

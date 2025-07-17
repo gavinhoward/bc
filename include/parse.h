@@ -201,6 +201,9 @@ typedef struct BcParse
 	/// True if the bc parser just entered a function and an auto statement
 	/// would be valid.
 	bool auto_part;
+
+	/// True if the bc parser is in a stack function.
+	bool stackfn;
 #endif // BC_ENABLED
 
 } BcParse;

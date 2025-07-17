@@ -1369,35 +1369,39 @@ bc_parse_loopExit(BcParse* p, BcLexType type)
 static void
 bc_parse_func(BcParse* p)
 {
-	bool comma = false, voidfn;
+	bool comma = false, voidfn, stackfn;
 	uint16_t flags;
 	size_t idx;
 
 	bc_lex_next(&p->l);
 
-	// Must have a name.
-	if (BC_ERR(p->l.t != BC_LEX_NAME)) bc_parse_err(p, BC_ERR_PARSE_FUNC);
+	voidfn = stackfn = false;
 
-	// If the name is "void", and POSIX is not on, mark as void.
-	voidfn = (!BC_IS_POSIX && p->l.t == BC_LEX_NAME &&
-	          !strcmp(p->l.str.v, "void"));
+	while (p->l.t == BC_LEX_NAME)
+	{
+		if (!strcmp(p->l.str.v, "void"))
+		{
+			if (BC_IS_POSIX) bc_parse_err(p, BC_ERR_POSIX_VOID);
+			if (BC_ERR(voidfn)) bc_parse_err(p, BC_ERR_PARSE_FUNC); // Duplicate void
+			voidfn = true;
+			bc_lex_next(&p->l);
+		}
+		else if (!strcmp(p->l.str.v, "stack"))
+		{
+			if (BC_IS_POSIX) bc_parse_err(p, BC_ERR_POSIX_STACK);
+			if (BC_ERR(stackfn)) bc_parse_err(p, BC_ERR_PARSE_FUNC); // Duplicate stack
+			stackfn = true;
+			bc_lex_next(&p->l);
+		}
+		else break; // Not a function type keyword, must be function name
+	}
+
+	// Must have a function name.
+	if (BC_ERR(p->l.t != BC_LEX_NAME)) bc_parse_err(p, BC_ERR_PARSE_FUNC);
 
 	// We can safely do this because the expected token should not overwrite the
 	// function name.
 	bc_lex_next(&p->l);
-
-	// If we *don't* have another name, then void is the name of the function.
-	voidfn = (voidfn && p->l.t == BC_LEX_NAME);
-
-	// With a void function, allow POSIX to complain and get a new token.
-	if (voidfn)
-	{
-		bc_parse_err(p, BC_ERR_POSIX_VOID);
-
-		// We can safely do this because the expected token should not overwrite
-		// the function name.
-		bc_lex_next(&p->l);
-	}
 
 	// Must have a left paren.
 	if (BC_ERR(p->l.t != BC_LEX_LPAREN)) bc_parse_err(p, BC_ERR_PARSE_FUNC);
@@ -1414,6 +1418,7 @@ bc_parse_func(BcParse* p)
 	// Update the function pointer and stuff in the parser and set its void.
 	bc_parse_updateFunc(p, idx);
 	p->func->voidfn = voidfn;
+	p->func->stackfn = stackfn;
 
 	bc_lex_next(&p->l);
 
@@ -1818,6 +1823,17 @@ bc_parse_stmt(BcParse* p)
 		case BC_LEX_KW_PRINT:
 		{
 			bc_parse_print(p, type);
+			break;
+		}
+
+		case BC_LEX_KW_GLOBAL_POP:
+		{
+			bc_lex_next(&p->l);
+			if (BC_ERR(p->l.t != BC_LEX_LPAREN)) bc_parse_err(p, BC_ERR_PARSE_TOKEN);
+			bc_lex_next(&p->l);
+			if (BC_ERR(p->l.t != BC_LEX_RPAREN)) bc_parse_err(p, BC_ERR_PARSE_TOKEN);
+			bc_lex_next(&p->l);
+			bc_parse_push(p, BC_INST_GLOBAL_POP);
 			break;
 		}
 
@@ -2392,6 +2408,8 @@ bc_parse_expr_err(BcParse* p, uint8_t flags, BcParseNext next)
 
 				break;
 			}
+
+
 
 			case BC_LEX_KW_SCALE:
 			{

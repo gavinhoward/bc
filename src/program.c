@@ -809,7 +809,7 @@ bc_program_read(BcProgram* p)
 
 #if BC_ENABLED
 	// Push on the globals stack if necessary.
-	if (BC_G) bc_program_prepGlobals(p);
+	if (f->stackfn) bc_program_prepGlobals(p);
 #endif // BC_ENABLED
 
 	// Set up a new BcInstPtr.
@@ -1814,7 +1814,7 @@ bc_program_call(BcProgram* p, const char* restrict code, size_t* restrict bgn)
 	assert(BC_PROG_STACK(&p->results, nargs));
 
 	// Prepare the globals' stacks.
-	if (BC_G) bc_program_prepGlobals(p);
+	if (f->stackfn) bc_program_prepGlobals(p);
 
 	// Push the arguments onto the stacks of their respective parameters.
 	for (i = 0; i < nargs; ++i)
@@ -1949,7 +1949,7 @@ bc_program_return(BcProgram* p, uchar inst)
 	bc_program_retire(p, nresults);
 
 	// Pop the globals, if necessary.
-	if (BC_G) bc_program_popGlobals(p, false);
+	if (f->stackfn) bc_program_popGlobals(p, false);
 
 	// Pop the stack. This is what causes the function to actually "return."
 	bc_vec_pop(&p->stack);
@@ -2731,7 +2731,15 @@ bc_program_globalSetting(BcProgram* p, uchar inst)
 #if BC_ENABLED
 	else if (inst == BC_INST_GLOBAL_STACKS)
 	{
-		val = (BC_G != 0);
+		if (p->stack.len > 0)
+		{
+			BcInstPtr* ip = bc_vec_top(&p->stack);
+			val = ((BcFunc*) bc_vec_item(&p->fns, ip->func))->stackfn || (BC_G != 0);
+		}
+		else
+		{
+			val = (BC_G != 0);
+		}
 	}
 #endif // BC_ENABLED
 #if DC_ENABLED
@@ -3028,7 +3036,7 @@ bc_program_reset(BcProgram* p)
 
 #if BC_ENABLED
 	// Clear the globals' stacks.
-	if (BC_G) bc_program_popGlobals(p, true);
+	if (f->stackfn) bc_program_popGlobals(p, true);
 #endif // BC_ENABLED
 
 	// Clear the bytecode vector of the main function.
@@ -3504,6 +3512,23 @@ bc_program_exec(BcProgram* p)
 			// clang-format on
 			{
 				bc_program_assign(p, inst);
+				BC_PROG_JUMP(inst, code, ip);
+			}
+
+			BC_PROG_LBL(BC_INST_GLOBAL_POP):
+			// clang-format on
+			{
+				if (p->stack.len > 0)
+				{
+					BcInstPtr* ip = bc_vec_top(&p->stack);
+					BcFunc* f = bc_vec_item(&p->fns, ip->func);
+					
+					if (f->stackfn)
+					{
+						bc_program_popGlobals(p, false);
+						bc_program_prepGlobals(p);
+					}
+				}
 				BC_PROG_JUMP(inst, code, ip);
 			}
 

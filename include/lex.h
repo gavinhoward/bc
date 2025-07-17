@@ -407,6 +407,9 @@ typedef enum BcLexType
 	/// bc else keyword.
 	BC_LEX_KW_ELSE,
 
+	/// bc GLOBAL_POP keyword.
+	BC_LEX_KW_GLOBAL_POP,
+
 #if DC_ENABLED
 
 	/// dc extended registers keyword.

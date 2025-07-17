@@ -328,6 +328,9 @@ typedef enum BcInst
 
 #endif // DC_ENABLED
 
+	/// Pop the global stacks.
+	BC_INST_GLOBAL_POP,
+
 	/// Invalid instruction.
 	BC_INST_INVALID,
 
@@ -409,6 +412,9 @@ typedef struct BcFunc
 #if BC_ENABLED
 	/// True if the function is a void function.
 	bool voidfn;
+
+	/// True if the function is a stack function (uses global stacks).
+	bool stackfn;
 #endif // BC_ENABLED
 
 } BcFunc;
