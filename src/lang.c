@@ -110,6 +110,7 @@ bc_func_init(BcFunc* f, const char* name)
 
 		f->nparams = 0;
 		f->voidfn = false;
+		f->stackfn = BC_G;
 	}
 
 #endif // BC_ENABLED

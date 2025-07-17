@@ -595,6 +595,9 @@ typedef enum BcErr
 	/// Non-POSIX void error.
 	BC_ERR_POSIX_VOID,
 
+	/// Non-POSIX stack error.
+	BC_ERR_POSIX_STACK,
+
 	/// Non-POSIX brace position used error.
 	BC_ERR_POSIX_BRACE,
 

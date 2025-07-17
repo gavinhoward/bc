@@ -631,6 +631,7 @@ extern const char bc_program_esc_seqs[];
 		&&lbl_BC_INST_QUIT,                             \
 		&&lbl_BC_INST_NQUIT,                            \
 		&&lbl_BC_INST_EXEC_STACK_LEN,                   \
+		&&lbl_BC_INST_GLOBAL_POP,                        \
 		&&lbl_BC_INST_INVALID,                          \
 	}
 
@@ -822,6 +823,7 @@ extern const char bc_program_esc_seqs[];
 		&&lbl_BC_INST_MODEXP,                           \
 		&&lbl_BC_INST_DIVMOD,                           \
 		&&lbl_BC_INST_PRINT_STREAM,                     \
+		&&lbl_BC_INST_GLOBAL_POP,                        \
 		&&lbl_BC_INST_INVALID,                          \
 	}
 
@@ -949,7 +951,7 @@ extern const char bc_program_esc_seqs[];
 		&&lbl_BC_INST_LOAD,          &&lbl_BC_INST_PUSH_VAR,           \
 		&&lbl_BC_INST_PUSH_TO_VAR,   &&lbl_BC_INST_QUIT,               \
 		&&lbl_BC_INST_NQUIT,         &&lbl_BC_INST_EXEC_STACK_LEN,     \
-		&&lbl_BC_INST_INVALID,                                         \
+		&&lbl_BC_INST_GLOBAL_POP,     &&lbl_BC_INST_INVALID,                                         \
 	}
 
 #else // BC_ENABLE_EXTRA_MATH
