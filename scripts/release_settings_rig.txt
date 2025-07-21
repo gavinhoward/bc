@@ -1,0 +1,16 @@
+bc/default_sigint_reset=1 dc/default_sigint_reset=1 bc/default_tty_mode=1 dc/default_tty_mode=1 bc/default_digit_clamp=1 dc/default_digit_clamp=1 bc/default_prompt=1 dc/default_prompt=1
+bc/default_sigint_reset=0 dc/default_sigint_reset=0 bc/default_tty_mode=1 dc/default_tty_mode=1 bc/default_digit_clamp=1 dc/default_digit_clamp=1 bc/default_prompt=1 dc/default_prompt=1
+bc/default_sigint_reset=1 dc/default_sigint_reset=1 bc/default_tty_mode=0 dc/default_tty_mode=0 bc/default_digit_clamp=1 dc/default_digit_clamp=1 bc/default_prompt=1 dc/default_prompt=1
+bc/default_sigint_reset=1 dc/default_sigint_reset=1 bc/default_tty_mode=1 dc/default_tty_mode=1 bc/default_digit_clamp=0 dc/default_digit_clamp=0 bc/default_prompt=1 dc/default_prompt=1
+bc/default_sigint_reset=1 dc/default_sigint_reset=1 bc/default_tty_mode=1 dc/default_tty_mode=1 bc/default_digit_clamp=1 dc/default_digit_clamp=1 bc/default_prompt=0 dc/default_prompt=0
+bc/default_sigint_reset=0 dc/default_sigint_reset=0 bc/default_tty_mode=0 dc/default_tty_mode=0 bc/default_digit_clamp=1 dc/default_digit_clamp=1 bc/default_prompt=1 dc/default_prompt=1
+bc/default_sigint_reset=0 dc/default_sigint_reset=0 bc/default_tty_mode=1 dc/default_tty_mode=1 bc/default_digit_clamp=0 dc/default_digit_clamp=0 bc/default_prompt=1 dc/default_prompt=1
+bc/default_sigint_reset=0 dc/default_sigint_reset=0 bc/default_tty_mode=1 dc/default_tty_mode=1 bc/default_digit_clamp=1 dc/default_digit_clamp=1 bc/default_prompt=0 dc/default_prompt=0
+bc/default_sigint_reset=1 dc/default_sigint_reset=1 bc/default_tty_mode=0 dc/default_tty_mode=0 bc/default_digit_clamp=0 dc/default_digit_clamp=0 bc/default_prompt=1 dc/default_prompt=1
+bc/default_sigint_reset=1 dc/default_sigint_reset=1 bc/default_tty_mode=0 dc/default_tty_mode=0 bc/default_digit_clamp=1 dc/default_digit_clamp=1 bc/default_prompt=0 dc/default_prompt=0
+bc/default_sigint_reset=1 dc/default_sigint_reset=1 bc/default_tty_mode=1 dc/default_tty_mode=1 bc/default_digit_clamp=0 dc/default_digit_clamp=0 bc/default_prompt=0 dc/default_prompt=0
+bc/default_sigint_reset=0 dc/default_sigint_reset=0 bc/default_tty_mode=0 dc/default_tty_mode=0 bc/default_digit_clamp=0 dc/default_digit_clamp=0 bc/default_prompt=1 dc/default_prompt=1
+bc/default_sigint_reset=0 dc/default_sigint_reset=0 bc/default_tty_mode=0 dc/default_tty_mode=0 bc/default_digit_clamp=1 dc/default_digit_clamp=1 bc/default_prompt=0 dc/default_prompt=0
+bc/default_sigint_reset=0 dc/default_sigint_reset=0 bc/default_tty_mode=0 dc/default_tty_mode=0 bc/default_digit_clamp=1 dc/default_digit_clamp=1 bc/default_prompt=0 dc/default_prompt=0
+bc/default_sigint_reset=1 dc/default_sigint_reset=1 bc/default_tty_mode=0 dc/default_tty_mode=0 bc/default_digit_clamp=0 dc/default_digit_clamp=0 bc/default_prompt=1 dc/default_prompt=0
+bc/default_sigint_reset=0 dc/default_sigint_reset=0 bc/default_tty_mode=0 dc/default_tty_mode=0 bc/default_digit_clamp=0 dc/default_digit_clamp=0 bc/default_prompt=0 dc/default_prompt=0

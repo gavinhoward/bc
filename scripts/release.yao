@@ -1,0 +1,149 @@
+#! /usr/bin/env yao
+/**
+ * SPDX-License-Identifier: BSD-2-Clause
+ *
+ * Copyright (c) 2018-2025 Gavin D. Howard and contributors.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * * Redistributions of source code must retain the above copyright notice, this
+ *   list of conditions and the following disclaimer.
+ *
+ * * Redistributions in binary form must reproduce the above copyright notice,
+ *   this list of conditions and the following disclaimer in the documentation
+ *   and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
+
+// For macOS from Ventura on, run using the following:
+//
+// scripts/release.yao -gG --no-gen-script --computed-goto
+//
+// For OpenBSD, run using the following:
+//
+// scripts/release.yao --no-gen-script --no-c11 --editline
+//
+// For FreeBSD, run using the following:
+//
+// scripts/release.yao -ger --no-gen-script --no-128 --computed-goto
+//
+// For Linux, run two separate ones (in different checkouts), like so:
+//
+// scripts/release.yao -gpGser --no-gen-script --computed-goto --no-128
+// cd temp_build; ../scripts/release.yao -gpCverk --no-gen-script --history
+//
+// Yes, I usually do sanitizers with Clang and Valgrind with GCC, and I also do
+// out-of-source builds with GCC.
+//
+// The reason I run history tests with GCC and not with Clang is because Clang
+// already runs slower as a result of running with sanitizers, and the history
+// tests are a little sensitive to load on a system.
+//
+// If this script fails on any platform when starting the Karatsuba test, check
+// that Python is installed, especially if the error says something like:
+// "karatsuba.py: not found".
+
+args: []str =
+sys.getopts opt, arg: opts, sys.argv
+{
+	if opt == @no64
+	{
+		no64! = true;
+	}
+	else if opt == @no128
+	{
+		no128! = true;
+	}
+	else if opt == @C
+	{
+		clang! = false;
+	}
+	else if opt == @C11
+	{
+		c11! = false;
+	}
+	else if opt == @G
+	{
+		gcc! = false;
+	}
+	else if opt == @GEN
+	{
+		gen_host! = false;
+	}
+	else if opt == @MAKE
+	{
+		run_make! = false;
+	}
+	else if opt == @RIG
+	{
+		if WINDOWS
+		{
+			sys.panic("Must run Rig on Windows");
+		}
+
+		run_rig! = false;
+	}
+	else if opt == @T
+	{
+		tests! = false;
+	}
+	else if opt == @computed-goto
+	{
+		computed_goto! = true;
+	}
+	else if opt == @e
+	{
+		editline! = true;
+	}
+	else if opt == @g
+	{
+		generated! = true;
+	}
+	else if opt == @history
+	{
+		history! = true;
+	}
+	else if opt == @k
+	{
+		karatsuba! = true;
+	}
+	else if opt == @p
+	{
+		problematic! = true;
+	}
+	else if opt == @r
+	{
+		readline! = true;
+	}
+	else if opt == @s
+	{
+		sanitizers! = true;
+	}
+	else if opt == @settings
+	{
+		settings! = true;
+	}
+	else if opt == @v
+	{
+		valgrind! = true;
+	}
+};
+
+if args.len != 0
+{
+	sys.panic("Should not have arguments");
+}
+
+build_sets();
