@@ -96,13 +96,13 @@ typedef struct BcLexKeyword
 
 /// A macro for the number of keywords bc has. This has to be updated if any are
 /// added. This is for the redefined_kws field of the BcVm struct.
-#define BC_LEX_NKWS (37)
+#define BC_LEX_NKWS (38)
 
 #else // BC_ENABLE_EXTRA_MATH
 
 /// A macro for the number of keywords bc has. This has to be updated if any are
 /// added. This is for the redefined_kws field of the BcVm struct.
-#define BC_LEX_NKWS (33)
+#define BC_LEX_NKWS (34)
 
 #endif // BC_ENABLE_EXTRA_MATH
 
