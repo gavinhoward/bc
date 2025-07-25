@@ -90,7 +90,7 @@ cd "$repo"
 # We want the absolute path for later.
 repo=$(pwd)
 
-version=$(cat "$scriptdir/VERSION.txt" | head -n1)
+version=$(cat "$repo/VERSION.txt" | head -n1)
 
 tag_msg="Version $version"
 projver="${proj}-${version}"
