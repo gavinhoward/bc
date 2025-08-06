@@ -52,8 +52,7 @@ My time includes, but is not limited to:
 	  because Windows blocks me from doing my main work on Linux.
 	* Any other instances of blocking compute time.
 
-All amounts will be billed by, and paid to, [Yzena, LLC][2]. Invoices will be
-provided, including line items for what each hour was spent on.
+Invoices will be provided, including line items for what each hour was spent on.
 
 It is suggested that the following amounts be budgeted:
 
@@ -76,5 +75,4 @@ This document is inspired by [Mike Hoye's Maintenance Terms][1].
 
 [0]: LICENSE.md
 [1]: https://github.com/mhoye/maintenance-terms
-[2]: scripts/release.sh
-[3]: https://yzena.com/
+[2]: scripts/release.yao
