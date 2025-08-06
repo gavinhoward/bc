@@ -1305,7 +1305,7 @@ if [ "$hist" -eq 1 ]; then
 	flags="$flags -DBC_ENABLE_EXTRA_MATH=$extra_math -DBC_ENABLE_OSSFUZZ=0"
 	flags="$flags -I$scriptdir/include/ -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700"
 
-	"$CC" $CPPFLAGS $CFLAGS $flags -c "$scriptdir/src/history.c" -E > /dev/null
+	"$CC" $CPPFLAGS $CFLAGS $flags "$scriptdir/src/history.c" -E > /dev/null
 
 	err="$?"
 
