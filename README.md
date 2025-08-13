@@ -3,9 +3,6 @@
 ***WARNING: This project has moved back to GitHub temporarily; self-hosted Git
 forges are not working for me, so I am trying to replace them.***
 
-***WARNING: This project has moved to [https://git.gavinhoward.com/][20] for
-[these reasons][21], though GitHub will remain a mirror.***
-
 This is an implementation of the [POSIX `bc` calculator][12] that implements
 [GNU `bc`][1] extensions, as well as the period (`.`) extension for the BSD
 flavor of `bc`.
@@ -510,8 +507,6 @@ Folders:
 [17]: https://git.gavinhoward.com/gavin/vim-bc
 [18]: https://git.gavinhoward.com/gavin/bc_libs
 [19]: ./manuals/benchmarks.md
-[20]: https://git.gavinhoward.com/gavin/bc
-[21]: https://gavinhoward.com/2020/04/i-am-moving-away-from-github/
 [22]: https://www.deepl.com/translator
 [23]: https://cgit.freebsd.org/src/tree/contrib/bc
 [24]: https://bugs.freebsd.org/
