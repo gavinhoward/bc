@@ -39,7 +39,7 @@ usage() {
 	if [ $# -eq 1 ]; then
 		printf '%s\n\n' "$1"
 	fi
-	print 'usage: %s [-n] dir [run_extra_tests] [run_stack_tests] [gen_tests] [run_problematic_tests] [exec args...]\n' \
+	printf 'usage: %s [-n] dir [run_extra_tests] [run_stack_tests] [gen_tests] [run_problematic_tests] [exec args...]\n' \
 		"$script"
 	exit 1
 }
