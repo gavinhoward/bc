@@ -3663,5 +3663,108 @@
     "title": "Build failures under RHEL 10 & Fedora 42 with GCC",
     "updatedAt": "2025-06-08T22:18:49Z",
     "url": "https://github.com/gavinhoward/bc/issues/92"
+  },
+  {
+    "assignees": [],
+    "author": {
+      "id": "MDQ6VXNlcjI1NTg2",
+      "is_bot": false,
+      "login": "kseistrup",
+      "name": "Klaus Alexander Seiﬆrup"
+    },
+    "body": "I cannot compile bc v7.0.3 with gcc v15.1.1 on Linux x86_64:\n\n```sh\n$ ./configure.sh -p GNU -e -G -sbc.banner -sdc.tty_mode\n    ⋮\n$ make\n    ⋮\ngcc -DBC_ENABLED=1 -DDC_ENABLED=1 -I./include/ -DBUILD_TYPE=A  -DEXECPREFIX= -DMAINEXEC=bc   -DBC_NUM_KARATSUBA_LEN=32 -DBC_ENABLE_NLS=1 -DBC_ENABLE_EXTRA_MATH=1 -DBC_ENABLE_HISTORY=1 -DBC_ENABLE_LIBRARY=0 -DBC_ENABLE_MEMCHECK=0 -DBC_ENABLE_AFL=0 -DBC_ENABLE_OSSFUZZ=0 -DBC_DEFAULT_BANNER=1 -DBC_DEFAULT_SIGINT_RESET=1 -DBC_DEFAULT_TTY_MODE=1 -DBC_DEFAULT_PROMPT=1 -DBC_DEFAULT_EXPR_EXIT=1 -DBC_DEFAULT_DIGIT_CLAMP=1 -DDC_DEFAULT_SIGINT_RESET=0 -DDC_DEFAULT_TTY_MODE=1 -DDC_DEFAULT_PROMPT=1 -DDC_DEFAULT_EXPR_EXIT=1 -DDC_DEFAULT_DIGIT_CLAMP=0 -DNDEBUG  -DBC_ENABLE_EDITLINE=1 -DBC_ENABLE_READLINE=0 -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -O3 -DNDEBUG -march=x86-64 -mtune=native -O2 -pipe -fno-plt -fexceptions        -Wp,-D_FORTIFY_SOURCE=3 -Wformat -Werror=format-security         -fstack-clash-protection -fcf-protection         -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -flto=auto -O3 -o src/data.o -c ./src/data.c\nIn file included from /usr/lib/gcc/x86_64-pc-linux-gnu/15.1.1/include/stdint.h:11,\n                 from ./include/status.h:46,\n                 from ./include/args.h:39,\n                 from ./src/data.c:39:\n./src/data.c:920:29: error: ‘falseUL’ undeclared here (not in a function)\n  920 |         BC_PARSE_EXPR_ENTRY(false, false, true, true, true, true, true, true),\n      |                             ^~~~~\n./src/data.c:920:9: note: in expansion of macro ‘BC_PARSE_EXPR_ENTRY’\n  920 |         BC_PARSE_EXPR_ENTRY(false, false, true, true, true, true, true, true),\n      |         ^~~~~~~~~~~~~~~~~~~\n./src/data.c:920:43: error: ‘trueUL’ undeclared here (not in a function)\n  920 |         BC_PARSE_EXPR_ENTRY(false, false, true, true, true, true, true, true),\n      |                                           ^~~~\n./src/data.c:920:9: note: in expansion of macro ‘BC_PARSE_EXPR_ENTRY’\n  920 |         BC_PARSE_EXPR_ENTRY(false, false, true, true, true, true, true, true),\n      |         ^~~~~~~~~~~~~~~~~~~\nmake: *** [Makefile:668: src/data.o] Error 1\n```\n\nUsing clang as compiler, everything works as expected. It also built correctly with gcc v14 back then.\n\n----\n\n```sh\n$ uname -a\nLinux home 6.15.7-arch1-1 #1 SMP PREEMPT_DYNAMIC Thu, 17 Jul 2025 21:05:29 +0000 x86_64 GNU/Linux\n$ gcc --version | head -1\ngcc (GCC) 15.1.1 20250425\n$ clang --version | head -1\nclang version 20.1.8\n$ echo $CFLAGS\n-DNDEBUG -march=x86-64 -mtune=native -O2 -pipe -fno-plt -fexceptions -Wp,-D_FORTIFY_SOURCE=3 -Wformat -Werror=format-security -fstack-clash-protection -fcf-protection -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer\n$ echo $LDFLAGS\n-Wl,-O1 -Wl,--sort-common -Wl,--as-needed -Wl,-z,relro -Wl,-z,now -Wl,-z,pack-relative-relocs\n$ echo $LTOFLAGS\n-flto=auto\n```\n\n----\n\nAUR: [bc-gh](https://aur.archlinux.org/packages/bc-gh)\n",
+    "closed": true,
+    "closedAt": "2025-07-25T16:53:45Z",
+    "closedByPullRequestsReferences": [],
+    "comments": [
+      {
+        "id": "IC_kwDOCL0xJc651jEE",
+        "author": {
+          "login": "gavinhoward"
+        },
+        "authorAssociation": "OWNER",
+        "body": "I have [attempted to fix it][1] on current `master`, but unfortunately, I do not have gcc v15. Can you pull the latest `master` and test it?\n\nAlso, be aware that [I do not have time to test a new release][2]. I can put one out for you, but it will be untested. Would you like me to do that?\n\n[1]: https://github.com/gavinhoward/bc/commit/fba36e6f94\n[2]: https://github.com/gavinhoward/bc/commit/341c93881",
+        "createdAt": "2025-07-25T13:26:50Z",
+        "includesCreatedEdit": false,
+        "isMinimized": false,
+        "minimizedReason": "",
+        "reactionGroups": [
+          {
+            "content": "THUMBS_UP",
+            "users": {
+              "totalCount": 1
+            }
+          }
+        ],
+        "url": "https://github.com/gavinhoward/bc/issues/94#issuecomment-3117822212",
+        "viewerDidAuthor": true
+      },
+      {
+        "id": "IC_kwDOCL0xJc651ySX",
+        "author": {
+          "login": "kseistrup"
+        },
+        "authorAssociation": "NONE",
+        "body": "Thanks!\n\nThe fix compiles with gcc v15 without any problems, so that's great.\n\nI wasn't aware of your life situation until now. For me, personally, I wouldn't mind a new release so that I can update the AUR package with a version that compiles. People will have to make do with the test suite then.\n",
+        "createdAt": "2025-07-25T13:46:42Z",
+        "includesCreatedEdit": false,
+        "isMinimized": false,
+        "minimizedReason": "",
+        "reactionGroups": [],
+        "url": "https://github.com/gavinhoward/bc/issues/94#issuecomment-3117884567",
+        "viewerDidAuthor": false
+      },
+      {
+        "id": "IC_kwDOCL0xJc657xOx",
+        "author": {
+          "login": "gavinhoward"
+        },
+        "authorAssociation": "OWNER",
+        "body": "Okay. A release should be out in an hour or so.",
+        "createdAt": "2025-07-25T16:53:45Z",
+        "includesCreatedEdit": false,
+        "isMinimized": false,
+        "minimizedReason": "",
+        "reactionGroups": [
+          {
+            "content": "HOORAY",
+            "users": {
+              "totalCount": 1
+            }
+          }
+        ],
+        "url": "https://github.com/gavinhoward/bc/issues/94#issuecomment-3119453105",
+        "viewerDidAuthor": true
+      },
+      {
+        "id": "IC_kwDOCL0xJc659BAh",
+        "author": {
+          "login": "kseistrup"
+        },
+        "authorAssociation": "NONE",
+        "body": "Much appreciated. Thanks!\n",
+        "createdAt": "2025-07-25T17:50:54Z",
+        "includesCreatedEdit": false,
+        "isMinimized": false,
+        "minimizedReason": "",
+        "reactionGroups": [],
+        "url": "https://github.com/gavinhoward/bc/issues/94#issuecomment-3119779873",
+        "viewerDidAuthor": false
+      }
+    ],
+    "createdAt": "2025-07-25T08:43:18Z",
+    "id": "I_kwDOCL0xJc7CdU08",
+    "isPinned": false,
+    "labels": [],
+    "milestone": null,
+    "number": 94,
+    "projectCards": [],
+    "projectItems": [],
+    "reactionGroups": [],
+    "state": "CLOSED",
+    "stateReason": "COMPLETED",
+    "title": "Fails to compile with gcc v15 on Linux x86_64, clang ok",
+    "updatedAt": "2025-07-25T17:50:54Z",
+    "url": "https://github.com/gavinhoward/bc/issues/94"
   }
 ]
