@@ -134,6 +134,12 @@ fn lib_name(name: str) -> str
 	return "lib" +~ name +~ ext;
 }
 
+/**
+ * Gets the calculator name from a test name. All test names are in the form
+ * `tests/<calc>/<actual_test_name>`.
+ * @param test_name  The full name of the test.
+ * @return           The name of the calculator, either `bc` or `dc`.
+ */
 fn calc_name(test_name: str) -> str
 {
 	testdir: str = path.dirname(test_name);
@@ -707,32 +713,46 @@ fn lib(name: str, o_files: []str) -> void
 	}
 }
 
+/**
+ * Checks the command result for an error test.
+ * @param name  The test name.
+ * @param res   The command result.
+ */
 fn check_err_test(
 	name: str,
 	res: CmdResult,
 ) -> void
 {
+	// Did it crash?
 	if res.exitcode > 127
 	{
 		error("Test \"" +~ name +~ "\" crashed");
 	}
 
+	// Did it succeed? This is an error test; the calculator should have failed.
 	if res.exitcode == 0
 	{
 		error("Test \"" +~ name +~ "\" returned no error");
 	}
 
+	// Did it have a memory error?
 	if res.exitcode == 100
 	{
 		error("Test \"" +~ name +~ "\" had memory errors on non-fatal error\n");
 	}
 
+	// Did the test have a non-empty `stderr`?
 	if res.stderr.len <= 1
 	{
 		error("Test \"" +~ name +~ "\" produced no error message");
 	}
 }
 
+/**
+ * Checks that the exitcode of a regular test indicates success.
+ * @param name      The name of the test.
+ * @param exitcode  The exitcode of the test.
+ */
 fn check_test_retcode(
 	name: str,
 	exitcode: uint,
@@ -745,6 +765,13 @@ fn check_test_retcode(
 	}
 }
 
+/**
+ * Checks the result of a regular test.
+ * @param name      The name of the test.
+ * @param res       The command result of the test.
+ * @param exp_path  The path of the file that contains the expected `stdout`
+ *                  output of the test.
+ */
 fn check_test(
 	name: str,
 	res: CmdResult,
@@ -761,6 +788,16 @@ fn check_test(
 	}
 }
 
+/**
+ * Registers all standard tests for a calculator.
+ * @param exec         The name of the main executable target. This is to let
+ *                     all of the tests depend on it, not to run it.
+ * @param testdir      The full path to the test directory in the build
+ *                     directory.
+ * @param src_testdir  The full path to the test directory in the source
+ *                     directory.
+ * @param extra        Whether or not extra tests should be run.
+ */
 fn register_standard_tests(
 	exec: str,
 	testdir: str,
@@ -776,6 +813,7 @@ fn register_standard_tests(
 	extra_path := path.join(src_dir.path, "tests/extra_required.txt");
 	extra_required: []str = str(io.read_file(extra_path)).split("\n");
 
+	// Loop through all of the tests and register, if necessary.
 	for t: tests
 	{
 		if t == ""
@@ -857,6 +895,16 @@ fn register_standard_tests(
 	}
 }
 
+/**
+ * Registers all script tests for a calculator.
+ * @param exec         The name of the main executable target. This is to let
+ *                     all of the tests depend on it, not to run it.
+ * @param testdir      The full path to the test directory in the build
+ *                     directory.
+ * @param src_testdir  The full path to the test directory in the source
+ *                     directory.
+ * @param extra        Whether or not extra tests should be run.
+ */
 fn register_script_tests(
 	exec: str,
 	testdir: str,
@@ -953,6 +1001,13 @@ fn register_script_tests(
 	}
 }
 
+/**
+ * Registers a stdin test for a calculator.
+ * @param exec     The name of the main executable target. This is to let all of
+ *                 the tests depend on it, not to run it.
+ * @param testdir  The full path to the test directory in the build directory.
+ * @param extra    Whether or not extra tests should be run.
+ */
 fn register_stdin_test(
 	exec: str,
 	testdir: str,
@@ -981,6 +1036,13 @@ fn register_stdin_test(
 	}
 }
 
+/**
+ * Registers all stdin tests for a calculator.
+ * @param exec     The name of the main executable target. This is to let all of
+ *                 the tests depend on it, not to run it.
+ * @param testdir  The full path to the test directory in the build directory.
+ * @param extra    Whether or not extra tests should be run.
+ */
 fn register_stdin_tests(
 	exec: str,
 	testdir: str,
@@ -1002,6 +1064,13 @@ fn register_stdin_tests(
 	}
 }
 
+/**
+ * Registers all read tests for a calculator.
+ * @param exec     The name of the main executable target. This is to let all of
+ *                 the tests depend on it, not to run it.
+ * @param testdir  The full path to the test directory in the build directory.
+ * @param extra    Whether or not extra tests should be run.
+ */
 fn register_read_tests(
 	exec: str,
 	testdir: str,
@@ -1142,6 +1211,11 @@ fn register_read_tests(
 	}
 }
 
+/**
+ * Runs a serial series of tests on all lines in the given file.
+ * @param name  The name of the file whose lines should be tested through
+ *              `stdin`.
+ */
 fn run_error_lines_test(name: str) -> void
 {
 	lines: []str = str(io.read_file(name)).split("\n");
@@ -1160,6 +1234,13 @@ fn run_error_lines_test(name: str) -> void
 	}
 }
 
+/**
+ * Registers all error tests for a calculator.
+ * @param exec     The name of the main executable target. This is to let all of
+ *                 the tests depend on it, not to run it.
+ * @param testdir  The full path to the test directory in the build directory.
+ * @param extra    Whether or not extra tests should be run.
+ */
 fn register_error_tests(
 	exec: str,
 	testdir: str,
@@ -1268,6 +1349,11 @@ fn register_error_tests(
 	}
 }
 
+/**
+ * Checks the command result for a keyword redefinition test.
+ * @param name  The test name.
+ * @param res   The command result.
+ */
 fn check_kwredef_test(
 	name: str,
 	res: CmdResult,
@@ -1283,6 +1369,17 @@ OTHER_LINE_LEN_RESULTS_NAME: str = "line_length_test_results.txt";
 OTHER_LINE_LEN70_RESULTS_NAME: str = "line_length70_test_results.txt";
 OTHER_MATHLIB_SCALE_RESULTS_NAME: str = "mathlib_scale_results.txt";
 
+/**
+ * Registers all miscellaneous (other) tests for a calculator.
+ *
+ * This is a huge function because there are a lot of miscellaneous tests for
+ * each calculator, and each of them are different. This function, in fact, has
+ * all or most of the tests that the POSIX test suite cannot run.
+ * @param exec     The name of the main executable target. This is to let all of
+ *                 the tests depend on it, not to run it.
+ * @param testdir  The full path to the test directory in the build directory.
+ * @param extra    Whether or not extra tests should be run.
+ */
 fn register_other_tests(
 	exec: str,
 	testdir: str,
@@ -2028,6 +2125,12 @@ fn register_other_tests(
 	}
 }
 
+/**
+ * Registers all timeconst tests for `bc`.
+ * @param exec     The name of the main executable target. This is to let all of
+ *                 the tests depend on it, not to run it.
+ * @param testdir  The full path to the test directory in the build directory.
+ */
 fn register_timeconst_tests(
 	exec: str,
 	testdir: str,
@@ -2074,6 +2177,15 @@ fn register_timeconst_tests(
 	}
 }
 
+/**
+ * Registers all history tests for a calculator.
+ * @param exec         The name of the main executable target. This is to let
+ *                     all of the tests depend on it, not to run it.
+ * @param testdir      The full path to the test directory in the build
+ *                     directory.
+ * @param src_testdir  The full path to the test directory in the source
+ *                     directory.
+ */
 fn register_history_tests(
 	exec: str,
 	testdir: str,
