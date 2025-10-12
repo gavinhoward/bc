@@ -1,0 +1,98 @@
+/*
+ * *****************************************************************************
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ *
+ * Copyright (c) 2018-2025 Gavin D. Howard and contributors.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * * Redistributions of source code must retain the above copyright notice, this
+ *   list of conditions and the following disclaimer.
+ *
+ * * Redistributions in binary form must reproduce the above copyright notice,
+ *   this list of conditions and the following disclaimer in the documentation
+ *   and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ *
+ * *****************************************************************************
+ *
+ * The package file for the script for getting project items from GitHub. This
+ * script requires a `GITHUB_TOKEN` environment variable.
+ *
+ */
+
+PROG: str = path.realpath(sys.program);
+SCRIPTDIR: str = path.dirname(PROG);
+ROOTDIR: str = path.dirname(SCRIPTDIR);
+
+ISSUE_ITEMS := "assignees,author,body,closed,closedAt," +~
+               "closedByPullRequestsReferences,comments,createdAt,id," +~
+               "isPinned,labels,milestone,number,projectCards,projectItems," +~
+               "reactionGroups,state,stateReason,title,updatedAt,url";
+PR_ITEMS := "additions,assignees,author,autoMergeRequest,baseRefName," +~
+            "baseRefOid,body,changedFiles,closed,closedAt," +~
+            "closingIssuesReferences,comments,commits,createdAt,deletions," +~
+            "files,fullDatabaseId,headRefName,headRefOid,headRepository," +~
+            "headRepositoryOwner,id,isCrossRepository,isDraft,labels," +~
+            "latestReviews,maintainerCanModify,mergeCommit,mergeStateStatus," +~
+            "mergeable,mergedAt,mergedBy,milestone,number," +~
+            "potentialMergeCommit,projectCards,projectItems,reactionGroups," +~
+            "reviewDecision,reviewRequests,reviews,state,statusCheckRollup," +~
+            "title,updatedAt,url";
+
+/**
+ * Actually executes the GitHub query.
+ * @param n   The issue or PR number.
+ * @param pr  True if the script is adding a PR, false for an issue.
+ */
+fn exec(n: num, pr: bool) -> void
+{
+	cd ROOTDIR
+	{
+		file_suffix: str = if pr { "prs"; } else { "issues"; };
+		file: str = "project/github_" +~ file_suffix +~ ".json";
+		items: str = if pr { PR_ITEMS; } else { ISSUE_ITEMS; };
+		kind: str = if pr { "pr"; } else { "issue"; };
+		strn: str = str(n);
+
+		tmp: str = path.tmp("bc_project");
+		check_file: str = path.tmp("bc_project");
+
+		io.open(check_file, "w"): f
+		{
+			f.print("{ \"items\": ");
+
+			contents: str = io.read_file(file);
+			f.print(contents);
+			f.print("}");
+		}
+
+		res := $ jq ".items.[].number" $check_file | grep $strn -;
+
+		if res.exitcode == 0
+		{
+			sys.panic(if pr { "PR"; } else { "Issue"; } +~ " #" +~ strn +~
+			          " already exists");
+		}
+
+		$ head -n -2 $file > $tmp;
+		$ printf '  },\n' >> $tmp;
+		$ gh $kind list --json $items --state closed --search @("#" +~ strn) |
+		  jq . |
+		  tail -n "+2" >> $tmp;
+		$ cat $tmp > $file;
+	}
+}
