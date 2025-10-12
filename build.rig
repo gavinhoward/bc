@@ -38,6 +38,11 @@ if OS == "Windows" && bool(config["lto"])
 	error("Link-time optimization is not supported on Windows");
 }
 
+if bool(config["valgrind"]) && !bool(config["memcheck"])
+{
+	error("Valgrind requires memcheck");
+}
+
 if LIBRARY_ENABLED == "0"
 {
 	if OS != "Windows" && NLS_ENABLED != "0"
