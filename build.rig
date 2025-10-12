@@ -61,10 +61,10 @@ if LIBRARY_ENABLED == "0"
 			DEFOPT +~ "BC_ENABLE_OSSFUZZ=0",
 			DEFOPT +~ "_POSIX_C_SOURCE=200809L",
 			DEFOPT +~ "_XOPEN_SOURCE=700",
-			INCOPT,
+			SRC_INCOPT,
 		];
 
-		res := $ $CC %(flags) -c @(path.join(src_dir, "src/vm.c")) -E;
+		res := $ $CC %(flags) -c @(path.join(src_dir.path, "src/vm.c")) -E;
 
 		if res.exitcode != 0
 		{
@@ -88,7 +88,7 @@ if LIBRARY_ENABLED == "0"
 			io.eprint("Testing gencat...\n");
 
 			res2 := $ gencat ./en_US.cat
-			          @(path.join(src_dir, "locales/en_US.msg"));
+			          @(path.join(src_dir.path, "locales/en_US.msg"));
 
 			if res2.exitcode != 0
 			{
@@ -130,10 +130,10 @@ if LIBRARY_ENABLED == "0"
 			DEFOPT +~ "BC_ENABLE_OSSFUZZ=0",
 			DEFOPT +~ "_POSIX_C_SOURCE=200809L",
 			DEFOPT +~ "_XOPEN_SOURCE=700",
-			INCOPT,
+			SRC_INCOPT,
 		];
 
-		res := $ $CC %(flags) -c @(path.join(src_dir, "src/history.c")) -E;
+		res := $ $CC %(flags) -c @(path.join(src_dir.path, "src/history.c")) -E;
 
 		if res.exitcode != 0
 		{
@@ -230,8 +230,8 @@ if bool(config["strict"])
 	}
 };
 
-version_contents: str = io.read_file(path.join(src_dir, "VERSION.txt"));
-version_lines: []str = version_contents.split("\n");
+version_contents: bytes = io.read_file(path.join(src_dir.path, "VERSION.txt"));
+version_lines: []str = str(version_contents).split("\n");
 version: str = version_lines[0];
 
 version_flag: []str = @[ DEFOPT +~ "VERSION=" +~ version ];
@@ -380,21 +380,14 @@ if OS != "Windows"
 
 			if BC_ENABLED != "0"
 			{
-				$ $SAFE_INSTALL $EXEC_INSTALL_MODE $BC_BIN
-				  @(path.join(bindir, BC_BIN));
+				safe_install(path.join(bindir, BC_BIN), BC_BIN,
+				             EXEC_INSTALL_MODE, false);
 			}
 
 			if DC_ENABLED != "0"
 			{
-				if BC_ENABLED != "0"
-				{
-					$ ln -sf @("./" +~ BC_BIN) @(path.join(bindir, DC_BIN));
-				}
-				else
-				{
-					$ $SAFE_INSTALL $EXEC_INSTALL_MODE $BC_BIN
-					  @(path.join(bindir, BC_BIN));
-				}
+				safe_install(path.join(bindir, DC_BIN), DC_BIN,
+				             EXEC_INSTALL_MODE, BC_ENABLED != "0");
 			}
 
 			if NLS_ENABLED != "0"
@@ -407,13 +400,13 @@ if OS != "Windows"
 
 				if DESTDIR != ""
 				{
-					$ @(path.join(src_dir, "scripts/locale_install.sh"))
+					$ @(path.join(src_dir.path, "scripts/locale_install.sh"))
 					  %(locale_install_args) @(str(config["nlspath"]))
 					  $MAINEXEC $DESTDIR;
 				}
 				else
 				{
-					$ @(path.join(src_dir, "scripts/locale_install.sh"))
+					$ @(path.join(src_dir.path, "scripts/locale_install.sh"))
 					  %(locale_install_args) @(str(config["nlspath"]))
 					  $MAINEXEC;
 				}
@@ -422,15 +415,30 @@ if OS != "Windows"
 			if bool(config["install_manpages"])
 			{
 				man1dir: str = get_man1dir();
+				src_mandir: str = path.join(src_dir.path, "manuals");
+
+				bc_src_mandir: str = path.join(src_mandir, "bc");
+				dc_src_mandir: str = path.join(src_mandir, "dc");
+
+				bc_manpage: str = path.join(man1dir, BC_MANPAGE);
+				dc_manpage: str = path.join(man1dir, DC_MANPAGE);
 
 				if BC_ENABLED != "0"
 				{
-					$ rm -rf @(path.join(man1dir, BC_MANPAGE));
+					path.rmf(bc_manpage);
+
+					safe_install(bc_manpage,
+					             path.join(bc_src_mandir, BUILD_TYPE +~ ".1"),
+					             MANPAGE_INSTALL_MODE, false);
 				}
 
 				if DC_ENABLED != "0"
 				{
-					$ rm -rf @(path.join(man1dir, DC_MANPAGE));
+					path.rmf(dc_manpage);
+
+					safe_install(dc_manpage,
+					             path.join(dc_src_mandir, BUILD_TYPE +~ ".1"),
+					             MANPAGE_INSTALL_MODE, false);
 				}
 			}
 		}
@@ -453,12 +461,12 @@ if OS != "Windows"
 			{
 				if DESTDIR != ""
 				{
-					$ @(path.join(src_dir, "scripts/locale_uninstall.sh"))
+					$ @(path.join(src_dir.path, "scripts/locale_uninstall.sh"))
 					  @(str(config["nlspath"])) $MAINEXEC $DESTDIR;
 				}
 				else
 				{
-					$ @(path.join(src_dir, "scripts/locale_uninstall.sh"))
+					$ @(path.join(src_dir.path, "scripts/locale_uninstall.sh"))
 					  @(str(config["nlspath"])) $MAINEXEC;
 				}
 			}
@@ -466,48 +474,60 @@ if OS != "Windows"
 			if bool(config["install_manpages"])
 			{
 				man1dir: str = get_man1dir();
-				$ rm -rf @(path.join(man1dir, BC_MANPAGE))
-				  @(path.join(man1dir, DC_MANPAGE));
+
+				bc_manpage: str = path.join(man1dir, BC_MANPAGE);
+				dc_manpage: str = path.join(man1dir, DC_MANPAGE);
+
+				path.rmf(bc_manpage);
+				path.rmf(dc_manpage);
 			}
 		}
 	}
 	else
 	{
-		target @install: targets, BCL_HEADER_PATH
+		target @install: targets, BCL_HEADER
 		{
 			full_libdir: str = get_libdir();
 
-			$ $SAFE_INSTALL $EXEC_INSTALL_MODE @(file_dep)
-			  @(path.join(full_libdir, file_dep));
+			safe_install(path.join(full_libdir, file_dep), file_dep,
+			             MANPAGE_INSTALL_MODE, false);
 
 			full_pc_path: str = get_pc_path();
 			bcl_pc: str = file_deps[1];
 
-			$ $SAFE_INSTALL $MANPAGE_INSTALL_MODE $bcl_pc
-			  @(path.join(full_pc_path, bcl_pc));
+			safe_install(path.join(full_libdir, bcl_pc), bcl_pc,
+			             MANPAGE_INSTALL_MODE, false);
 
 			full_includedir: str = get_includedir();
 
-			$ $SAFE_INSTALL $MANPAGE_INSTALL_MODE @(file_deps[2])
-			  @(path.join(full_includedir, BCL_HEADER));
+			safe_install(path.join(full_libdir, file_deps[2]), file_deps[2],
+			             MANPAGE_INSTALL_MODE, false);
 
 			if bool(config["install_manpages"])
 			{
-				$ $SAFE_INSTALL $MANPAGE_INSTALL_MODE
-				  @(path.join(src_dir, path.join("manuals", BCL_MANPAGE)))
-				  @(path.join(get_man3dir(), BCL_MANPAGE));
+				dest: str = path.join(get_man3dir(), BCL_MANPAGE);
+				src: str = path.join(src_dir.path,
+				                     path.join("manuals", BCL_MANPAGE));
+
+				safe_install(dest, src, MANPAGE_INSTALL_MODE, false);
 			}
 		}
 
 		target @uninstall
 		{
-			$ rm -rf @(path.join(get_libdir(), LIBRARY))
-			  @(path.join(get_pc_path(), PC_FILE))
-			  @(path.join(get_includedir(), BCL_HEADER));
+			path1: str = path.join(get_libdir(), LIBRARY);
+			path2: str = path.join(get_pc_path(), PC_FILE);
+			path3: str = path.join(get_includedir(), BCL_HEADER);
+
+			path.rmf(path1);
+			path.rmf(path2);
+			path.rmf(path3);
 
 			if bool(config["install_manpages"])
 			{
-				$ rm -rf @(path.join(get_man3dir(), BCL_MANPAGE));
+				manpage: str = path.join(get_man3dir(), BCL_MANPAGE);
+
+				path.rmf(manpage);
 			}
 		}
 	}
@@ -527,7 +547,7 @@ if platform == host
 
 		test @bcl: libtest
 		{
-			$ @(str(tgt_name));
+			$ @(tgt);
 		}
 	}
 	else
@@ -544,9 +564,9 @@ if platform == host
 
 		target @clean_tests
 		{
-			for f: path.find_ext(build_dir, "txt")
+			for f: path.find_ext("txt")
 			{
-				path.rm(f);
+				path.rmf(f);
 			}
 		}
 	}
