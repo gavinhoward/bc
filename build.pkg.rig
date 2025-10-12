@@ -762,7 +762,7 @@ fn check_test(
 }
 
 fn register_standard_tests(
-	bin: str,
+	exec: str,
 	testdir: str,
 	src_testdir: str,
 	extra: bool,
@@ -813,7 +813,7 @@ fn register_standard_tests(
 			script_name: str = path.basename(test_name) +~ "." +~ calc;
 			scriptdir: str = path.join(testdir, "scripts");
 
-			target test_file: bin, path.join(scriptdir, script_name)
+			target test_file: exec, path.join(scriptdir, script_name)
 			{
 				calc: str = calc_name(tgt);
 
@@ -841,7 +841,7 @@ fn register_standard_tests(
 			}
 		}
 
-		test sym(test_name): bin, test_file, test_result_file
+		test sym(test_name): exec, test_file, test_result_file
 		{
 			name: str = path.basename(tgt);
 			halt: str = str(config["halt"]);
@@ -858,7 +858,7 @@ fn register_standard_tests(
 }
 
 fn register_script_tests(
-	bin: str,
+	exec: str,
 	testdir: str,
 	src_testdir: str,
 	extra: bool,
@@ -921,7 +921,7 @@ fn register_script_tests(
 			}
 		}
 
-		test sym(test_name): bin, test_name, test_result_file
+		test sym(test_name): exec, test_name, test_result_file
 		{
 			halt: str = str(config["halt"]);
 
@@ -954,7 +954,7 @@ fn register_script_tests(
 }
 
 fn register_stdin_test(
-	bin: str,
+	exec: str,
 	testdir: str,
 	name: str
 ) -> void
@@ -967,7 +967,7 @@ fn register_stdin_test(
 	src_test_file: str = path.join(src_dir.path, test_file);
 	src_test_result_file: str = path.join(src_dir.path, test_result_file);
 
-	test sym(test_name): bin, test_file, test_result_file
+	test sym(test_name): exec, test_file, test_result_file
 	{
 		name: str = path.basename(tgt);
 		calc: str = calc_name(tgt);
@@ -982,7 +982,7 @@ fn register_stdin_test(
 }
 
 fn register_stdin_tests(
-	bin: str,
+	exec: str,
 	testdir: str,
 ) -> void
 {
@@ -992,18 +992,18 @@ fn register_stdin_tests(
 	{
 		for t: @[ "stdin", "stdin1", "stdin2" ]
 		{
-			register_stdin_test(bin, testdir, t);
+			register_stdin_test(exec, testdir, t);
 		}
 	}
 	else
 	{
 		// dc only needs one.
-		register_stdin_test(bin, testdir, "stdin");
+		register_stdin_test(exec, testdir, "stdin");
 	}
 }
 
 fn register_read_tests(
-	bin: str,
+	exec: str,
 	testdir: str,
 ) -> void
 {
@@ -1041,7 +1041,7 @@ fn register_read_tests(
 		src_testdir: str = path.join(src_dir.path, testdir);
 
 		// First test is the regular read test.
-		test sym(test_name1): bin, test_name1 +~ ".txt",
+		test sym(test_name1): exec, test_name1 +~ ".txt",
 		                      path.join(testdir, "read_results.txt")
 		{
 			read_call: str = str(config["read_call"]);
@@ -1083,7 +1083,7 @@ fn register_read_tests(
 		}
 
 		// Next test is reading multiple times.
-		test sym(test_name2): bin, test_name2_file, test_name2_results
+		test sym(test_name2): exec, test_name2_file, test_name2_results
 		{
 			read_call: str = str(config["read_call"]);
 
@@ -1098,7 +1098,7 @@ fn register_read_tests(
 		test_name3_file: str = test_name3 +~ ".txt";
 
 		// Next test is the read errors test.
-		test sym(test_name3): bin, test_name3_file
+		test sym(test_name3): exec, test_name3_file
 		{
 			read_call: str = str(config["read_call"]);
 
@@ -1119,7 +1119,7 @@ fn register_read_tests(
 		}
 
 		// Next test is the empty read test.
-		test sym(path.join(testdir, "read_empty")): bin
+		test sym(path.join(testdir, "read_empty")): exec
 		{
 			read_call: str = str(config["read_call"]);
 
@@ -1130,7 +1130,7 @@ fn register_read_tests(
 		}
 
 		// Next test is the read EOF test.
-		test sym(path.join(testdir, "read_EOF")): bin
+		test sym(path.join(testdir, "read_EOF")): exec
 		{
 			read_call: str = str(config["read_call"]);
 
@@ -1161,14 +1161,14 @@ fn run_error_lines_test(name: str) -> void
 }
 
 fn register_error_tests(
-	bin: str,
+	exec: str,
 	testdir: str,
 ) -> void
 {
 	calc: str = path.basename(testdir);
 
 	// First test is command-line expression error.
-	test sym(path.join(testdir, "command-line_expr_error")): bin
+	test sym(path.join(testdir, "command-line_expr_error")): exec
 	{
 		halt: str = str(config["halt"]);
 
@@ -1180,7 +1180,7 @@ fn register_error_tests(
 
 	// First test is command-line file expression error.
 	test sym(path.join(testdir, "command-line_file_expr_error")):
-	         bin, path.join(testdir, "decimal.txt")
+	         exec, path.join(testdir, "decimal.txt")
 	{
 		halt: str = str(config["halt"]);
 
@@ -1192,7 +1192,7 @@ fn register_error_tests(
 
 	if calc == "bc"
 	{
-		test sym(path.join(testdir, "posix_warning")): bin
+		test sym(path.join(testdir, "posix_warning")): exec
 		{
 			res := $ %(config_list["args"]) %(config_list["options"]) -w
 			         << @("line");
@@ -1213,7 +1213,7 @@ fn register_error_tests(
 
 		posix_errors: str = path.join(testdir, "posix_errors.txt");
 
-		test sym(posix_errors): bin, posix_errors
+		test sym(posix_errors): exec, posix_errors
 		{
 			run_error_lines_test(tgt);
 		}
@@ -1221,7 +1221,7 @@ fn register_error_tests(
 
 	errors: str = path.join(testdir, "errors.txt");
 
-	test sym(errors): bin, errors
+	test sym(errors): exec, errors
 	{
 		run_error_lines_test(tgt);
 	}
@@ -1237,7 +1237,7 @@ fn register_error_tests(
 			continue;
 		}
 
-		test sym(f): bin, f
+		test sym(f): exec, f
 		{
 			errors_dir: str = path.dirname(tgt);
 			testdir: str = path.dirname(errors_dir);
@@ -1284,7 +1284,7 @@ OTHER_LINE_LEN70_RESULTS_NAME: str = "line_length70_test_results.txt";
 OTHER_MATHLIB_SCALE_RESULTS_NAME: str = "mathlib_scale_results.txt";
 
 fn register_other_tests(
-	bin: str,
+	exec: str,
 	testdir: str,
 	extra: bool,
 ) -> void
@@ -1294,7 +1294,7 @@ fn register_other_tests(
 	path.mkdirp(testdir);
 
 	// Halt test.
-	test sym(path.join(testdir, "halt")): bin
+	test sym(path.join(testdir, "halt")): exec
 	{
 		halt: str = str(config["halt"]) +~ "\n";
 
@@ -1306,7 +1306,7 @@ fn register_other_tests(
 	if calc == "bc"
 	{
 		// bc has two halt or quit commands, so test the second as well.
-		test sym(path.join(testdir, "quit")): bin
+		test sym(path.join(testdir, "quit")): exec
 		{
 			res := $ %(config_list["args"]) << @("quit\n");
 
@@ -1314,7 +1314,7 @@ fn register_other_tests(
 		}
 
 		// Also, make sure quit only quits after an expression.
-		test sym(path.join(testdir, "quit_after_expr")): bin
+		test sym(path.join(testdir, "quit_after_expr")): exec
 		{
 			res := $ %(config_list["args"]) -e "1+1" << @("quit\n");
 
@@ -1326,7 +1326,7 @@ fn register_other_tests(
 			}
 		}
 
-		test sym(path.join(testdir, "env_args1")): bin
+		test sym(path.join(testdir, "env_args1")): exec
 		{
 			env.set env.str("BC_ENV_ARGS", " '-l' '' -q")
 			{
@@ -1336,7 +1336,7 @@ fn register_other_tests(
 			}
 		}
 
-		test sym(path.join(testdir, "env_args2")): bin
+		test sym(path.join(testdir, "env_args2")): exec
 		{
 			env.set env.str("BC_ENV_ARGS", " '-l' '' -q")
 			{
@@ -1353,7 +1353,7 @@ fn register_other_tests(
 			f.print("5\n0\n");
 		}
 
-		test sym(path.join(testdir, "keyword_redefinition1")): bin
+		test sym(path.join(testdir, "keyword_redefinition1")): exec
 		{
 			res := $ %(config_list["args"]) --redefine=print -e
 			         "define print(x) { x }" -e "print(5)" << @("halt\n");
@@ -1361,7 +1361,7 @@ fn register_other_tests(
 			check_kwredef_test(tgt, res);
 		}
 
-		test sym(path.join(testdir, "keyword_redefinition2")): bin
+		test sym(path.join(testdir, "keyword_redefinition2")): exec
 		{
 			res := $ %(config_list["args"]) -r abs -r else -e
 			         "abs = 5; else = 0" -e "abs;else" << @("halt\n");
@@ -1371,7 +1371,7 @@ fn register_other_tests(
 
 		if extra
 		{
-			test sym(path.join(testdir, "keyword_redefinition_lib2")): bin
+			test sym(path.join(testdir, "keyword_redefinition_lib2")): exec
 			{
 				res := $ %(config_list["args"]) -lr abs -e "perm(5, 1)" -e 0
 				         << @("halt\n");
@@ -1380,7 +1380,7 @@ fn register_other_tests(
 			}
 
 			test sym(path.join(testdir, "leading_zero_script")):
-			         bin, path.join(testdir, "leadingzero.txt"),
+			         exec, path.join(testdir, "leadingzero.txt"),
 			         path.join(testdir, "leadingzero_results.txt")
 			{
 				res := $ %(config_list["args"]) -lz @(file_deps[1])
@@ -1390,7 +1390,7 @@ fn register_other_tests(
 			}
 		}
 
-		test sym(path.join(testdir, "keyword_redefinition3")): bin
+		test sym(path.join(testdir, "keyword_redefinition3")): exec
 		{
 			res := $ %(config_list["args"]) -r abs -r else -e
 			         "abs = 5; else = 0" -e "abs;else" << @("halt\n");
@@ -1398,7 +1398,7 @@ fn register_other_tests(
 			check_kwredef_test(tgt, res);
 		}
 
-		test sym(path.join(testdir, "keyword_redefinition_error")): bin
+		test sym(path.join(testdir, "keyword_redefinition_error")): exec
 		{
 			res := $ %(config_list["args"]) -r break -e "define break(x) { x }";
 
@@ -1406,7 +1406,7 @@ fn register_other_tests(
 		}
 
 		test sym(path.join(testdir,
-		                   "keyword_redefinition_without_redefine")): bin
+		                   "keyword_redefinition_without_redefine")): exec
 		{
 			res := $ %(config_list["args"]) -e "define read(x) { x }";
 
@@ -1414,7 +1414,7 @@ fn register_other_tests(
 		}
 
 		test sym(path.join(testdir, "multiline_comment_in_expr_file")):
-		     bin, path.join(testdir, "misc1.txt"),
+		     exec, path.join(testdir, "misc1.txt"),
 		     path.join(testdir, "misc1_results.txt")
 		{
 			// tests/bc/misc1.txt happens to have a multiline comment in it.
@@ -1427,7 +1427,7 @@ fn register_other_tests(
 		}
 
 		test sym(path.join(testdir, "multiline_comment_error_in_expr_file")):
-		     bin, path.join(testdir, "errors/05.txt")
+		     exec, path.join(testdir, "errors/05.txt")
 		{
 			src_test_file: str = file_deps[1];
 
@@ -1437,7 +1437,7 @@ fn register_other_tests(
 		}
 
 		test sym(path.join(testdir, "multiline_string_in_expr_file")):
-		     bin, path.join(testdir, "strings.txt"),
+		     exec, path.join(testdir, "strings.txt"),
 		     path.join(testdir, "strings_results.txt")
 		{
 			// tests/bc/strings.txt happens to have a multiline string in it.
@@ -1452,7 +1452,7 @@ fn register_other_tests(
 		tst := path.join(testdir,
 		                 "multiline_string_with_backslash_error_in_expr_file");
 
-		test sym(tst): bin, path.join(testdir, "errors/16.txt")
+		test sym(tst): exec, path.join(testdir, "errors/16.txt")
 		{
 			src_test_file: str = file_deps[1];
 
@@ -1463,7 +1463,7 @@ fn register_other_tests(
 
 		tst2 := path.join(testdir, "multiline_string_error_in_expr_file");
 
-		test sym(tst2): bin, path.join(testdir, "errors/04.txt")
+		test sym(tst2): exec, path.join(testdir, "errors/04.txt")
 		{
 			src_test_file: str = file_deps[1];
 
@@ -1472,7 +1472,7 @@ fn register_other_tests(
 			check_err_test(tgt, res);
 		}
 
-		test sym(path.join(testdir, "interactive_halt")): bin
+		test sym(path.join(testdir, "interactive_halt")): exec
 		{
 			res := $ %(config_list["args"]) -i << @("halt\n");
 
@@ -1481,7 +1481,7 @@ fn register_other_tests(
 	}
 	else
 	{
-		test sym(path.join(testdir, "env_args1")): bin
+		test sym(path.join(testdir, "env_args1")): exec
 		{
 			env.set env.str("DC_ENV_ARGS", "'-x'"), env.str("DC_EXPR_EXIT", "1")
 			{
@@ -1491,7 +1491,7 @@ fn register_other_tests(
 			}
 		}
 
-		test sym(path.join(testdir, "env_args2")): bin
+		test sym(path.join(testdir, "env_args2")): exec
 		{
 			env.set env.str("DC_ENV_ARGS", "'-x'"), env.str("DC_EXPR_EXIT", "1")
 			{
@@ -1512,7 +1512,7 @@ fn register_other_tests(
 		}
 
 		test sym(path.join(testdir, "extended_register_command1")):
-		     bin, temp_test_res1
+		     exec, temp_test_res1
 		{
 			res := $ %(config_list["args"]) -e gxpR << @("q\n");
 
@@ -1530,7 +1530,7 @@ fn register_other_tests(
 		}
 
 		test sym(path.join(testdir, "extended_register_command2")):
-		     bin, temp_test_res2
+		     exec, temp_test_res2
 		{
 			res := $ %(config_list["args"]) -x -e gxpR << @("q\n");
 
@@ -1561,7 +1561,7 @@ fn register_other_tests(
 		}
 	}
 
-	test sym(path.join(testdir, "line_length1")): bin, other_results1
+	test sym(path.join(testdir, "line_length1")): exec, other_results1
 	{
 		env.set env.str(str(config["var"]), "80")
 		{
@@ -1573,7 +1573,7 @@ fn register_other_tests(
 		}
 	}
 
-	test sym(path.join(testdir, "line_length2")): bin, other_results2
+	test sym(path.join(testdir, "line_length2")): exec, other_results2
 	{
 		env.set env.str(str(config["var"]), "2147483647")
 		{
@@ -1599,7 +1599,7 @@ fn register_other_tests(
 	}
 
 	test sym(path.join(testdir, "expr_and_file_args_test")):
-	     bin, path.join(testdir, "add.txt"), output_file
+	     exec, path.join(testdir, "add.txt"), output_file
 	{
 		input_file: str = file_deps[1];
 		input: str = str(io.read_file(input_file));
@@ -1626,7 +1626,7 @@ fn register_other_tests(
 	}
 
 	test sym(path.join(testdir, "files_test")):
-	     bin, path.join(testdir, "add.txt"), output_file2
+	     exec, path.join(testdir, "add.txt"), output_file2
 	{
 		env.set env.str(str(config["var"]), "2147483647")
 		{
@@ -1641,7 +1641,7 @@ fn register_other_tests(
 		}
 	}
 
-	test sym(path.join(testdir, "line_length3")): bin, other_results1
+	test sym(path.join(testdir, "line_length3")): exec, other_results1
 	{
 		env.set env.str(str(config["var"]), "62")
 		{
@@ -1664,7 +1664,7 @@ fn register_other_tests(
 		}
 	}
 
-	test sym(line_len_func): bin, line_len_func_res
+	test sym(line_len_func): exec, line_len_func_res
 	{
 		env.set env.str(str(config["var"]), "62")
 		{
@@ -1676,7 +1676,7 @@ fn register_other_tests(
 		}
 	}
 
-	test sym(path.join(testdir, "arg")): bin
+	test sym(path.join(testdir, "arg")): exec
 	{
 		halt: str = str(config["halt"]);
 
@@ -1707,7 +1707,7 @@ fn register_other_tests(
 		}
 	}
 
-	test sym(leading0_arg): bin, leading0_arg_res
+	test sym(leading0_arg): exec, leading0_arg_res
 	{
 		calc: str = calc_name(tgt);
 
@@ -1728,7 +1728,7 @@ fn register_other_tests(
 		check_test(tgt, res, expected_file);
 	}
 
-	test sym(path.join(testdir, "invalid_file_arg")): bin
+	test sym(path.join(testdir, "invalid_file_arg")): exec
 	{
 		res := $ %(config_list["args"]) -f
 		         "astoheusanotehynstahonsetihaotsnuhynstahoaoetusha.txt";
@@ -1736,7 +1736,7 @@ fn register_other_tests(
 		check_err_test(tgt, res);
 	}
 
-	test sym(path.join(testdir, "invalid_option_arg")): bin
+	test sym(path.join(testdir, "invalid_option_arg")): exec
 	{
 		other_tests: []str = config_list["other_tests"];
 
@@ -1746,7 +1746,7 @@ fn register_other_tests(
 		check_err_test(tgt, res);
 	}
 
-	test sym(path.join(testdir, "invalid_long_option_arg")): bin
+	test sym(path.join(testdir, "invalid_long_option_arg")): exec
 	{
 		other_tests: []str = config_list["other_tests"];
 
@@ -1756,49 +1756,49 @@ fn register_other_tests(
 		check_err_test(tgt, res);
 	}
 
-	test sym(path.join(testdir, "unrecognized_option_arg")): bin
+	test sym(path.join(testdir, "unrecognized_option_arg")): exec
 	{
 		res := $ %(config_list["args"]) -u -e @(str(config["halt"]));
 
 		check_err_test(tgt, res);
 	}
 
-	test sym(path.join(testdir, "unrecognized_long_option_arg")): bin
+	test sym(path.join(testdir, "unrecognized_long_option_arg")): exec
 	{
 		res := $ %(config_list["args"]) --uniform -e @(str(config["halt"]));
 
 		check_err_test(tgt, res);
 	}
 
-	test sym(path.join(testdir, "no_required_arg_for_option")): bin
+	test sym(path.join(testdir, "no_required_arg_for_option")): exec
 	{
 		res := $ %(config_list["args"]) -f;
 
 		check_err_test(tgt, res);
 	}
 
-	test sym(path.join(testdir, "no_required_arg_for_long_option")): bin
+	test sym(path.join(testdir, "no_required_arg_for_long_option")): exec
 	{
 		res := $ %(config_list["args"]) --file;
 
 		check_err_test(tgt, res);
 	}
 
-	test sym(path.join(testdir, "given_arg_for_long_option_with_no_arg")): bin
+	test sym(path.join(testdir, "given_arg_for_long_option_with_no_arg")): exec
 	{
 		res := $ %(config_list["args"]) --version=5;
 
 		check_err_test(tgt, res);
 	}
 
-	test sym(path.join(testdir, "colon_option")): bin
+	test sym(path.join(testdir, "colon_option")): exec
 	{
 		res := $ %(config_list["args"]) -:;
 
 		check_err_test(tgt, res);
 	}
 
-	test sym(path.join(testdir, "colon_long_option")): bin
+	test sym(path.join(testdir, "colon_long_option")): exec
 	{
 		res := $ %(config_list["args"]) --:;
 
@@ -1828,7 +1828,7 @@ fn register_other_tests(
 		}
 	}
 
-	test sym(builtin_var_arg): bin, builtin_var_arg_res
+	test sym(builtin_var_arg): exec, builtin_var_arg_res
 	{
 		calc: str = calc_name(tgt);
 
@@ -1899,7 +1899,7 @@ fn register_other_tests(
 		}
 
 		test sym(path.join(testdir, "builtin_var_arg_with_lib")):
-		     bin, mathlib_scale_res
+		     exec, mathlib_scale_res
 		{
 			results_file: str = file_deps[1];
 
@@ -1909,7 +1909,7 @@ fn register_other_tests(
 		}
 
 		test sym(path.join(testdir, "builtin_variable_long_arg_with_lib")):
-		     bin, mathlib_scale_res
+		     exec, mathlib_scale_res
 		{
 			results_file: str = file_deps[1];
 
@@ -1920,7 +1920,7 @@ fn register_other_tests(
 		}
 
 		test sym(path.join(testdir, "builtin_var_arg_with_lib_env_arg")):
-		     bin, mathlib_scale_res
+		     exec, mathlib_scale_res
 		{
 			env.set env.str("BC_ENV_ARGS", "-l")
 			{
@@ -1933,7 +1933,7 @@ fn register_other_tests(
 		}
 
 		test sym(path.join(testdir, "builtin_var_long_arg_with_lib_env_arg")):
-		     bin, mathlib_scale_res
+		     exec, mathlib_scale_res
 		{
 			env.set env.str("BC_ENV_ARGS", "-l")
 			{
@@ -1946,7 +1946,7 @@ fn register_other_tests(
 		}
 
 		test sym(path.join(testdir, "builtin_var_env_arg_with_lib_arg")):
-		     bin, mathlib_scale_res
+		     exec, mathlib_scale_res
 		{
 			env.set env.str("BC_ENV_ARGS", "-S100")
 			{
@@ -1959,7 +1959,7 @@ fn register_other_tests(
 		}
 
 		test sym(path.join(testdir, "builtin_var_long_env_arg_with_lib_arg")):
-		     bin, mathlib_scale_res
+		     exec, mathlib_scale_res
 		{
 			env.set env.str("BC_ENV_ARGS", "--scale=100")
 			{
@@ -1971,7 +1971,7 @@ fn register_other_tests(
 			}
 		}
 
-		test sym(path.join(testdir, "limits")): bin
+		test sym(path.join(testdir, "limits")): exec
 		{
 			res := $ %(config_list["args"]) << @("limits\n");
 
@@ -1984,7 +1984,7 @@ fn register_other_tests(
 		}
 	}
 
-	test sym(path.join(testdir, "bad_arg_for_builtin_var_option")): bin
+	test sym(path.join(testdir, "bad_arg_for_builtin_var_option")): exec
 	{
 		calc: str = calc_name(tgt);
 
@@ -2004,7 +2004,7 @@ fn register_other_tests(
 		}
 	}
 
-	test sym(path.join(testdir, "directory_as_file")): bin
+	test sym(path.join(testdir, "directory_as_file")): exec
 	{
 		testdir: str = path.dirname(tgt);
 
@@ -2013,14 +2013,14 @@ fn register_other_tests(
 		check_err_test(tgt, res);
 	}
 
-	test sym(path.join(testdir, "binary_file")): bin
+	test sym(path.join(testdir, "binary_file")): exec
 	{
 		res := $ %(config_list["args"]) @(file_dep);
 
 		check_err_test(tgt, res);
 	}
 
-	test sym(path.join(testdir, "binary_stdin")): bin
+	test sym(path.join(testdir, "binary_stdin")): exec
 	{
 		res := $ %(config_list["args"]) < @(file_dep);
 
@@ -2029,7 +2029,7 @@ fn register_other_tests(
 }
 
 fn register_timeconst_tests(
-	bin: str,
+	exec: str,
 	testdir: str,
 ) -> void
 {
@@ -2049,7 +2049,7 @@ fn register_timeconst_tests(
 
 	for i: range(1001)
 	{
-		test sym(path.join(timeconst, str(i))): bin, timeconst
+		test sym(path.join(timeconst, str(i))): exec, timeconst
 		{
 			idx: str = path.basename(tgt) +~ "\n";
 			file: str = file_deps[1];
@@ -2075,7 +2075,7 @@ fn register_timeconst_tests(
 }
 
 fn register_history_tests(
-	bin: str,
+	exec: str,
 	testdir: str,
 	src_testdir: str,
 ) -> void
@@ -2098,7 +2098,7 @@ fn register_history_tests(
 	for i: range(len)
 	{
 		test sym(calc +~ "/history/" +~ str(i)):
-		     bin, path.join(scriptdir, "history.py")
+		     exec, path.join(scriptdir, "history.py")
 		{
 			name: str = tgt;
 			parts: []str = name.split("/");
@@ -2118,7 +2118,7 @@ fn register_history_tests(
  */
 fn exe_tests(name: str) -> void
 {
-	bin: str = exe_name(name);
+	exec: str = exe_name(name);
 
 	testdir: str = path.join("tests", name);
 	src_testdir: str = path.join(src_dir.path, testdir);
@@ -2161,11 +2161,11 @@ fn exe_tests(name: str) -> void
 	args: []str =
 	if bool(config["valgrind"])
 	{
-		VALGRIND_ARGS +~ @[ "./" +~ bin ];
+		VALGRIND_ARGS +~ @[ "./" +~ exec ];
 	}
 	else
 	{
-		@[ "./" +~ bin ];
+		@[ "./" +~ exec ];
 	};
 
 	test_config: Gaml = @(gaml){
@@ -2184,22 +2184,22 @@ fn exe_tests(name: str) -> void
 	{
 		extra: bool = bool(config["extra_math"]);
 
-		register_standard_tests(bin, testdir, src_testdir, extra);
-		register_script_tests(bin, testdir, src_testdir, extra);
-		register_stdin_tests(bin, testdir);
-		register_read_tests(bin, testdir);
-		register_error_tests(bin, testdir);
-		register_other_tests(bin, testdir, extra);
+		register_standard_tests(exec, testdir, src_testdir, extra);
+		register_script_tests(exec, testdir, src_testdir, extra);
+		register_stdin_tests(exec, testdir);
+		register_read_tests(exec, testdir);
+		register_error_tests(exec, testdir);
+		register_other_tests(exec, testdir, extra);
 
 		if name == "bc" && GEN_TESTS &&
 		   path.isfile(path.join(src_testdir, "scripts/timeconst.bc"))
 		{
-			register_timeconst_tests(bin, testdir);
+			register_timeconst_tests(exec, testdir);
 		}
 
 		if host.os != "Windows" && sym(config["history"]) == @builtin
 		{
-			register_history_tests(bin, testdir, src_testdir);
+			register_history_tests(exec, testdir, src_testdir);
 		}
 	}
 }
