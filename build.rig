@@ -192,7 +192,9 @@ if OS != "Windows" && !bool(config["debug"]) && !macos && bool(config["strip"])
 lto_flag: []str =
 if bool(config["lto"])
 {
-	@[ "-flto" ];
+	// The new GCC needs this to not print a stupid warning about serial
+	// compilation of jobs. Yeesh.
+	if CC contains "gcc" { @[ "-flto=auto" ]; } else { @[ "-flto" ]; }
 };
 
 strict_flags: []str =
