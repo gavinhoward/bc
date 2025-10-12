@@ -44,6 +44,7 @@ Makefile
 bcl.pc
 
 build/*
+release/*
 tests/fuzzing/bc_outputs1/*
 tests/fuzzing/bc_outputs2/*
 tests/fuzzing/bc_outputs3/*
