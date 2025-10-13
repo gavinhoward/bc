@@ -1,6 +1,6 @@
 # Development
 
-Updated: 08 Mar 2025
+Updated: 13 Oct 2025
 
 This document is meant for the day when I (Gavin D. Howard) get [hit by a
 bus][1]. In other words, it's meant to make the [bus factor][1] a non-issue.
@@ -3089,9 +3089,9 @@ POSIX-compatible locales are terrible.
 
 How are they terrible?
 
-First, `gencat` does not work for generating cross-compilation. In other words,
-it does not generate machine-portable files. There's nothing I can do about
-this except for warn users.
+First, `gencat` does not work for generating files for cross-compilation. In
+other words, it does not generate machine-portable files. There's nothing I can
+do about this except for warn users.
 
 Second, the format of `.msg` files is...interesting. Thank goodness it is text
 because otherwise, it would be impossible to get them right.
