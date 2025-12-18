@@ -369,7 +369,7 @@ push build_config: config_stack
 		{
 			target PC_FILE: PC_FILE +~ ".in"
 			{
-				configure_file(file_dep, tgt, "%%");
+				generate_file(file_dep, tgt, "%%");
 			}
 		}
 
