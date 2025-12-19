@@ -47,55 +47,41 @@ if LIBRARY_ENABLED == "0"
 {
 	if OS != "Windows" && NLS_ENABLED != "0"
 	{
-		io.eprint("Testing NLS...\n");
-
-		clang_flags: []str =
-		if CC contains "clang"
+		// This is more to test Rig when `bc` is used in the Rig test suite. But
+		// it does test all of the keywords that wouldn't otherwise be used.
+		if !can_configure && (!configure_exists["nls"] ||
+		                      !bool(configure_get["nls"]))
 		{
-			@[ "-Wno_unreachable-code" ];
-		};
-
-		flags: []str = clang_flags +~ @[
-			DEFOPT +~ "BC_ENABLE_NLS=1",
-			DEFOPT +~ "BC_ENABLED=" +~ BC_ENABLED,
-			DEFOPT +~ "DC_ENABLED=" +~ DC_ENABLED,
-			DEFOPT +~ "BC_ENABLE_HISTORY=0",
-			DEFOPT +~ "BC_ENABLE_LIBRARY=0",
-			DEFOPT +~ "BC_ENABLE_AFL=0",
-			DEFOPT +~ "BC_ENABLE_EXTRA_MATH=" +~ EXTRA_MATH_ENABLED,
-			DEFOPT +~ "BC_ENABLE_OSSFUZZ=0",
-			DEFOPT +~ "_POSIX_C_SOURCE=200809L",
-			DEFOPT +~ "_XOPEN_SOURCE=700",
-			SRC_INCOPT,
-		];
-
-		res := $ $CC %(flags) -c @(path.join(src_dir.path, "src/vm.c")) -E;
-
-		if res.exitcode != 0
-		{
-			if FORCE
-			{
-				io.eprint("Forcing NLS...\n");
-			}
-			else
-			{
-				error("NLS does not work\n");
-			}
+			error("Configuring did not set NLS");
 		}
-		else
+
+		configure
 		{
-			if path.isfile("vm.o")
+			io.eprint("Testing NLS...\n");
+
+			clang_flags: []str =
+			if CC contains "clang"
 			{
-				path.rm("vm.o");
-			}
+				@[ "-Wno_unreachable-code" ];
+			};
 
-			io.eprint("NLS works.\n\n");
-			io.eprint("Testing gencat...\n");
+			flags: []str = clang_flags +~ @[
+				DEFOPT +~ "BC_ENABLE_NLS=1",
+				DEFOPT +~ "BC_ENABLED=" +~ BC_ENABLED,
+				DEFOPT +~ "DC_ENABLED=" +~ DC_ENABLED,
+				DEFOPT +~ "BC_ENABLE_HISTORY=0",
+				DEFOPT +~ "BC_ENABLE_LIBRARY=0",
+				DEFOPT +~ "BC_ENABLE_AFL=0",
+				DEFOPT +~ "BC_ENABLE_EXTRA_MATH=" +~ EXTRA_MATH_ENABLED,
+				DEFOPT +~ "BC_ENABLE_OSSFUZZ=0",
+				DEFOPT +~ "_POSIX_C_SOURCE=200809L",
+				DEFOPT +~ "_XOPEN_SOURCE=700",
+				SRC_INCOPT,
+			];
 
-			res2 := $ gencat ./en_US.cat
-			          @(path.join(src_dir.path, "locales/en_US.msg"));
+			res := $ $CC %(flags) -c @(path.join(src_dir.path, "src/vm.c")) -E;
 
-			if res2.exitcode != 0
+			if res.exitcode != 0
 			{
 				if FORCE
 				{
@@ -103,62 +89,113 @@ if LIBRARY_ENABLED == "0"
 				}
 				else
 				{
-					error("gencat does not work\n");
+					error("NLS does not work\n");
 				}
 			}
 			else
 			{
-				io.eprint("gencat works.\n\n");
-
-				if platform != host
+				if path.isfile("vm.o")
 				{
-					error("Cross compiles will not work!\n\n");
+					path.rm("vm.o");
 				}
+
+				io.eprint("NLS works.\n\n");
+				io.eprint("Testing gencat...\n");
+
+				res2 := $ gencat ./en_US.cat
+				          @(path.join(src_dir.path, "locales/en_US.msg"));
+
+				if res2.exitcode != 0
+				{
+					if FORCE
+					{
+						io.eprint("Forcing NLS...\n");
+					}
+					else
+					{
+						error("gencat does not work\n");
+					}
+				}
+				else
+				{
+					io.eprint("gencat works.\n\n");
+
+					if platform != host
+					{
+						error("Cross compiles will not work!\n\n");
+					}
+				}
+			}
+
+			configure_set
+			{
+				nls: true
 			}
 		}
 	}
 
 	if OS != "Windows" && sym(config["history"]) != @none
 	{
-		io.eprint("Testing history...\n");
+		hist_sym: sym = sym(config["history"]);
 
-		flags: []str = @[
-			DEFOPT +~ "BC_ENABLE_HISTORY=1",
-			DEFOPT +~ "BC_ENABLED=" +~ BC_ENABLED,
-			DEFOPT +~ "DC_ENABLED=" +~ DC_ENABLED,
-			DEFOPT +~ "BC_ENABLE_NLS=" +~ NLS_ENABLED,
-			DEFOPT +~ "BC_ENABLE_LIBRARY=0",
-			DEFOPT +~ "BC_ENABLE_AFL=0",
-			DEFOPT +~ "BC_ENABLE_EDITLINE=" +~ EDITLINE_ENABLED,
-			DEFOPT +~ "BC_ENABLE_READLINE=" +~ READLINE_ENABLED,
-			DEFOPT +~ "BC_ENABLE_EXTRA_MATH=" +~ EXTRA_MATH_ENABLED,
-			DEFOPT +~ "BC_ENABLE_OSSFUZZ=0",
-			DEFOPT +~ "_POSIX_C_SOURCE=200809L",
-			DEFOPT +~ "_XOPEN_SOURCE=700",
-			SRC_INCOPT,
-		];
-
-		res := $ $CC %(flags) -c @(path.join(src_dir.path, "src/history.c")) -E;
-
-		if res.exitcode != 0
+		// This is more to test Rig when `bc` is used in the Rig test suite. But
+		// it does test all of the keywords that wouldn't otherwise be used.
+		if !can_configure && (!configure_exists["history"] ||
+		                      sym(configure_get["history"]) != hist_sym)
 		{
-			if FORCE
+			error("Configuring did not set history");
+		}
+
+		configure
+		{
+			io.eprint("Testing history...\n");
+
+			flags: []str = @[
+				DEFOPT +~ "BC_ENABLE_HISTORY=1",
+				DEFOPT +~ "BC_ENABLED=" +~ BC_ENABLED,
+				DEFOPT +~ "DC_ENABLED=" +~ DC_ENABLED,
+				DEFOPT +~ "BC_ENABLE_NLS=" +~ NLS_ENABLED,
+				DEFOPT +~ "BC_ENABLE_LIBRARY=0",
+				DEFOPT +~ "BC_ENABLE_AFL=0",
+				DEFOPT +~ "BC_ENABLE_EDITLINE=" +~ EDITLINE_ENABLED,
+				DEFOPT +~ "BC_ENABLE_READLINE=" +~ READLINE_ENABLED,
+				DEFOPT +~ "BC_ENABLE_EXTRA_MATH=" +~ EXTRA_MATH_ENABLED,
+				DEFOPT +~ "BC_ENABLE_OSSFUZZ=0",
+				DEFOPT +~ "_POSIX_C_SOURCE=200809L",
+				DEFOPT +~ "_XOPEN_SOURCE=700",
+				SRC_INCOPT,
+			];
+
+			res := $ $CC %(flags) -c @(path.join(src_dir.path, "src/history.c"))
+					  -E;
+
+			if res.exitcode != 0
 			{
-				io.eprint("Forcing history...\n");
+				if FORCE
+				{
+					io.eprint("Forcing history...\n");
+				}
+				else
+				{
+					error("History does not work\n");
+				}
 			}
 			else
 			{
-				error("History does not work\n");
-			}
-		}
-		else
-		{
-			if path.isfile("history.o")
-			{
-				path.rm("history.o");
+				if path.isfile("history.o")
+				{
+					path.rm("history.o");
+				}
+
+				io.eprint("History works.\n\n");
 			}
 
-			io.eprint("History works.\n\n");
+			hist_sym: sym = sym(config["history"]);
+
+			configure_set
+			{
+				history: $hist_sym
+			}
 		}
 	}
 }
