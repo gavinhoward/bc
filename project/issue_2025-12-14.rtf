@@ -1,0 +1,328 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2759
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 ArialMT;\f1\fswiss\fcharset0 Arial-BoldMT;\f2\fmodern\fcharset0 CourierNewPSMT;
+\f3\fswiss\fcharset0 Arial-ItalicMT;}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue0;}
+{\*\expandedcolortbl;;\csgray\c0\c0;}
+\margl1440\margr1440\vieww16360\viewh14040\viewkind0
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\partightenfactor0
+
+\f0\fs24 \cf0 \cb2 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\qc\partightenfactor0
+
+\f1\b\fs36 \cf0 \cb2 Bug 121225-B: Information Loss \
+when Typing Hexadecimal Fractions into the \
+bc Calculator v. 4.0.2 
+\f0\b0 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\partightenfactor0
+
+\fs24 \cf0 \cb2 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\partightenfactor0
+\cf0 \cb2 \ul \ulc0 About the Author\cb2 \ulnone : I\'92ve been a software developer for 40+ years. I\'92ve used the 
+\f2\fs28 \cb2 bc
+\f0\fs24 \cb2 (1) calculator occasionally since 1981. 
+\f1\b \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\partightenfactor0
+
+\f0\b0 \cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\partightenfactor0
+
+\f1\b \cf0 I regret to report a logic error in hexadecimal conversion in the bc(1) calculator. \
+The bug is at least 27 years old:
+\f0\b0  \
+When the user types real numbers (
+\f3\i \cb2 i.e.,
+\f0\i0 \cb2  non-integers) into the 
+\f2\fs28 \cb2 bc
+\f0\fs24 \cb2  calculator in hexadecimal (and in all bases higher than 10), 
+\f2\fs28 \cb2 bc
+\f0\fs24 \cb2 \'92s parser loses information. \
+\
+Normally, if we run 
+\f2\fs28 \cb2 bc
+\f0\fs24 \cb2  in base 10 and set scale to something large, and type a few real numbers, 
+\f2\fs28 \cb2 bc
+\f0\fs24 \cb2  echoes the numbers back at us, with the same number of decimal places, just as we typed them: \
+\
+	%  bc \
+	>>> scale=20\
+	>>> \
+	>>> 1.414213562373095 # sqrt(2) \
+	1.414213562373095\
+	>>> \
+	>>> 3.141592653589793 # \uc0\u960  \
+	3.141592653589793\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\partightenfactor0
+
+\f2\fs28 \cf0 \cb2 bc
+\f0\fs24 \cb2  echoes what we type, with the precision we type. \
+This also works in lower bases, such as base 2: \
+\
+	>>> ibase=obase=2\
+	>>> 1\
+	1\
+	>>> 10\
+	10\
+	>>> 101\
+	101\
+	>>> 101101.101101\
+	101101.10110100000000000000\
+\
+However if we type non-whole numbers in hexadecimal, we get a surprise loss of significant digits: \
+Apparently 
+\f2\fs28 \cb2 bc
+\f0\fs24 \cb2  cannot handle non-integers in base 16: \
+\
+	>>> ibase=obase=G		# Set base to hex. \
+	>>> ibase - 8			# Trick for verifying base using single-digit numbers. \
+	8\
+	>>> obase - 8\
+	8\
+	>>> \
+	>>> F00				# First I try integers \'97 \
+	F00					# Hex integers echo as typed. \
+	>>> F0\
+	F0\
+	>>> .F				# Note the radix point (period). This is the fraction 15/16 = 0.9375 . \
+	.E					# WHAT?? This is way off. \'85 In fact ALL of these are wrong: \
+	>>> .FF\
+	.FD\
+	>>> .FFF\
+	.FFB\
+	>>> .FFFF\
+	.FFF9\
+	>>> .FFFFF\
+	.FFFF5\
+	>>> .FFFFFF\
+	.FFFFE\
+\
+While hex input fails, it\'92s easy to prove that 
+\f2\fs28 \cb2 bc
+\f0\fs24 \cb2  CAN work with and output real numbers in hexadecimal, \cb2 \ul if\cb2 \ulnone  we take care \cb2 \ul not\cb2 \ulnone  to enter them as base 16 real numbers: \
+\
+	>>> ibase=A			# Switch to decimal. \
+	>>> ibase - 8\
+	2					# Base 10 verified. \
+	>>> scale=32\
+	>>> 1/10\
+	.199999999999999999999999999		# hex \
+	>>> . * 10\
+	1.000000000000000000000000000		# hex # Correct. \
+\
+	>>> ibase=obase=G; scale=A+A\
+	>>> sqrt(2)\
+	1.6A09E667F3BCC908A\
+	>>> . * .\
+	1.FFFFFFFFFFFFFFFFD				# close enough. \
+\
+So hex arithmetic on real numbers is not some unintended feature of 
+\f2\fs28 \cb2 bc
+\f0\fs24 \cb2 . \
+
+\f2\fs28 \cb2 bc
+\f0\fs24 \cb2  can output the numbers correctly \'97 it just can\'92t handle them accurately as input: \
+\
+	>>> ibase=obase=G; scale=G+G\
+	>>> 1/7							# Let\'92s make a repeating fraction. \
+	.249249249249249249249249248\
+	>>> .249249249249249249249			# Let\'92s type some of that back in. \
+	.249249249249249245				# Hmm, that\'92s shorter than what I typed. Some data loss is going on. \
+	>>> scale=200						# Did I not make scale big enough? Let\'92s make scale so big that I don\'92t have to worry. \
+	>>> .249249249249249249249			# I type it again. \
+	.249249249249249245				# Same result! Digits missing off the end! \
+\
+However as seen farther above, if I type a real number in decimal or base 2, 
+\f2\fs28 \cb2 bc
+\f0\fs24 \cb2  faithfully echoes all my digits, without loss. \
+\
+The bug has an interesting mathematical property that reveals what\'92s going on: \
+Notice that if we type "." (a period) followed by a number of Effs, 
+\f2\fs28 \cb2 bc
+\f0\fs24 \cb2  replies with only 83% of that number of Effs: \
+In the next example, I type 12 lines of Effs, but 
+\f2\fs28 \cb2 bc
+\f0\fs24 \cb2  gives me only 10 lines back: \
+\
+	>>> scale=4096	# some huge number so that scale is not an issue. \
+	>>> # I will now type 12 lines of 68 Fs per line, for a total of 816 Fs after the decimal point: \
+	>>> .FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF\\                                                                                                        \
+	>>> FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF\\                                                                                                         \
+	>>> FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF\\                                                                                                         \
+	>>> FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF\\                                                                                                         \
+	>>> FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF\\                                                                                                         \
+	>>> FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF\\                                                                                                         \
+	>>> FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF\\                                                                                                         \
+	>>> FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF\\                                                                                                         \
+	>>> FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF\\                                                                                                         \
+	>>> FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF\\                                                                                                         \
+	>>> FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF\\                                                                                                         \
+	>>> FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF\\                                                                                                         \
+	>>>                                                                                                                                                                               \
+	.FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF\\                                                                                                             \
+	FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF\\                                                                                                             \
+	FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF\\                                                                                                             \
+	FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF\\                                                                                                             \
+	FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF\\                                                                                                             \
+	FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF\\                                                                                                             \
+	FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF\\                                                                                                             \
+	FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF\\                                                                                                             \
+	FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF\\                                                                                                             \
+	FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFD                                                                                                               \
+\
+and only ten lines print out. \
+\
+Is this simply an output issue? No, and we can prove that by shifting the number to the left. \
+First let\'92s store it in a variable named \'93ffff\'94: \
+So that the reader can experiment with it, I\'92ll omit the extra prompts and indentation so that you can paste this into your own 
+\f2\fs28 \cb2 bc
+\f0\fs24 \cb2 : \
+\
+>>> ffff = 0.FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF\\\
+FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF\\\
+FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF\\\
+FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF\\\
+FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF\\\
+FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF\\\
+FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF\\\
+FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF\\\
+FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF\\\
+FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF\\\
+FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF\\\
+FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF\
+\
+	>>> ffff * 16^680 # Now we\'92ll shift it to the left by 680 hex digits. \
+	FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF\\\
+	FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF\\\
+	FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF\\\
+	FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF\\\
+	FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF\\\
+	FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF\\\
+	FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF\\\
+	FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF\\\
+	FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF\\\
+	FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFD86\\\
+	.BB24FE5BD7EB0D839DAEE61C264D1F0218CC6DC5B1483C1EB3211F328F2AEBA3443         # <- Note the decimal point, at far left of the 11th line. \
+\
+So it seems we get only 678 valid hex digits out of 816, 
+\f3\i \cb2 i.e.,
+\f0\i0 \cb2  just 83%. A 17% loss of the user\'92s data. \
+\
+In what follows, we should keep in mind that the number of bits of information in a decimal digit is log
+\fs20 \cb2 \sub 2
+\fs24 \cb2 \nosupersub (10) \uc0\u8776  3.32 bits. \
+Of course binary digits are worth 1 bit, and hex digits are worth 4 bits. \
+This measure of information sets the stage to account for what\'92s going on: \
+\
+While the input routine *does* translate the hexadecimal digits correctly, \
+the input routine is behaving as though the amount of \cb2 \ul information\cb2 \ulnone  in those digits is 3.32 bits per digit, \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\partightenfactor0
+
+\f1\b \cf0 even when ibase is not ten, 
+\f0\b0 \
+and so is only copying 3.32 \'f7 4 = 83% of the information off of the command line, \
+thus losing 17% of every hex fraction, \
+
+\f1\b even when scale is great enough to fit all the digits
+\f0\b0  of the newly input hex number. \
+The motto, the logic, seems to be \'93If ibase = 16, read hexadecimal, but still count bits as if decimal\'94 \'97 and that ain\'92t right. \
+\
+Stated another way: The 2003 man page for 
+\f2\fs28 \cb2 bc
+\f0\fs24 \cb2  says \'93All numbers are represented internally in decimal and all computation is done in decimal.\'94 \
+If that is still true, then an 
+\f3\i \cb2 n
+\f0\i0 \cb2 -digit hex fraction \cb2 \ul should\cb2 \ulnone  be stored in ceil(
+\f3\i \cb2 n
+\f0\i0 \cb2  log
+\fs20 \cb2 \sub 10
+\fs24 \cb2 \nosupersub (16)) \uc0\u8776  ceil(1.20412 
+\f3\i \cb2 n
+\f0\i0 \cb2 ) decimal digits (4 
+\f3\i \cb2 n
+\f0\i0 \cb2  bits). \
+Currently however 
+\f2\fs28 \cb2 bc
+\f0\fs24 \cb2  seems to be storing them and/or computing them in only 
+\f3\i \cb2 n
+\f0\i0 \cb2  decimal digits (3.32 
+\f3\i \cb2 n
+\f0\i0 \cb2  bits). \
+\
+This could also explain why binary real numbers (ibase = obase = 2) get echoed back with 3.32 times as many digits after the radix point: \
+\
+	>>> ibase=obase=2; scale=A*A		# Working in binary, with a huge scale of 100: \
+	>>> 101101.101101\
+	101101.10110100000000000000		# 20 digits after the point \'97 not just the 6 I typed. \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\partightenfactor0
+
+\f2\fs28 \cf0 \cb2 bc
+\f0\fs24 \cb2  doesn\'92t treat the whole-number part (left of the radix point) that way \'97 nor, I argue, should it treat the 
+\f3\i \cb2 fractional
+\f0\i0 \cb2  part that way. \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\partightenfactor0
+
+\f1\b \cf0 Conclusion: tl/dr: bc\'92s command line parser is not multiplying by log(ibase) (it\'92s assuming ibase is always 10) when estimating the information content of \cb2 \ul or\cb2 \ulnone  when allocating storage for post-radix-point digits. This results in information loss when parsing real numbers in bases of 11 and above.
+\f0\b0  \
+\
+
+\f1\b Possible Quick Fix:
+\f0\b0  If the source code contains a commented-out call to log() or log2() or log10() (or better yet, a small table of logarithms, indexed by [ibase]), the error could be found quickly. \
+\
+
+\f1\b Caveat:
+\f0\b0  Simply patching this bug might not be wise, as some users and some testware may be testing binary or octal arithmetic, and so, may be depending on the fractional output to have *more* digits than typed (as in the binary example above). \
+Therefore a wise solution might be to default to the old behavior whenever ibase <= 10, and to run the patch code only if ibase > 10. \
+\'85 Surely no users are depending on a *loss* of precision in their base-16 computations ;^) They should be grateful for the improvement. \
+\
+
+\f1\b History: This bug is at least 27 years old.
+\f0\b0  On my late-model M2 Mac mini, I am running 
+\f2\fs28 \cb2 bc
+\f0\fs24 \cb2  4.0.2. (All the examples above are from 
+\f2\fs28 \cb2 bc
+\f0\fs24 \cb2  4.0.2.) \
+Sitting next to the mini, I also have an ancient blue-and-white Macintosh G3. It\'92s a Jony Ive design, with rounded corners and a jelly blue Apple logo on the side, a thing of beauty. It runs Mac OS X 10.3.9 Panther, including \
+
+\f1\b bc version 1.05 from 1998
+\f0\b0 , which exhibits the exact same mis-handling of hex fractions. \
+My guess is this bug was just never caught, or never reported, or never fixed. \
+I\'92m here to say the 
+\f2\fs28 \cb2 bc
+\f0\fs24 \cb2  bug matters to those of us who need to design and/or test machine-coded arithmetic. \
+\
+\'85 However if 
+\f2\fs28 \cb2 bc
+\f0\fs24 \cb2  is still fully decimal on the inside, maybe I shouldn\'92t be using it to simulate floating-point instructions ;^) \
+Or I should set scale to zero, and work only with integers. \
+\
+
+\f1\b Severity:
+\f0\b0  Yikes! \
+\
+
+\f1\b Urgency:
+\f0\b0  none. \
+\
+Thank you for taking my bug report. \
+\
+\
+    J. E. Brown (Mr.)\
+    Owner / Senior C++ Developer / Machine Vision and Keypunch Specialist\
+    Card Reader Service for 80-Column IBM Punch Cards\
+    
+\f3\i \cb2 Hollerith you need us! ;^)
+\f0\i0 \cb2 \
+    http://PunchCardReader.com\
+    Los Alamos, New Mexico USA\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\partightenfactor0
+
+\f3\i \cf0 \cb2 J. E. Brown, a master's-level Computer Scientist, wrote calculus programs on punch cards in the 1970s.\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\partightenfactor0
+
+\f0\i0 \cf0 \cb2 \
+}
