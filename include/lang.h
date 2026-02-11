@@ -603,9 +603,11 @@ bc_func_free(void* func);
  * @param a     The array to initialize.
  * @param nums  True if the array should be for numbers, false if it should be
  *              for vectors.
+ * @param var   True if the array is for a variable (the array is the variable's
+ *              stack), false otherwise.
  */
 void
-bc_array_init(BcVec* a, bool nums);
+bc_array_init(BcVec* a, bool nums, bool var);
 
 /**
  * Copies an array to another array. This is used to do pass arrays to functions

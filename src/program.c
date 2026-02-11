@@ -268,7 +268,7 @@ bc_program_search(BcProgram* p, const char* name, bool var)
 	if (bc_map_insert(map, name, v->len, &i))
 	{
 		BcVec* temp = bc_vec_pushEmpty(v);
-		bc_array_init(temp, var);
+		bc_array_init(temp, var, var);
 	}
 
 	return ((BcId*) bc_vec_item(map, i))->idx;
@@ -1341,7 +1341,7 @@ bc_program_copyToVar(BcProgram* p, size_t idx, BcType t)
 
 		// If we get here, we need to copy the array because in bc, all
 		// arguments are passed by value. Yes, this is expensive.
-		bc_array_init(rv, true);
+		bc_array_init(rv, true, false);
 		bc_array_copy(rv, v);
 	}
 
@@ -1851,7 +1851,7 @@ bc_program_call(BcProgram* p, const char* restrict code, size_t* restrict bgn)
 			assert(a->type == BC_TYPE_ARRAY);
 
 			v2 = bc_vec_pushEmpty(v);
-			bc_array_init(v2, true);
+			bc_array_init(v2, true, false);
 		}
 	}
 

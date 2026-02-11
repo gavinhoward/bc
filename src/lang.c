@@ -159,16 +159,23 @@ bc_func_free(void* func)
 #endif // BC_DEBUG || BC_ENABLE_MEMCHECK
 
 void
-bc_array_init(BcVec* a, bool nums)
+bc_array_init(BcVec* a, bool nums, bool var)
 {
 	BC_SIG_ASSERT_LOCKED;
+
+	// If we have a variable, we need a nums array.
+	assert(!var || nums);
 
 	// Set the proper vector.
 	if (nums) bc_vec_init(a, sizeof(BcNum), BC_DTOR_NUM);
 	else bc_vec_init(a, sizeof(BcVec), BC_DTOR_VEC);
 
-	// We always want at least one item in the array.
-	bc_array_expand(a, 1);
+	// We always want at least one item in the array, unless we have an actual
+	// `bc` array. That is obviously not the case when we are making a vector of
+	// vectors (`!nums`), but it is also not the case when we have a variable
+	// (`var), which is a vector (stack) of numbers. We always want one item on
+	// a variable stack, so we need to expand in that case.
+	if (!nums || var) bc_array_expand(a, 1);
 }
 
 void
@@ -238,7 +245,7 @@ bc_array_expand(BcVec* a, size_t len)
 		while (len > a->len)
 		{
 			BcVec* v = bc_vec_pushEmpty(a);
-			bc_array_init(v, true);
+			bc_array_init(v, true, false);
 		}
 	}
 }
