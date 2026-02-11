@@ -3,7 +3,7 @@
  *
  * SPDX-License-Identifier: BSD-2-Clause
  *
- * Copyright (c) 2018-2025 Gavin D. Howard and contributors.
+ * Copyright (c) 2018-2026 Gavin D. Howard and contributors.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -371,7 +371,7 @@ LIBRARY_C_FILES: []str = @[
 ];
 
 GEN_HEADER1: str =
-    "// Copyright (c) 2018-2025 Gavin D. Howard and contributors.\n" +~
+    "// Copyright (c) 2018-2026 Gavin D. Howard and contributors.\n" +~
     "// Licensed under the 2-clause BSD license.\n" +~
     "// *** AUTOMATICALLY GENERATED FROM ";
 GEN_HEADER2: str = ". DO NOT MODIFY. ***\n\n";

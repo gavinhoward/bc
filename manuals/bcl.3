@@ -1,7 +1,7 @@
 .\"
 .\" SPDX-License-Identifier: BSD-2-Clause
 .\"
-.\" Copyright (c) 2018-2025 Gavin D. Howard and contributors.
+.\" Copyright (c) 2018-2026 Gavin D. Howard and contributors.
 .\"
 .\" Redistribution and use in source and binary forms, with or without
 .\" modification, are permitted provided that the following conditions are met:
@@ -292,7 +292,7 @@ call \f[B]bcl_end()\f[R], and client applications should call both.
 .PP
 If there was no error, \f[B]BCL_ERROR_NONE\f[R] is returned.
 Otherwise, this function can return:
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_FATAL_ALLOC_ERR\f[R]
 .PP
 This function must be the first one clients call.
@@ -325,7 +325,7 @@ supposed to initialize.
 .PP
 If there was no error, \f[B]BCL_ERROR_NONE\f[R] is returned.
 Otherwise, this function can return:
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_FATAL_ALLOC_ERR\f[R]
 .PP
 This function must be the second one clients call.
@@ -340,7 +340,7 @@ that new thread.
 .RE
 .TP
 \f[B]void bcl_free(\f[R]\f[I]void\f[R]\f[B])\f[R]
-Decrements bcl(3)\[cq]s reference count and frees the data associated
+Decrements bcl(3)\(cqs reference count and frees the data associated
 with it if the reference count is \f[B]0\f[R].
 .RS
 .PP
@@ -420,10 +420,10 @@ enough.
 They are then multiplied by the appropriate power of \f[B]ibase\f[R].
 .PP
 For example, with clamping off and an \f[B]ibase\f[R] of \f[B]3\f[R],
-the string \[lq]AB\[rq] would equal \f[B]3\[ha]1*A+3\[ha]0*B\f[R], which
-is \f[B]3\f[R] times \f[B]10\f[R] plus \f[B]11\f[R], or \f[B]41\f[R],
-while with clamping on and an \f[B]ibase\f[R] of \f[B]3\f[R], the string
-\[lq]AB\[rq] would be equal to \f[B]3\[ha]1*2+3\[ha]0*2\f[R], which is
+the string \(lqAB\(rq would equal \f[B]3\(ha1*A+3\(ha0*B\f[R], which is
+\f[B]3\f[R] times \f[B]10\f[R] plus \f[B]11\f[R], or \f[B]41\f[R], while
+with clamping on and an \f[B]ibase\f[R] of \f[B]3\f[R], the string
+\(lqAB\(rq would be equal to \f[B]3\(ha1*2+3\(ha0*2\f[R], which is
 \f[B]3\f[R] times \f[B]2\f[R] plus \f[B]2\f[R], or \f[B]8\f[R].
 .PP
 This value is \f[I]thread\-local\f[R]; it applies to just the thread it
@@ -510,14 +510,14 @@ Frees \f[I]ctxt\f[R], after which it is no longer valid.
 It is undefined behavior to attempt to use an invalid context.
 .TP
 \f[B]BclError bcl_pushContext(BclContext\f[R] \f[I]ctxt\f[R]\f[B])\f[R]
-Pushes \f[I]ctxt\f[R] onto bcl(3)\[cq]s stack of contexts.
+Pushes \f[I]ctxt\f[R] onto bcl(3)\(cqs stack of contexts.
 \f[I]ctxt\f[R] must have been created with
 \f[B]bcl_ctxt_create(\f[R]\f[I]void\f[R]\f[B])\f[R].
 .RS
 .PP
 If there was no error, \f[B]BCL_ERROR_NONE\f[R] is returned.
 Otherwise, this function can return:
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_FATAL_ALLOC_ERR\f[R]
 .PP
 There \f[I]must\f[R] be a valid context to do any arithmetic.
@@ -590,9 +590,9 @@ Creates and returns a \f[B]BclNumber\f[R].
 bcl(3) will encode an error in the return value, if there was one.
 The error can be queried with \f[B]bcl_err(BclNumber)\f[R].
 Possible errors include:
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_CONTEXT\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_FATAL_ALLOC_ERR\f[R]
 .RE
 .TP
@@ -605,7 +605,7 @@ Returns \f[B]true\f[R] if \f[I]n\f[R] is negative, \f[B]false\f[R]
 otherwise.
 .TP
 \f[B]void bcl_num_setNeg(BclNumber\f[R] \f[I]n\f[R]\f[B], bool\f[R] \f[I]neg\f[R]\f[B])\f[R]
-Sets \f[I]n\f[R]\[cq]s sign to \f[I]neg\f[R], where \f[B]true\f[R] is
+Sets \f[I]n\f[R]\(cqs sign to \f[I]neg\f[R], where \f[B]true\f[R] is
 negative, and \f[B]false\f[R] is positive.
 .TP
 \f[B]size_t bcl_num_scale(BclNumber\f[R] \f[I]n\f[R]\f[B])\f[R]
@@ -626,11 +626,11 @@ If the argument \f[I]scale\f[R] is less than the \f[I]scale\f[R] of
 .PP
 If there was no error, \f[B]BCL_ERROR_NONE\f[R] is returned.
 Otherwise, this function can return:
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_NUM\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_CONTEXT\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_FATAL_ALLOC_ERR\f[R]
 .RE
 .TP
@@ -646,7 +646,7 @@ given to pointer arguments.
 See the \f[B]Consumption and Propagation\f[R] subsection below.
 .TP
 \f[B]BclNumber bcl_parse(const char *restrict\f[R] \f[I]val\f[R]\f[B])\f[R]
-Parses a number string according to the current context\[cq]s
+Parses a number string according to the current context\(cqs
 \f[B]ibase\f[R] and returns the resulting number.
 .RS
 .PP
@@ -657,19 +657,19 @@ section for more information.
 bcl(3) will encode an error in the return value, if there was one.
 The error can be queried with \f[B]bcl_err(BclNumber)\f[R].
 Possible errors include:
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_NUM\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_CONTEXT\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_PARSE_INVALID_STR\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_FATAL_ALLOC_ERR\f[R]
 .RE
 .TP
 \f[B]char* bcl_string(BclNumber\f[R] \f[I]n\f[R]\f[B])\f[R]
 Returns a string representation of \f[I]n\f[R] according the the current
-context\[cq]s \f[B]ibase\f[R].
+context\(cqs \f[B]ibase\f[R].
 The string is dynamically allocated and must be freed by the caller.
 .RS
 .PP
@@ -679,7 +679,7 @@ See the \f[B]Consumption and Propagation\f[R] subsection below.
 .TP
 \f[B]char* bcl_string_keep(BclNumber\f[R] \f[I]n\f[R]\f[B])\f[R]
 Returns a string representation of \f[I]n\f[R] according the the current
-context\[cq]s \f[B]ibase\f[R].
+context\(cqs \f[B]ibase\f[R].
 The string is dynamically allocated and must be freed by the caller.
 .TP
 \f[B]BclError bcl_bigdig(BclNumber\f[R] \f[I]n\f[R]\f[B], BclBigDig *\f[R]\f[I]result\f[R]\f[B])\f[R]
@@ -692,11 +692,11 @@ See the \f[B]LIMITS\f[R] section.
 .PP
 If there was no error, \f[B]BCL_ERROR_NONE\f[R] is returned.
 Otherwise, this function can return:
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_NUM\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_CONTEXT\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_MATH_OVERFLOW\f[R]
 .PP
 \f[I]n\f[R] is consumed; it cannot be used after the call.
@@ -713,11 +713,11 @@ See the \f[B]LIMITS\f[R] section.
 .PP
 If there was no error, \f[B]BCL_ERROR_NONE\f[R] is returned.
 Otherwise, this function can return:
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_NUM\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_CONTEXT\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_MATH_OVERFLOW\f[R]
 .RE
 .TP
@@ -728,9 +728,9 @@ Creates a \f[B]BclNumber\f[R] from \f[I]val\f[R].
 bcl(3) will encode an error in the return value, if there was one.
 The error can be queried with \f[B]bcl_err(BclNumber)\f[R].
 Possible errors include:
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_CONTEXT\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_FATAL_ALLOC_ERR\f[R]
 .RE
 .SS Math
@@ -742,11 +742,11 @@ given to pointer arguments.
 See the \f[B]Consumption and Propagation\f[R] subsection below.
 .PP
 All procedures in this section can return the following errors:
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_NUM\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_CONTEXT\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_FATAL_ALLOC_ERR\f[R]
 .TP
 \f[B]BclNumber bcl_add(BclNumber\f[R] \f[I]a\f[R]\f[B], BclNumber\f[R] \f[I]b\f[R]\f[B])\f[R]
@@ -764,11 +764,11 @@ See the \f[B]Consumption and Propagation\f[R] subsection below.
 bcl(3) will encode an error in the return value, if there was one.
 The error can be queried with \f[B]bcl_err(BclNumber)\f[R].
 Possible errors include:
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_NUM\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_CONTEXT\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_FATAL_ALLOC_ERR\f[R]
 .RE
 .TP
@@ -783,11 +783,11 @@ The \f[I]scale\f[R] of the result is the max of the \f[I]scale\f[R]s of
 bcl(3) will encode an error in the return value, if there was one.
 The error can be queried with \f[B]bcl_err(BclNumber)\f[R].
 Possible errors include:
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_NUM\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_CONTEXT\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_FATAL_ALLOC_ERR\f[R]
 .RE
 .TP
@@ -806,11 +806,11 @@ See the \f[B]Consumption and Propagation\f[R] subsection below.
 bcl(3) will encode an error in the return value, if there was one.
 The error can be queried with \f[B]bcl_err(BclNumber)\f[R].
 Possible errors include:
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_NUM\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_CONTEXT\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_FATAL_ALLOC_ERR\f[R]
 .RE
 .TP
@@ -825,11 +825,11 @@ The \f[I]scale\f[R] of the result is the max of the \f[I]scale\f[R]s of
 bcl(3) will encode an error in the return value, if there was one.
 The error can be queried with \f[B]bcl_err(BclNumber)\f[R].
 Possible errors include:
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_NUM\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_CONTEXT\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_FATAL_ALLOC_ERR\f[R]
 .RE
 .TP
@@ -851,11 +851,11 @@ See the \f[B]Consumption and Propagation\f[R] subsection below.
 bcl(3) will encode an error in the return value, if there was one.
 The error can be queried with \f[B]bcl_err(BclNumber)\f[R].
 Possible errors include:
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_NUM\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_CONTEXT\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_FATAL_ALLOC_ERR\f[R]
 .RE
 .TP
@@ -873,11 +873,11 @@ If \f[I]ascale\f[R] is the \f[I]scale\f[R] of \f[I]a\f[R] and
 bcl(3) will encode an error in the return value, if there was one.
 The error can be queried with \f[B]bcl_err(BclNumber)\f[R].
 Possible errors include:
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_NUM\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_CONTEXT\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_FATAL_ALLOC_ERR\f[R]
 .RE
 .TP
@@ -898,13 +898,13 @@ See the \f[B]Consumption and Propagation\f[R] subsection below.
 bcl(3) will encode an error in the return value, if there was one.
 The error can be queried with \f[B]bcl_err(BclNumber)\f[R].
 Possible errors include:
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_NUM\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_CONTEXT\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_MATH_DIVIDE_BY_ZERO\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_FATAL_ALLOC_ERR\f[R]
 .RE
 .TP
@@ -921,13 +921,13 @@ context.
 bcl(3) will encode an error in the return value, if there was one.
 The error can be queried with \f[B]bcl_err(BclNumber)\f[R].
 Possible errors include:
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_NUM\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_CONTEXT\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_MATH_DIVIDE_BY_ZERO\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_FATAL_ALLOC_ERR\f[R]
 .RE
 .TP
@@ -948,13 +948,13 @@ See the \f[B]Consumption and Propagation\f[R] subsection below.
 bcl(3) will encode an error in the return value, if there was one.
 The error can be queried with \f[B]bcl_err(BclNumber)\f[R].
 Possible errors include:
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_NUM\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_CONTEXT\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_MATH_DIVIDE_BY_ZERO\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_FATAL_ALLOC_ERR\f[R]
 .RE
 .TP
@@ -971,13 +971,13 @@ modulus.
 bcl(3) will encode an error in the return value, if there was one.
 The error can be queried with \f[B]bcl_err(BclNumber)\f[R].
 Possible errors include:
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_NUM\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_CONTEXT\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_MATH_DIVIDE_BY_ZERO\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_FATAL_ALLOC_ERR\f[R]
 .RE
 .TP
@@ -1003,17 +1003,17 @@ See the \f[B]Consumption and Propagation\f[R] subsection below.
 bcl(3) will encode an error in the return value, if there was one.
 The error can be queried with \f[B]bcl_err(BclNumber)\f[R].
 Possible errors include:
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_NUM\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_CONTEXT\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_MATH_NON_INTEGER\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_MATH_OVERFLOW\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_MATH_DIVIDE_BY_ZERO\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_FATAL_ALLOC_ERR\f[R]
 .RE
 .TP
@@ -1035,17 +1035,17 @@ See the \f[B]LIMITS\f[R] section.
 bcl(3) will encode an error in the return value, if there was one.
 The error can be queried with \f[B]bcl_err(BclNumber)\f[R].
 Possible errors include:
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_NUM\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_CONTEXT\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_MATH_NON_INTEGER\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_MATH_OVERFLOW\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_MATH_DIVIDE_BY_ZERO\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_FATAL_ALLOC_ERR\f[R]
 .RE
 .TP
@@ -1067,13 +1067,13 @@ See the \f[B]Consumption and Propagation\f[R] subsection below.
 bcl(3) will encode an error in the return value, if there was one.
 The error can be queried with \f[B]bcl_err(BclNumber)\f[R].
 Possible errors include:
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_NUM\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_CONTEXT\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_MATH_NON_INTEGER\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_FATAL_ALLOC_ERR\f[R]
 .RE
 .TP
@@ -1091,13 +1091,13 @@ This is done in decimal.
 bcl(3) will encode an error in the return value, if there was one.
 The error can be queried with \f[B]bcl_err(BclNumber)\f[R].
 Possible errors include:
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_NUM\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_CONTEXT\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_MATH_NON_INTEGER\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_FATAL_ALLOC_ERR\f[R]
 .RE
 .TP
@@ -1119,13 +1119,13 @@ See the \f[B]Consumption and Propagation\f[R] subsection below.
 bcl(3) will encode an error in the return value, if there was one.
 The error can be queried with \f[B]bcl_err(BclNumber)\f[R].
 Possible errors include:
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_NUM\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_CONTEXT\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_MATH_NON_INTEGER\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_FATAL_ALLOC_ERR\f[R]
 .RE
 .TP
@@ -1143,13 +1143,13 @@ This is done in decimal.
 bcl(3) will encode an error in the return value, if there was one.
 The error can be queried with \f[B]bcl_err(BclNumber)\f[R].
 Possible errors include:
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_NUM\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_CONTEXT\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_MATH_NON_INTEGER\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_FATAL_ALLOC_ERR\f[R]
 .RE
 .TP
@@ -1167,13 +1167,13 @@ See the \f[B]Consumption and Propagation\f[R] subsection below.
 bcl(3) will encode an error in the return value, if there was one.
 The error can be queried with \f[B]bcl_err(BclNumber)\f[R].
 Possible errors include:
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_NUM\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_CONTEXT\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_MATH_NEGATIVE\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_FATAL_ALLOC_ERR\f[R]
 .RE
 .TP
@@ -1188,13 +1188,13 @@ current context.
 bcl(3) will encode an error in the return value, if there was one.
 The error can be queried with \f[B]bcl_err(BclNumber)\f[R].
 Possible errors include:
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_NUM\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_CONTEXT\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_MATH_NEGATIVE\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_FATAL_ALLOC_ERR\f[R]
 .RE
 .TP
@@ -1216,13 +1216,13 @@ point to the space occupied by \f[I]a\f[R] or \f[I]b\f[R].
 .PP
 If there was no error, \f[B]BCL_ERROR_NONE\f[R] is returned.
 Otherwise, this function can return:
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_NUM\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_CONTEXT\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_MATH_DIVIDE_BY_ZERO\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_FATAL_ALLOC_ERR\f[R]
 .RE
 .TP
@@ -1240,13 +1240,13 @@ point to the space occupied by \f[I]a\f[R] or \f[I]b\f[R].
 .PP
 If there was no error, \f[B]BCL_ERROR_NONE\f[R] is returned.
 Otherwise, this function can return:
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_NUM\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_CONTEXT\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_MATH_DIVIDE_BY_ZERO\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_FATAL_ALLOC_ERR\f[R]
 .RE
 .TP
@@ -1269,17 +1269,17 @@ See the \f[B]Consumption and Propagation\f[R] subsection below.
 bcl(3) will encode an error in the return value, if there was one.
 The error can be queried with \f[B]bcl_err(BclNumber)\f[R].
 Possible errors include:
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_NUM\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_CONTEXT\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_MATH_NEGATIVE\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_MATH_NON_INTEGER\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_MATH_DIVIDE_BY_ZERO\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_FATAL_ALLOC_ERR\f[R]
 .RE
 .TP
@@ -1298,17 +1298,17 @@ current context.
 bcl(3) will encode an error in the return value, if there was one.
 The error can be queried with \f[B]bcl_err(BclNumber)\f[R].
 Possible errors include:
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_NUM\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_CONTEXT\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_MATH_NEGATIVE\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_MATH_NON_INTEGER\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_MATH_DIVIDE_BY_ZERO\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_FATAL_ALLOC_ERR\f[R]
 .RE
 .SS Miscellaneous
@@ -1331,11 +1331,11 @@ Copies \f[I]s\f[R] into \f[I]d\f[R].
 .PP
 If there was no error, \f[B]BCL_ERROR_NONE\f[R] is returned.
 Otherwise, this function can return:
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_NUM\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_CONTEXT\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_FATAL_ALLOC_ERR\f[R]
 .RE
 .TP
@@ -1347,11 +1347,11 @@ Creates and returns a new \f[B]BclNumber\f[R] that is a copy of
 bcl(3) will encode an error in the return value, if there was one.
 The error can be queried with \f[B]bcl_err(BclNumber)\f[R].
 Possible errors include:
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_NUM\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_CONTEXT\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_FATAL_ALLOC_ERR\f[R]
 .RE
 .SS Pseudo\-Random Number Generator
@@ -1362,7 +1362,7 @@ pseudo\-random numbers twice.
 .PP
 By default, bcl(3) attempts to seed the PRNG with data from
 \f[B]/dev/urandom\f[R].
-If that fails, it seeds itself with by calling \f[B]libc\f[R]\[cq]s
+If that fails, it seeds itself with by calling \f[B]libc\f[R]\(cqs
 \f[B]srand(time(NULL))\f[R] and then calling \f[B]rand()\f[R] for each
 byte, since \f[B]rand()\f[R] is only guaranteed to return \f[B]15\f[R]
 bits.
@@ -1372,12 +1372,12 @@ remaining fairly portable.
 .PP
 If necessary, the PRNG can be reseeded with one of the following
 functions:
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]bcl_rand_seedWithNum(BclNumber)\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]bcl_rand_seed(unsigned
 char[\f[R]\f[I]BCL_SEED_SIZE\f[R]\f[B]])\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]bcl_rand_reseed(\f[R]\f[I]void\f[R]\f[B])\f[R]
 .PP
 All procedures in this section without the \f[B]_keep\f[R] suffix in
@@ -1390,18 +1390,18 @@ generator.
 All procedures require a valid current context.
 .TP
 \f[B]BCL_SEED_ULONGS\f[R]
-The number of \f[B]unsigned long\f[R]\[cq]s in a seed for bcl(3)\[cq]s
+The number of \f[B]unsigned long\f[R]\(cqs in a seed for bcl(3)\(cqs
 random number generator.
 .TP
 \f[B]BCL_SEED_SIZE\f[R]
-The size, in \f[B]char\f[R]\[cq]s, of a seed for bcl(3)\[cq]s random
+The size, in \f[B]char\f[R]\(cqs, of a seed for bcl(3)\(cqs random
 number generator.
 .TP
 \f[B]BclBigDig\f[R]
-bcl(3)\[cq]s overflow type (see the \f[B]PERFORMANCE\f[R] section).
+bcl(3)\(cqs overflow type (see the \f[B]PERFORMANCE\f[R] section).
 .TP
 \f[B]BclRandInt\f[R]
-An unsigned integer type returned by bcl(3)\[cq]s random number
+An unsigned integer type returned by bcl(3)\(cqs random number
 generator.
 .TP
 \f[B]BclNumber bcl_irand(BclNumber\f[R] \f[I]a\f[R]\f[B])\f[R]
@@ -1425,15 +1425,15 @@ This procedure requires a valid current context.
 bcl(3) will encode an error in the return value, if there was one.
 The error can be queried with \f[B]bcl_err(BclNumber)\f[R].
 Possible errors include:
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_NUM\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_CONTEXT\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_MATH_NEGATIVE\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_MATH_NON_INTEGER\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_FATAL_ALLOC_ERR\f[R]
 .RE
 .TP
@@ -1455,15 +1455,15 @@ This procedure requires a valid current context.
 bcl(3) will encode an error in the return value, if there was one.
 The error can be queried with \f[B]bcl_err(BclNumber)\f[R].
 Possible errors include:
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_NUM\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_CONTEXT\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_MATH_NEGATIVE\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_MATH_NON_INTEGER\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_FATAL_ALLOC_ERR\f[R]
 .RE
 .TP
@@ -1479,9 +1479,9 @@ This procedure requires a valid current context.
 bcl(3) will encode an error in the return value, if there was one.
 The error can be queried with \f[B]bcl_err(BclNumber)\f[R].
 Possible errors include:
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_CONTEXT\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_FATAL_ALLOC_ERR\f[R]
 .RE
 .TP
@@ -1501,15 +1501,15 @@ This procedure requires a valid current context.
 bcl(3) will encode an error in the return value, if there was one.
 The error can be queried with \f[B]bcl_err(BclNumber)\f[R].
 Possible errors include:
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_NUM\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_CONTEXT\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_MATH_NEGATIVE\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_MATH_NON_INTEGER\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_FATAL_ALLOC_ERR\f[R]
 .RE
 .TP
@@ -1526,15 +1526,15 @@ This procedure requires a valid current context.
 bcl(3) will encode an error in the return value, if there was one.
 The error can be queried with \f[B]bcl_err(BclNumber)\f[R].
 Possible errors include:
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_NUM\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_CONTEXT\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_MATH_NEGATIVE\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_MATH_NON_INTEGER\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_FATAL_ALLOC_ERR\f[R]
 .RE
 .TP
@@ -1548,9 +1548,9 @@ This procedure requires a valid current context.
 .PP
 If there was no error, \f[B]BCL_ERROR_NONE\f[R] is returned.
 Otherwise, this function can return:
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_NUM\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_CONTEXT\f[R]
 .PP
 Note that if \f[B]bcl_rand_seed2num(\f[R]\f[I]void\f[R]\f[B])\f[R] or
@@ -1567,9 +1567,9 @@ This procedure requires a valid current context.
 .PP
 If there was no error, \f[B]BCL_ERROR_NONE\f[R] is returned.
 Otherwise, this function can return:
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_NUM\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_CONTEXT\f[R]
 .PP
 Note that if \f[B]bcl_rand_seed2num(\f[R]\f[I]void\f[R]\f[B])\f[R] or
@@ -1584,14 +1584,14 @@ Seeds the PRNG with the bytes in \f[I]seed\f[R].
 .PP
 If there was no error, \f[B]BCL_ERROR_NONE\f[R] is returned.
 Otherwise, this function can return:
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_CONTEXT\f[R]
 .RE
 .TP
 \f[B]void bcl_rand_reseed(\f[R]\f[I]void\f[R]\f[B])\f[R]
 Reseeds the PRNG with the default reseeding behavior.
 First, it attempts to read data from \f[B]/dev/urandom\f[R] and falls
-back to \f[B]libc\f[R]\[cq]s \f[B]rand()\f[R].
+back to \f[B]libc\f[R]\(cqs \f[B]rand()\f[R].
 .RS
 .PP
 This procedure cannot fail.
@@ -1606,9 +1606,9 @@ This procedure requires a valid current context.
 bcl(3) will encode an error in the return value, if there was one.
 The error can be queried with \f[B]bcl_err(BclNumber)\f[R].
 Possible errors include:
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_INVALID_CONTEXT\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]BCL_ERROR_FATAL_ALLOC_ERR\f[R]
 .RE
 .TP
@@ -1702,8 +1702,8 @@ exponent.
 .PP
 \f[B]WARNING\f[R]: Both the number and the exponent in scientific
 notation are interpreted according to the current \f[B]ibase\f[R], but
-the number is still multiplied by \f[B]10\[ha]exponent\f[R] regardless
-of the current \f[B]ibase\f[R].
+the number is still multiplied by \f[B]10\(haexponent\f[R] regardless of
+the current \f[B]ibase\f[R].
 For example, if \f[B]ibase\f[R] is \f[B]16\f[R] and bcl(3) is given the
 number string \f[B]FFeA\f[R], the resulting decimal number will be
 \f[B]2550000000000\f[R], and if bcl(3) is given the number string
@@ -1809,7 +1809,7 @@ Set at \f[B]BC_OVERFLOW_MAX\-1\f[R].
 \f[B]BC_RAND_MAX\f[R]
 The maximum integer (inclusive) returned by the \f[B]bcl_rand_int()\f[R]
 function.
-Set at \f[B]2\[ha]BC_LONG_BIT\-1\f[R].
+Set at \f[B]2\(haBC_LONG_BIT\-1\f[R].
 .TP
 Exponent
 The maximum allowable exponent (positive or negative).
@@ -1823,7 +1823,7 @@ In fact, memory should be exhausted before these limits should be hit.
 bc(1) and dc(1)
 .SH STANDARDS
 bcl(3) is compliant with the arithmetic defined in the IEEE Std
-1003.1\-2017 (\[lq]POSIX.1\-2017\[rq]) specification at
+1003.1\-2017 (\(lqPOSIX.1\-2017\(rq) specification at
 https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html for
 bc(1).
 .PP

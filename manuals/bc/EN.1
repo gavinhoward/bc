@@ -1,7 +1,7 @@
 .\"
 .\" SPDX-License-Identifier: BSD-2-Clause
 .\"
-.\" Copyright (c) 2018-2025 Gavin D. Howard and contributors.
+.\" Copyright (c) 2018-2026 Gavin D. Howard and contributors.
 .\"
 .\" Redistribution and use in source and binary forms, with or without
 .\" modification, are permitted provided that the following conditions are met:
@@ -78,9 +78,9 @@ Disables clamping of digits greater than or equal to the current
 .RS
 .PP
 This means that the value added to a number from a digit is always that
-digit\[cq]s value multiplied by the value of ibase raised to the power
-of the digit\[cq]s position, which starts from 0 at the least
-significant digit.
+digit\(cqs value multiplied by the value of ibase raised to the power of
+the digit\(cqs position, which starts from 0 at the least significant
+digit.
 .PP
 If this and/or the \f[B]\-c\f[R] or \f[B]\-\-digit\-clamp\f[R] options
 are given multiple times, the last one given is used.
@@ -100,8 +100,7 @@ Enables clamping of digits greater than or equal to the current
 This means that digits that the value added to a number from a digit
 that is greater than or equal to the ibase is the value of ibase minus 1
 all multiplied by the value of ibase raised to the power of the
-digit\[cq]s position, which starts from 0 at the least significant
-digit.
+digit\(cqs position, which starts from 0 at the least significant digit.
 .PP
 If this and/or the \f[B]\-C\f[R] or \f[B]\-\-no\-digit\-clamp\f[R]
 options are given multiple times, the last one given is used.
@@ -202,8 +201,8 @@ aliases.
 Examples:
 .IP
 .EX
-alias d2o=\[dq]bc \-e ibase=A \-e obase=8\[dq]
-alias h2b=\[dq]bc \-e ibase=G \-e obase=2\[dq]
+alias d2o=\(dqbc \-e ibase=A \-e obase=8\(dq
+alias h2b=\(dqbc \-e ibase=G \-e obase=2\(dq
 .EE
 .PP
 Second, if the purpose of a function is to set \f[B]ibase\f[R],
@@ -337,35 +336,35 @@ meant for other bc(1) implementations.
 .RS
 .PP
 The keywords this bc(1) allows to be redefined are:
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]abs\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]asciify\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]continue\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]divmod\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]else\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]halt\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]last\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]limits\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]maxibase\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]maxobase\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]maxscale\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]modexp\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]print\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]read\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]stream\f[R]
 .PP
 If any of those keywords are used as a function, variable, or array name
@@ -443,7 +442,7 @@ That means that starting a string without ending it or starting a
 function, \f[B]if\f[R] statement, or loop without ending it will also
 cause bc(1) to not execute.
 .PP
-Second, after an \f[B]if\f[R] statement, bc(1) doesn\[cq]t know if an
+Second, after an \f[B]if\f[R] statement, bc(1) doesn\(cqt know if an
 \f[B]else\f[R] statement will follow, so it will not execute until it
 knows there will not be an \f[B]else\f[R] statement.
 .SH STDOUT
@@ -496,7 +495,7 @@ Identifiers with more than one character (letter) are a
 .PP
 \f[B]ibase\f[R] is a global variable determining how to interpret
 constant numbers.
-It is the \[lq]input\[rq] base, or the number base used for interpreting
+It is the \(lqinput\(rq base, or the number base used for interpreting
 input numbers.
 \f[B]ibase\f[R] is initially \f[B]10\f[R].
 If the \f[B]\-s\f[R] (\f[B]\-\-standard\f[R]) and \f[B]\-w\f[R]
@@ -508,7 +507,7 @@ The max allowable value for \f[B]ibase\f[R] can be queried in bc(1)
 programs with the \f[B]maxibase()\f[R] built\-in function.
 .PP
 \f[B]obase\f[R] is a global variable determining how to output results.
-It is the \[lq]output\[rq] base, or the number base used for outputting
+It is the \(lqoutput\(rq base, or the number base used for outputting
 numbers.
 \f[B]obase\f[R] is initially \f[B]10\f[R].
 The max allowable value for \f[B]obase\f[R] is \f[B]BC_BASE_MAX\f[R] and
@@ -688,7 +687,7 @@ See the \f[B]OPTIONS\f[R] section.
 This is a \f[B]non\-portable extension\f[R].
 .IP "22." 4
 \f[B]leading_zero()\f[R]: \f[B]0\f[R] if leading zeroes are not enabled
-with the \f[B]\-z\f[R] or \f[B]\[en]leading\-zeroes\f[R] options,
+with the \f[B]\-z\f[R] or \f[B]\(enleading\-zeroes\f[R] options,
 non\-zero otherwise.
 See the \f[B]OPTIONS\f[R] section.
 This is a \f[B]non\-portable extension\f[R].
@@ -715,7 +714,7 @@ equal to the current value of \f[B]ibase\f[R] are not changed.
 Instead, their given value is multiplied by the appropriate power of
 \f[B]ibase\f[R] and added into the number.
 This means that, with an \f[B]ibase\f[R] of \f[B]3\f[R], the number
-\f[B]AB\f[R] is equal to \f[B]3\[ha]1*A+3\[ha]0*B\f[R], which is
+\f[B]AB\f[R] is equal to \f[B]3\(ha1*A+3\(ha0*B\f[R], which is
 \f[B]3\f[R] times \f[B]10\f[R] plus \f[B]11\f[R], or \f[B]41\f[R].
 .PP
 If clamping is on, then digits or letters that are greater than or equal
@@ -723,7 +722,7 @@ to the current value of \f[B]ibase\f[R] are set to the value of the
 highest valid digit in \f[B]ibase\f[R] before being multiplied by the
 appropriate power of \f[B]ibase\f[R] and added into the number.
 This means that, with an \f[B]ibase\f[R] of \f[B]3\f[R], the number
-\f[B]AB\f[R] is equal to \f[B]3\[ha]1*2+3\[ha]0*2\f[R], which is
+\f[B]AB\f[R] is equal to \f[B]3\(ha1*2+3\(ha0*2\f[R], which is
 \f[B]3\f[R] times \f[B]2\f[R] plus \f[B]2\f[R], or \f[B]8\f[R].
 .PP
 There is one exception to clamping: single\-character numbers (i.e.,
@@ -762,7 +761,7 @@ Associativity: None
 Description: \f[B]negation\f[R], \f[B]boolean not\f[R]
 .RE
 .TP
-\f[B]\[ha]\f[R]
+\f[B]\(ha\f[R]
 Type: Binary
 .RS
 .PP
@@ -789,7 +788,7 @@ Associativity: Left
 Description: \f[B]add\f[R], \f[B]subtract\f[R]
 .RE
 .TP
-\f[B]=\f[R] \f[B]+=\f[R] \f[B]\-=\f[R] \f[B]*=\f[R] \f[B]/=\f[R] \f[B]%=\f[R] \f[B]\[ha]=\f[R]
+\f[B]=\f[R] \f[B]+=\f[R] \f[B]\-=\f[R] \f[B]*=\f[R] \f[B]/=\f[R] \f[B]%=\f[R] \f[B]\(ha=\f[R]
 Type: Binary
 .RS
 .PP
@@ -855,7 +854,7 @@ implementations!
 This is a \f[B]non\-portable extension\f[R].
 .RE
 .TP
-\f[B]\[ha]\f[R]
+\f[B]\(ha\f[R]
 The \f[B]power\f[R] operator (not the \f[B]exclusive or\f[R] operator,
 as it would be in C) takes two expressions and raises the first to the
 power of the value of the second.
@@ -905,7 +904,7 @@ The \f[B]subtract\f[R] operator takes two expressions, \f[B]a\f[R] and
 \f[B]b\f[R], and returns the difference, with a \f[I]scale\f[R] equal to
 the max of the \f[I]scale\f[R]s of \f[B]a\f[R] and \f[B]b\f[R].
 .TP
-\f[B]=\f[R] \f[B]+=\f[R] \f[B]\-=\f[R] \f[B]*=\f[R] \f[B]/=\f[R] \f[B]%=\f[R] \f[B]\[ha]=\f[R]
+\f[B]=\f[R] \f[B]+=\f[R] \f[B]\-=\f[R] \f[B]*=\f[R] \f[B]/=\f[R] \f[B]%=\f[R] \f[B]\(ha=\f[R]
 The \f[B]assignment\f[R] operators take two expressions, \f[B]a\f[R] and
 \f[B]b\f[R] where \f[B]a\f[R] is a named expression (see the \f[I]Named
 Expressions\f[R] subsection).
@@ -1070,30 +1069,30 @@ resets (see the \f[B]RESET\f[R] section).
 Assigning strings to variables and array elements and passing them to
 functions are \f[B]non\-portable extensions\f[R].
 .SS Print Statement
-The \[lq]expressions\[rq] in a \f[B]print\f[R] statement may also be
+The \(lqexpressions\(rq in a \f[B]print\f[R] statement may also be
 strings.
 If they are, there are backslash escape sequences that are interpreted
 specially.
 What those sequences are, and what they cause to be printed, are shown
 below:
 .PP
-\f[B]\[rs]a\f[R]: \f[B]\[rs]a\f[R]
+\f[B]\(rsa\f[R]: \f[B]\(rsa\f[R]
 .PP
-\f[B]\[rs]b\f[R]: \f[B]\[rs]b\f[R]
+\f[B]\(rsb\f[R]: \f[B]\(rsb\f[R]
 .PP
-\f[B]\[rs]\[rs]\f[R]: \f[B]\[rs]\f[R]
+\f[B]\(rs\(rs\f[R]: \f[B]\(rs\f[R]
 .PP
-\f[B]\[rs]e\f[R]: \f[B]\[rs]\f[R]
+\f[B]\(rse\f[R]: \f[B]\(rs\f[R]
 .PP
-\f[B]\[rs]f\f[R]: \f[B]\[rs]f\f[R]
+\f[B]\(rsf\f[R]: \f[B]\(rsf\f[R]
 .PP
-\f[B]\[rs]n\f[R]: \f[B]\[rs]n\f[R]
+\f[B]\(rsn\f[R]: \f[B]\(rsn\f[R]
 .PP
-\f[B]\[rs]q\f[R]: \f[B]\[lq]\f[R]
+\f[B]\(rsq\f[R]: \f[B]\(lq\f[R]
 .PP
-\f[B]\[rs]r\f[R]: \f[B]\[rs]r\f[R]
+\f[B]\(rsr\f[R]: \f[B]\(rsr\f[R]
 .PP
-\f[B]\[rs]t\f[R]: \f[B]\[rs]t\f[R]
+\f[B]\(rst\f[R]: \f[B]\(rst\f[R]
 .PP
 Any other character following a backslash causes the backslash and
 character to be printed as\-is.
@@ -1191,9 +1190,9 @@ Void functions can only use the first two \f[B]return\f[R] statements
 listed above.
 They can also omit the return statement entirely.
 .PP
-The word \[lq]void\[rq] is not treated as a keyword; it is still
-possible to have variables, arrays, and functions named \f[B]void\f[R].
-The word \[lq]void\[rq] is only treated specially right after the
+The word \(lqvoid\(rq is not treated as a keyword; it is still possible
+to have variables, arrays, and functions named \f[B]void\f[R].
+The word \(lqvoid\(rq is only treated specially right after the
 \f[B]define\f[R] keyword.
 .PP
 This is a \f[B]non\-portable extension\f[R].
@@ -1271,8 +1270,8 @@ Functions\f[R] subsection below).
 All transcendental functions can return slightly inaccurate results, up
 to 1 ULP (https://en.wikipedia.org/wiki/Unit_in_the_last_place).
 This is unavoidable, and the article at
-https://people.eecs.berkeley.edu/\[ti]wkahan/LOG10HAF.TXT explains why
-it is impossible and unnecessary to calculate exact results for the
+https://people.eecs.berkeley.edu/\(tiwkahan/LOG10HAF.TXT explains why it
+is impossible and unnecessary to calculate exact results for the
 transcendental functions.
 .PP
 Because of the possible inaccuracy, I recommend that users call those
@@ -1282,17 +1281,17 @@ If exact results are \f[I]absolutely\f[R] required, users can double the
 precision (\f[B]scale\f[R]) and then truncate.
 .PP
 The transcendental functions in the standard math library are:
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]s(x)\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]c(x)\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]a(x)\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]l(x)\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]e(x)\f[R]
-.IP \[bu] 2
+.IP \(bu 2
 \f[B]j(x, n)\f[R]
 .SH RESET
 When bc(1) encounters an error or a signal that it has a non\-default
@@ -1413,7 +1412,7 @@ They should be in the same format as all other command\-line arguments.
 These are always processed first, so any files given in
 \f[B]BC_ENV_ARGS\f[R] will be processed before arguments and files given
 on the command\-line.
-This gives the user the ability to set up \[lq]standard\[rq] options and
+This gives the user the ability to set up \(lqstandard\(rq options and
 files to be used at every invocation.
 The most useful thing for such files to contain would be useful
 functions that the user might want every time bc(1) runs.
@@ -1421,15 +1420,15 @@ functions that the user might want every time bc(1) runs.
 .PP
 The code that parses \f[B]BC_ENV_ARGS\f[R] will correctly handle quoted
 arguments, but it does not understand escape sequences.
-For example, the string \f[B]\[lq]/home/gavin/some bc file.bc\[rq]\f[R]
-will be correctly parsed, but the string \f[B]\[lq]/home/gavin/some
-\[dq]bc\[dq] file.bc\[rq]\f[R] will include the backslashes.
+For example, the string \f[B]\(lq/home/gavin/some bc file.bc\(rq\f[R]
+will be correctly parsed, but the string \f[B]\(lq/home/gavin/some
+\(dqbc\(dq file.bc\(rq\f[R] will include the backslashes.
 .PP
-The quote parsing will handle either kind of quotes, \f[B]\[cq]\f[R] or
-\f[B]\[lq]\f[R].
+The quote parsing will handle either kind of quotes, \f[B]\(cq\f[R] or
+\f[B]\(lq\f[R].
 Thus, if you have a file with any number of single quotes in the name,
-you can use double quotes as the outside quotes, as in \f[B]\[lq]some
-`bc' file.bc\[rq]\f[R], and vice versa if you have a file with double
+you can use double quotes as the outside quotes, as in \f[B]\(lqsome
+`bc' file.bc\(rq\f[R], and vice versa if you have a file with double
 quotes.
 However, handling a file with both kinds of quotes in
 \f[B]BC_ENV_ARGS\f[R] is not supported due to the complexity of the
@@ -1440,8 +1439,8 @@ where the parsing is done by the shell.
 \f[B]BC_LINE_LENGTH\f[R]
 If this environment variable exists and contains an integer that is
 greater than \f[B]1\f[R] and is less than \f[B]UINT16_MAX\f[R]
-(\f[B]2\[ha]16\-1\f[R]), bc(1) will output lines to that length,
-including the backslash (\f[B]\[rs]\f[R]).
+(\f[B]2\(ha16\-1\f[R]), bc(1) will output lines to that length,
+including the backslash (\f[B]\(rs\f[R]).
 The default line length is \f[B]70\f[R].
 .RS
 .PP
@@ -1557,7 +1556,7 @@ overflow when calculating the size of a number, and attempting to use a
 non\-integer where an integer is required.
 .PP
 Converting to a hardware integer happens for the second operand of the
-power (\f[B]\[ha]\f[R]) operator and the corresponding assignment
+power (\f[B]\(ha\f[R]) operator and the corresponding assignment
 operator.
 .RE
 .TP
@@ -1630,9 +1629,8 @@ the contents of, or default for, the \f[B]BC_SIGINT_RESET\f[R]
 environment variable (see the \f[B]ENVIRONMENT VARIABLES\f[R] section).
 .SH TTY MODE
 If \f[B]stdin\f[R], \f[B]stdout\f[R], and \f[B]stderr\f[R] are all
-connected to a TTY, then \[lq]TTY mode\[rq] is considered to be
-available, and thus, bc(1) can turn on TTY mode, subject to some
-settings.
+connected to a TTY, then \(lqTTY mode\(rq is considered to be available,
+and thus, bc(1) can turn on TTY mode, subject to some settings.
 .PP
 If there is the environment variable \f[B]BC_TTY_MODE\f[R] in the
 environment (see the \f[B]ENVIRONMENT VARIABLES\f[R] section), then if
@@ -1691,7 +1689,7 @@ However, if bc(1) is in interactive mode, and the
 then bc(1) will stop executing the current input and reset (see the
 \f[B]RESET\f[R] section) upon receiving a \f[B]SIGINT\f[R].
 .PP
-Note that \[lq]current input\[rq] can mean one of two things.
+Note that \(lqcurrent input\(rq can mean one of two things.
 If bc(1) is processing input from \f[B]stdin\f[R] in interactive mode,
 it will ask for more input.
 If bc(1) is processing input from a file in interactive mode, it will
@@ -1733,7 +1731,7 @@ the arrow keys.
 dc(1)
 .SH STANDARDS
 bc(1) is compliant with the IEEE Std 1003.1\-2017
-(\[lq]POSIX.1\-2017\[rq]) specification at
+(\(lqPOSIX.1\-2017\(rq) specification at
 https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html .
 The flags \f[B]\-efghiqsvVw\f[R], all long options, and the extensions
 noted above are extensions to that specification.
