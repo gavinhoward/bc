@@ -1,5 +1,13 @@
 # News
 
+## 7.2.0
+
+This is an ***UNTESTED*** release. If you would like testing, see the
+[maintenance terms][23].
+
+This fixes the `length()` function to return `0` on untouched arrays.
+Technically, this is a change in behavior; thus, the minor version bump.
+
 ## 7.1.0
 
 This is an ***UNTESTED*** release. If you would like testing, see the
