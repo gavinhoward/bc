@@ -2082,6 +2082,11 @@ length
 
 :   Tests the `length()` builtin function.
 
+length0
+
+:   Tests the `length()` builtin function, specifically that an array that has
+    not been assigned to has a length of zero.
+
 scale
 
 :   Tests the `scale()` builtin function.

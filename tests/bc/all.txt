@@ -129,6 +129,7 @@ lib2_uint
 lib2_rand
 print2
 length
+length0
 scale
 shift
 add
