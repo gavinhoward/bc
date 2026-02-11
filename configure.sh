@@ -608,6 +608,7 @@ predefined_build() {
 		GDH)
 			CFLAGS="-Weverything -Wno-padded -Wno-unsafe-buffer-usage -Wno-poison-system-directories"
 			CFLAGS="$CFLAGS -Wno-unknown-warning-option -Wno-switch-default -Wno-pre-c11-compat"
+			CFLAGS="$CFLAGS -Wno-implicit-int-enum-cast -Wno-implicit-void-ptr-cast -Wno-c++-keyword"
 			CFLAGS="$CFLAGS -Werror -pedantic -std=c11"
 			bc_only=0
 			dc_only=0
@@ -639,6 +640,7 @@ predefined_build() {
 		DBG)
 			CFLAGS="-Weverything -Wno-padded -Wno-unsafe-buffer-usage -Wno-poison-system-directories"
 			CFLAGS="$CFLAGS -Wno-unknown-warning-option -Wno-switch-default -Wno-pre-c11-compat"
+			CFLAGS="$CFLAGS -Wno-implicit-int-enum-cast -Wno-implicit-void-ptr-cast -Wno-c++-keyword"
 			CFLAGS="$CFLAGS -Werror -pedantic -std=c11"
 			bc_only=0
 			dc_only=0
