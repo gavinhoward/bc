@@ -424,7 +424,7 @@ push build_config: config_stack
 
 			test @bcl: libtest
 			{
-				$ @(tgt);
+				$ @(path.join(".", tgt));
 			}
 		}
 
