@@ -412,6 +412,22 @@ push build_config: config_stack
 			}
 		}
 
+		// If we can test, add the library test executable to the build, as well
+		// as the test itself.
+		if platform == host
+		{
+			libtesto: str = c2o("tests/bcl.c");
+
+			libtest: str = "bcl";
+
+			exe(libtest, @[ libtesto, LIBRARY ]);
+
+			test @bcl: libtest
+			{
+				$ @(tgt);
+			}
+		}
+
 		@[ LIBRARY, PC_FILE ];
 	}
 };
@@ -582,40 +598,23 @@ if OS != "Windows"
 }
 
 // If the platform matches the host, we can run the test suite.
-if platform == host
+if platform == host && BUILD_MODE != @library
 {
-	// If we have the library, build and run that test.
-	if BUILD_MODE == @library
+	if BUILD_MODE != @dc
 	{
-		libtesto: str = c2o("tests/bcl.c");
-
-		libtest: str = "bcl";
-
-		exe(libtest, @[ libtesto, targets[0] ]);
-
-		test @bcl: libtest
-		{
-			$ @(tgt);
-		}
+		exe_tests("bc");
 	}
-	else
+
+	if BUILD_MODE != @bc
 	{
-		if BUILD_MODE != @dc
-		{
-			exe_tests("bc");
-		}
+		exe_tests("dc");
+	}
 
-		if BUILD_MODE != @bc
+	target @clean_tests
+	{
+		for f: path.find_ext("txt")
 		{
-			exe_tests("dc");
-		}
-
-		target @clean_tests
-		{
-			for f: path.find_ext("txt")
-			{
-				path.rmf(f);
-			}
+			path.rmf(f);
 		}
 	}
 }
