@@ -150,13 +150,13 @@ fn calc_name(test_name: str) -> str
 
 BC_BIN: str = exe_name("bc");
 DC_BIN: str = exe_name("dc");
-LIBRARY: str = lib_name("libbcl");
+LIBRARY: str = lib_name("bcl");
 
 BC_MANPAGE: str = EXECPREFIX +~ "bc" +~ EXECSUFFIX +~ ".1";
 DC_MANPAGE: str = EXECPREFIX +~ "dc" +~ EXECSUFFIX +~ ".1";
 BCL_MANPAGE: str = "bcl.3";
 
-BCL_HEADER: str = "bcl.h";
+BCL_HEADER: str = "include/bcl.h";
 PC_FILE: str = "bcl.pc";
 
 /**

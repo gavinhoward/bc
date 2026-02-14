@@ -544,7 +544,9 @@ if OS != "Windows"
 
 			full_includedir: str = get_includedir();
 
-			safe_install(path.join(full_libdir, file_deps[2]), file_deps[2],
+			bclh: str = path.basename(file_deps[2]);
+
+			safe_install(path.join(full_includedir, bclh), file_deps[2],
 			             MANPAGE_INSTALL_MODE, false);
 
 			if bool(config["install_manpages"])
@@ -561,7 +563,7 @@ if OS != "Windows"
 		{
 			path1: str = path.join(get_libdir(), LIBRARY);
 			path2: str = path.join(get_pc_path(), PC_FILE);
-			path3: str = path.join(get_includedir(), BCL_HEADER);
+			path3: str = path.join(get_includedir(), path.basename(BCL_HEADER));
 
 			path.rmf(path1);
 			path.rmf(path2);
