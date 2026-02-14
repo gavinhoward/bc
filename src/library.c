@@ -1333,15 +1333,22 @@ bcl_parse(const char* restrict val)
 
 	if (neg) val += 1;
 
+	// Clear and initialize the number.
+	bc_num_clear(BCL_NUM_NUM_NP(n));
+	bc_num_init(BCL_NUM_NUM_NP(n), BC_NUM_DEF_SIZE);
+
+	// XXX: This may look like it can go before the clearing and initialization
+	// of the number. However, it cannot.
+	//
+	// The reason why is because if the string is not valid, then when this
+	// jumps to the `err` label, it will try to free a number that was not
+	// initialized. In the best case, this leads to a crash from heap
+	// corruption, and in the worst case, undefined behavior ruins everything.
 	if (!bc_num_strValid(val))
 	{
 		vm->err = BCL_ERROR_PARSE_INVALID_STR;
 		goto err;
 	}
-
-	// Clear and initialize the number.
-	bc_num_clear(BCL_NUM_NUM_NP(n));
-	bc_num_init(BCL_NUM_NUM_NP(n), BC_NUM_DEF_SIZE);
 
 	bc_num_parse(BCL_NUM_NUM_NP(n), val, (BcBigDig) ctxt->ibase);
 
