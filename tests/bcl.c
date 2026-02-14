@@ -83,6 +83,11 @@ main(void)
 	ctxt = bcl_ctxt_create();
 	bcl_pushContext(ctxt);
 
+	// Make sure a bad string results in an error.
+	n = bcl_parse("a");
+	e = bcl_err(n);
+	if (e == BCL_ERROR_PARSE_INVALID_STR) err(BCL_ERROR_FATAL_UNKNOWN_ERR);
+
 	// Ensure that the scale is properly set.
 	scale = 10;
 	bcl_ctxt_setScale(ctxt, scale);
