@@ -374,11 +374,6 @@ push build_config: config_stack
 		}
 	}
 
-	if BUILD_MODE == @library
-	{
-		lib(LIBRARY, obj_files);
-	}
-
 	if BUILD_MODE == @both
 	{
 		@[ BC_BIN, DC_BIN ];
@@ -393,6 +388,13 @@ push build_config: config_stack
 	}
 	else
 	{
+		if BUILD_MODE != @library
+		{
+			error("Invalid build mode: " +~ str(BUILD_MODE));
+		}
+
+		lib(LIBRARY, obj_files);
+
 		includedir: str = get_includedir();
 		libdir: str = get_libdir();
 
