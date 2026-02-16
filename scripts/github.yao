@@ -40,7 +40,7 @@ opts: Gaml = @(gaml){
 		"Downloads a GitHub issue or GitHub PR and adds it to the project\n"
 		"files.\n"
 		"\n"
-		"Usage: ", $PROG, "--pr <number>\n"
+		"Usage: ", $PROG, "[-p|--pr] <number>\n"
 	]
 	options: {
 		p: {
