@@ -40,7 +40,7 @@ ROOTDIR: str = path.dirname(SCRIPTDIR);
 
 ISSUE_ITEMS := "assignees,author,body,closed,closedAt," +~
                "closedByPullRequestsReferences,comments,createdAt,id," +~
-               "isPinned,labels,milestone,number,projectCards,projectItems," +~
+               "isPinned,labels,milestone,number,projectItems," +~
                "reactionGroups,state,stateReason,title,updatedAt,url";
 PR_ITEMS := "additions,assignees,author,autoMergeRequest,baseRefName," +~
             "baseRefOid,body,changedFiles,closed,closedAt," +~
@@ -55,10 +55,11 @@ PR_ITEMS := "additions,assignees,author,autoMergeRequest,baseRefName," +~
 
 /**
  * Actually executes the GitHub query.
- * @param n   The issue or PR number.
- * @param pr  True if the script is adding a PR, false for an issue.
+ * @param n    The issue or PR number.
+ * @param pr   True if the script is adding a PR, false for an issue.
+ * @param cli  The name of the GitHub CLI program.
  */
-fn exec(n: num, pr: bool) -> void
+fn exec(n: num, pr: bool, cli: str) -> void
 {
 	cd ROOTDIR
 	{
@@ -90,9 +91,8 @@ fn exec(n: num, pr: bool) -> void
 
 		$ head -n -2 $file > $tmp;
 		$ printf '  },\n' >> $tmp;
-		$ gh $kind list --json $items --state closed --search @("#" +~ strn) |
-		  jq . |
-		  tail -n "+2" >> $tmp;
-		$ cat $tmp > $file;
+		$ $cli $kind view $strn --json $items >> $tmp;
+		$ printf ']\n' >> $tmp;
+		$ cat $tmp | jq . > $file;
 	}
 }

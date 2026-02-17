@@ -40,9 +40,15 @@ opts: Gaml = @(gaml){
 		"Downloads a GitHub issue or GitHub PR and adds it to the project\n"
 		"files.\n"
 		"\n"
-		"Usage: ", $PROG, "[-p|--pr] <number>\n"
+		"Usage: ", $PROG, "[-g|--github-cli <github-cli>] [-p|--pr] <number>\n"
 	]
 	options: {
+		g: {
+			help: "Path to the GitHub CLI to use."
+			short: @g
+			long: @github-cli
+			type: @REQUIRED
+		}
 		p: {
 			help: "Whether to get a PR or not"
 			short: @p
@@ -53,6 +59,7 @@ opts: Gaml = @(gaml){
 };
 
 pr: !bool = false;
+cli: !str = "gh";
 
 leftovers: []str =
 sys.getopts opt, arg: opts, sys.argv
@@ -60,6 +67,10 @@ sys.getopts opt, arg: opts, sys.argv
 	if opt == @p
 	{
 		pr! = true;
+	}
+	else if opt == @g
+	{
+		cli! = arg;
 	}
 };
 
@@ -72,4 +83,4 @@ if leftovers.len != 1
 // This line is just to ensure that the argument is a number.
 n: num = num(leftovers[0]);
 
-exec(n, pr);
+exec(n, pr, cli);
