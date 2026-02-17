@@ -75,7 +75,7 @@ fn exec(n: num, pr: bool) -> void
 		{
 			f.print("{ \"items\": ");
 
-			contents: str = io.read_file(file);
+			contents: str = str(io.read_file(file));
 			f.print(contents);
 			f.print("}");
 		}
