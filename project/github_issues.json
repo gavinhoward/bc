@@ -3766,5 +3766,63 @@
     "title": "Fails to compile with gcc v15 on Linux x86_64, clang ok",
     "updatedAt": "2025-07-25T17:50:54Z",
     "url": "https://github.com/gavinhoward/bc/issues/94"
+  },
+  {
+    "assignees": [],
+    "author": {
+      "id": "U_kgDOCGPbwA",
+      "is_bot": false,
+      "login": "shuang886",
+      "name": "Steven Huang"
+    },
+    "body": "Calling `bcl_parse(\"a\")` for example:\n\n```c\nBclNumber\nbcl_parse(const char* restrict val)\n{\n\tBclNum n;\n\t...\n\tif (!bc_num_strValid(val))  ← returns false because lowercase\n\t{\n\t\tvm->err = BCL_ERROR_PARSE_INVALID_STR;\n\t\tgoto err;  ← bypasses bc_num_init()\n\t}\n\n\t// Clear and initialize the number.\n\tbc_num_clear(BCL_NUM_NUM_NP(n));\n\tbc_num_init(BCL_NUM_NUM_NP(n), BC_NUM_DEF_SIZE);\n\t...\nerr:\n\tBC_FUNC_FOOTER(vm, e);\n\tBC_MAYBE_SETUP(ctxt, e, n, idx);  ← crashes in bc_num_free() trying to free(n->num)\n```\n\nI believe `bc_num_free()` should not be called unless it had gone through `bcl_num_init()`, but I'm not familiar enough with how everything is meant to be.",
+    "closed": true,
+    "closedAt": "2026-02-16T15:16:14Z",
+    "closedByPullRequestsReferences": [],
+    "comments": [
+      {
+        "id": "IC_kwDOCL0xJc7ojPZB",
+        "author": {
+          "login": "gavinhoward"
+        },
+        "authorAssociation": "OWNER",
+        "body": "You are correct on all counts. That was an issue, that was the cause, and that was the fix.\n\nI added your suggested test to the test, and it passes the test with the change. However, before I close this issue, can you pull the latest `master` and test that it works for you?",
+        "createdAt": "2026-02-14T09:19:48Z",
+        "includesCreatedEdit": false,
+        "isMinimized": false,
+        "minimizedReason": "",
+        "reactionGroups": [],
+        "url": "https://github.com/gavinhoward/bc/issues/95#issuecomment-3901552193",
+        "viewerDidAuthor": true
+      },
+      {
+        "id": "IC_kwDOCL0xJc7o_v4k",
+        "author": {
+          "login": "shuang886"
+        },
+        "authorAssociation": "NONE",
+        "body": "Yup, works great, thanks for the speedy fix!",
+        "createdAt": "2026-02-16T15:16:14Z",
+        "includesCreatedEdit": false,
+        "isMinimized": false,
+        "minimizedReason": "",
+        "reactionGroups": [],
+        "url": "https://github.com/gavinhoward/bc/issues/95#issuecomment-3909025316",
+        "viewerDidAuthor": false
+      }
+    ],
+    "createdAt": "2026-02-13T18:30:17Z",
+    "id": "I_kwDOCL0xJc7qwLch",
+    "isPinned": false,
+    "labels": [],
+    "milestone": null,
+    "number": 95,
+    "projectItems": [],
+    "reactionGroups": [],
+    "state": "CLOSED",
+    "stateReason": "COMPLETED",
+    "title": "bcl_parse() crashes if fed illegal characters",
+    "updatedAt": "2026-02-16T15:16:14Z",
+    "url": "https://github.com/gavinhoward/bc/issues/95"
   }
 ]
