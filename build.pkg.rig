@@ -750,18 +750,18 @@ fn check_err_test(
 
 /**
  * Checks that the exitcode of a regular test indicates success.
- * @param name      The name of the test.
- * @param exitcode  The exitcode of the test.
+ * @param name  The name of the test.
+ * @param res   The command result.
  */
 fn check_test_retcode(
 	name: str,
-	exitcode: uint,
+	res: CmdResult
 ) -> void
 {
-	if exitcode != 0
+	if res.exitcode != 0
 	{
 		error("Test \"" +~ name +~ "\" failed with exitcode: " +~
-		      str(exitcode) +~ "\n");
+		      str(res.exitcode) +~ "\n" +~ str(res.stderr) +~ "\n");
 	}
 }
 
@@ -778,7 +778,7 @@ fn check_test(
 	exp_path: str,
 ) -> void
 {
-	check_test_retcode(name, res.exitcode);
+	check_test_retcode(name, res);
 
 	exp := io.read_file(exp_path);
 
@@ -1397,7 +1397,7 @@ fn register_other_tests(
 
 		res := $ %(config_list["args"]) << $halt;
 
-		check_test_retcode(tgt, res.exitcode);
+		check_test_retcode(tgt, res);
 	}
 
 	if calc == "bc"
@@ -1407,7 +1407,7 @@ fn register_other_tests(
 		{
 			res := $ %(config_list["args"]) << @("quit\n");
 
-			check_test_retcode(tgt, res.exitcode);
+			check_test_retcode(tgt, res);
 		}
 
 		// Also, make sure quit only quits after an expression.
@@ -1415,7 +1415,7 @@ fn register_other_tests(
 		{
 			res := $ %(config_list["args"]) -e "1+1" << @("quit\n");
 
-			check_test_retcode(tgt, res.exitcode);
+			check_test_retcode(tgt, res);
 
 			if str(res.stdout) != "2"
 			{
@@ -1429,7 +1429,7 @@ fn register_other_tests(
 			{
 				res := $ %(config_list["args"]) << @("s(.02893)\n");
 
-				check_test_retcode(tgt, res.exitcode);
+				check_test_retcode(tgt, res);
 			}
 		}
 
@@ -1439,7 +1439,7 @@ fn register_other_tests(
 			{
 				res := $ %(config_list["args"]) -e 4 << @("halt\n");
 
-				check_test_retcode(tgt, res.exitcode);
+				check_test_retcode(tgt, res);
 			}
 		}
 
@@ -1573,7 +1573,7 @@ fn register_other_tests(
 		{
 			res := $ %(config_list["args"]) -i << @("halt\n");
 
-			check_test_retcode(tgt, res.exitcode);
+			check_test_retcode(tgt, res);
 		}
 	}
 	else
@@ -1584,7 +1584,7 @@ fn register_other_tests(
 			{
 				res := $ %(config_list["args"]) << @("4s stuff\n");
 
-				check_test_retcode(tgt, res.exitcode);
+				check_test_retcode(tgt, res);
 			}
 		}
 
@@ -1594,7 +1594,7 @@ fn register_other_tests(
 			{
 				res := $ %(config_list["args"]) -e 4pR;
 
-				check_test_retcode(tgt, res.exitcode);
+				check_test_retcode(tgt, res);
 			}
 		}
 
@@ -1778,19 +1778,19 @@ fn register_other_tests(
 		halt: str = str(config["halt"]);
 
 		res1 := $ %(config_list["args"]) -h << $halt;
-		check_test_retcode(tgt, res1.exitcode);
+		check_test_retcode(tgt, res1);
 
 		res2 := $ %(config_list["args"]) -P << $halt;
-		check_test_retcode(tgt, res2.exitcode);
+		check_test_retcode(tgt, res2);
 
 		res3 := $ %(config_list["args"]) -R << $halt;
-		check_test_retcode(tgt, res3.exitcode);
+		check_test_retcode(tgt, res3);
 
 		res4 := $ %(config_list["args"]) -v << $halt;
-		check_test_retcode(tgt, res4.exitcode);
+		check_test_retcode(tgt, res4);
 
 		res5 := $ %(config_list["args"]) -V << $halt;
-		check_test_retcode(tgt, res5.exitcode);
+		check_test_retcode(tgt, res5);
 	}
 
 	leading0_arg: str = path.join(testdir, "leading_zero_arg");
@@ -2072,7 +2072,7 @@ fn register_other_tests(
 		{
 			res := $ %(config_list["args"]) << @("limits\n");
 
-			check_test_retcode(tgt, res.exitcode);
+			check_test_retcode(tgt, res);
 
 			if str(res.stdout) == "" || str(res.stdout) == "\n"
 			{
