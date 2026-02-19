@@ -6,16 +6,25 @@ define len2(*a[]) {
 	return length(a[])
 }
 
-define void change_len(*a[]) {
+define void change_len1(a[]) {
+	a[length(a[]) + 4] = 0
+}
+
+define void change_len2(*a[]) {
 	a[length(a[]) + 4] = 0
 }
 
 length(temp[])
-
 len1(temp[])
 len2(temp[])
 
-change_len(temp[])
+change_len1(temp[])
+
+length(temp[])
+len1(temp[])
+len2(temp[])
+
+change_len2(temp[])
 
 length(temp[])
 len1(temp[])
