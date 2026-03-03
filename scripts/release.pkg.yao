@@ -261,14 +261,14 @@ fn do_rig(args: []str) -> void
 }
 
 /**
- * Runs `configure.sh`.
+ * Runs `configure.sh` for `make`.
  * @param cflags    The C compiler flags.
  * @param cc        The C compiler.
  * @param flags     The flags to pass to `configure.sh` itself.
  * @param gen       The setting for `GEN_HOST`.
  * @param long_bit  The number of bits in longs.
  */
-fn configure(
+fn configure_make(
 	cflags: str,
 	cc: str,
 	flags: str,
@@ -352,7 +352,7 @@ fn build_make(
 		sys.panic("Cannot run `configure.sh` or make");
 	}
 
-	configure(cflags, cc, flags, gen, long_bit);
+	configure_make(cflags, cc, flags, gen, long_bit);
 
 	hdr := "Building with `make`...\n    CC=" +~ cc +~
 	       "\n    CFLAGS=\"" +~ cflags +~
