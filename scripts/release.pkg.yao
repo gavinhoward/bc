@@ -1382,32 +1382,14 @@ fn build_sets() -> void
 		}
 	}
 
-	if !run_make
+	if run_rig
 	{
 		build_sets_rig();
 	}
-	else if !run_rig
+
+	if run_make
 	{
 		build_sets_make();
-	}
-	else
-	{
-		parallel.map @[ "rig", "make" ]:
-		(builder: str) -> void
-		{
-			if builder == "rig"
-			{
-				build_sets_rig();
-			}
-			else if builder == "make"
-			{
-				build_sets_make();
-			}
-			else
-			{
-				sys.panic("Bad builder: " +~ builder +~ "\n");
-			}
-		}
 	}
 
 	io.eprint("\nTests successful.\n");
