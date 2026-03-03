@@ -320,13 +320,18 @@ targets: []str =
 push build_config: config_stack
 {
 	gen_o_files: []str =
-	if BUILD_MODE != @library
+	if BUILD_MODE == @both || BUILD_MODE == @bc
 	{
 		@[
 			txt2o("gen/lib.bc", "bc_lib", "bc_lib_name", "BC_ENABLED", true),
 			txt2o("gen/lib2.bc", "bc_lib2", "bc_lib2_name",
 			      "BC_ENABLED && BC_ENABLE_EXTRA_MATH", true),
 			txt2o("gen/bc_help.txt", "bc_help", "", "BC_ENABLED", false),
+		];
+	} +~
+	if BUILD_MODE == @both || BUILD_MODE == @dc
+	{
+		@[
 			txt2o("gen/dc_help.txt", "dc_help", "", "DC_ENABLED", false),
 		];
 	};
@@ -380,7 +385,7 @@ push build_config: config_stack
 	}
 	else if BUILD_MODE == @bc
 	{
-		@[ DC_BIN ];
+		@[ BC_BIN ];
 	}
 	else if BUILD_MODE == @dc
 	{
