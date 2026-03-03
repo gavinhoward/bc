@@ -32,6 +32,8 @@ ROOTDIR: str = path.dirname(SCRIPTDIR);
 
 MAKE_DIR: str = "release_make";
 
+JOBS_STR: str = "-j" +~ str(sys.ncores);
+
 WINDOWS: bool = (host.os == "Windows");
 
 DEFOPT: str = if WINDOWS { "/D"; } else { "-D"; };
@@ -286,7 +288,7 @@ fn header(msg: str) -> void
  */
 fn do_make(args: []str) -> void
 {
-	$ make -j64 %(args);
+	$ make $JOBS_STR %(args) > /dev/null;
 }
 
 /**
@@ -295,7 +297,7 @@ fn do_make(args: []str) -> void
  */
 fn do_rig(args: []str) -> void
 {
-	$ rig -j64 %(args);
+	$ rig %(args) > /dev/null;
 }
 
 /**
@@ -397,7 +399,7 @@ fn build_make(
 
 	header(hdr);
 
-	res := $ make -j64;
+	res := $ make $JOBS_STR;
 
 	if res.stderr.len != 0
 	{
