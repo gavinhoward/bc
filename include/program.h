@@ -306,7 +306,7 @@ typedef void (*BcProgramUnary)(BcResult* r, BcNum* n);
 void
 bc_program_init(BcProgram* p);
 
-#if BC_DEBUG
+#if BC_DEBUG || BC_ENABLE_MEMCHECK
 
 /**
  * Frees a BcProgram. This is only used in debug builds because a BcProgram is
@@ -317,7 +317,7 @@ bc_program_init(BcProgram* p);
 void
 bc_program_free(BcProgram* p);
 
-#endif // BC_DEBUG
+#endif // BC_DEBUG || BC_ENABLE_MEMCHECK
 
 /**
  * Prints a stack trace of the bc functions or dc strings currently executing.

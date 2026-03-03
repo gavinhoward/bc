@@ -367,9 +367,9 @@ const BcVecFree bc_vec_dtors[] = {
 	bc_vec_free,
 	bc_num_free,
 #if !BC_ENABLE_LIBRARY
-#if BC_DEBUG
+#if BC_DEBUG || BC_ENABLE_MEMCHECK
 	bc_func_free,
-#endif // BC_DEBUG
+#endif // BC_DEBUG || BC_ENABLE_MEMCHECK
 	bc_slab_free,
 	bc_const_free,
 	bc_result_free,

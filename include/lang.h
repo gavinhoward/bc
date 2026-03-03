@@ -582,7 +582,7 @@ bc_func_insert(BcFunc* f, struct BcProgram* p, char* name, BcType type,
 void
 bc_func_reset(BcFunc* f);
 
-#if BC_DEBUG
+#if BC_DEBUG || BC_ENABLE_MEMCHECK
 /**
  * Frees a function. This is a destructor. This is only used in debug builds
  * because all functions are freed at exit. We free them in debug builds to
@@ -591,7 +591,7 @@ bc_func_reset(BcFunc* f);
  */
 void
 bc_func_free(void* func);
-#endif // BC_DEBUG
+#endif // BC_DEBUG || BC_ENABLE_MEMCHECK
 
 /**
  * Initializes an array, which is the array type in bc and dc source code. Since

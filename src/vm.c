@@ -60,6 +60,7 @@
 #include <status.h>
 #include <vector.h>
 #include <args.h>
+#include <parse.h>
 #include <vm.h>
 #include <read.h>
 #include <bc.h>

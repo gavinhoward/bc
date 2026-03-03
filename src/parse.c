@@ -223,7 +223,8 @@ bc_parse_reset(BcParse* p)
 	if (BC_ERR(vm->status)) BC_JMP;
 }
 
-#if BC_DEBUG
+#if BC_DEBUG || BC_ENABLE_MEMCHECK
+
 void
 bc_parse_free(BcParse* p)
 {
@@ -244,7 +245,8 @@ bc_parse_free(BcParse* p)
 
 	bc_lex_free(&p->l);
 }
-#endif // BC_DEBUG
+
+#endif // BC_DEBUG || BC_ENABLE_MEMCHECK
 
 void
 bc_parse_init(BcParse* p, BcProgram* prog, size_t func)

@@ -2869,9 +2869,9 @@ bc_program_free(BcProgram* p)
 	if (BC_IS_BC) bc_num_free(&p->last);
 #endif // BC_ENABLED
 
-#if BC_ENABLE_EXTRA_MATH
+#if BC_ENABLE_EXTRA_MATH && BC_DEBUG
 	bc_rand_free(&p->rng);
-#endif // BC_ENABLE_EXTRA_MATH
+#endif // BC_ENABLE_EXTRA_MATH && BC_DEBUG
 
 #if DC_ENABLED
 	if (BC_IS_DC) bc_vec_free(&p->tail_calls);
@@ -3020,8 +3020,13 @@ bc_program_reset(BcProgram* p)
 	//
 	// XXX: We don't do this in dc because other dc implementations don't.
 	// However, we *MUST* pop the items for results that are not retired yet.
+#if DC_ENABLED
 	if (BC_IS_DC && BC_I) bc_vec_npop(&p->results, p->nresults);
-	else bc_vec_popAll(&p->results);
+	else
+#endif // DC_ENABLED
+	{
+		bc_vec_popAll(&p->results);
+	}
 
 	// Now clear how many results there are.
 	p->nresults = 0;

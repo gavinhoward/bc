@@ -214,13 +214,16 @@ typedef struct BcParse
 void
 bc_parse_init(BcParse* p, struct BcProgram* prog, size_t func);
 
+#if BC_DEBUG || BC_ENABLE_MEMCHECK
+
 /**
- * Frees a parser. This is not guarded by #if BC_DEBUG because a separate
- * parser is created at runtime to parse read() expressions and dc strings.
+ * Frees a parser.
  * @param p  The parser to free.
  */
 void
 bc_parse_free(BcParse* p);
+
+#endif // BC_DEBUG || BC_ENABLE_MEMCHECK
 
 /**
  * Resets the parser. Resetting means erasing all state to the point that the
