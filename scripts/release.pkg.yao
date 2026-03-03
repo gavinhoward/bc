@@ -409,14 +409,7 @@ fn build_rig(
 
 	header(hdr);
 
-	res := $ rig;
-
-	if res.stderr.len != 0
-	{
-		io.eprint(cc +~ "generated warning(s):\n\n");
-		io.eprint(str(res.stderr));
-		sys.exit(1);
-	}
+	res := $ rig -gr -j64 %(flags);
 
 	if res.exitcode != 0
 	{
@@ -589,8 +582,6 @@ fn run_config_tests_rig(
 		run_test_rig(@[]);
 	}
 
-	do_rig(@[ "clean" ]);
-
 	build_rig(cflags, cc, flags +~ @[ "-Dbuild_mode=bc" ], long_bit);
 
 	if tests
@@ -598,16 +589,12 @@ fn run_config_tests_rig(
 		run_test_rig(@[]);
 	}
 
-	do_rig(@[ "clean" ]);
-
 	build_rig(cflags, cc, flags +~ @[ "-Dbuild_mode=dc" ], long_bit);
 
 	if tests
 	{
 		run_test_rig(@[]);
 	}
-
-	do_rig(@[ "clean" ]);
 }
 
 /**
