@@ -1334,7 +1334,7 @@ fn build_sets_make() -> void
 
 	$ bin/bc -ls << @("quit\n");
 
-	do_rig(@[ "clean_tests" ]);
+	do_make(@[ "clean_tests" ]);
 
 	if clang
 	{
