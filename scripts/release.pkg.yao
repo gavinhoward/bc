@@ -36,6 +36,13 @@ DEFOPT: str = if WINDOWS { "/D"; } else { "-D"; };
 C11OPT: str = if WINDOWS { "/std:c11"; } else { "-std=c11"; };
 C99OPT: str = if WINDOWS { "/std:c99"; } else { "-std=c99"; };
 
+ENVS: []str = @[
+    "POSIXLY_CORRECT", "BC_ENV_ARGS", "BC_LINE_LENGTH", "BC_BANNER",
+    "BC_SIGINT_RESET", "BC_TTY_MODE", "BC_PROMPT", "BC_EXPR_EXIT",
+    "BC_DIGIT_CLAMP", "DC_ENV_ARGS", "DC_LINE_LENGTH", "DC_SIGINT_RESET",
+    "DC_TTY_MODE", "DC_PROMPT", "DC_EXPR_EXIT", "DC_DIGIT_CLAMP",
+];
+
 /**
  * Turns a string array into a string by joining all strings together with
  * spaces.
@@ -1379,6 +1386,14 @@ fn build_sets_rig() -> void
 
 fn build_sets() -> void
 {
+	for e: ENVS
+	{
+		if env.exists(e)
+		{
+			sys.panic("Environment variable should not exist: " +~ e +~ "\n");
+		}
+	}
+
 	if !run_make
 	{
 		build_sets_rig();

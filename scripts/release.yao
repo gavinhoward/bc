@@ -146,4 +146,7 @@ if args.len != 0
 	sys.panic("Should not have arguments");
 }
 
-build_sets();
+env.unset ENVS
+{
+	build_sets();
+}
