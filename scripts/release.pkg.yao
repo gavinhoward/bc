@@ -27,9 +27,8 @@
  */
 
 PROG: str = path.realpath(sys.program);
-REAL: str = path.realpath(PROG +~ "..");
-
 SCRIPTDIR: str = path.dirname(PROG);
+ROOTDIR: str = path.dirname(SCRIPTDIR);
 
 WINDOWS: bool = (host.os == "Windows");
 
@@ -324,7 +323,7 @@ fn configure_make(
 	        env.str("CC", cc), env.str("GEN_HOST", str(gen)),
 	        env.str("LONG_BIT", str(long_bit))
 	{
-		$ @(path.join(REAL, "configure.sh")) $flags $extra_flags > /dev/null
+		$ @(path.join(ROOTDIR, "configure.sh")) %(all_flags) > /dev/null
 		  !> /dev/null;
 	}
 }
