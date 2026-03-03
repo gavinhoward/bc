@@ -359,7 +359,7 @@ fn build_make(
 	configure_make(cflags, cc, flags, gen, long_bit);
 
 	hdr := "Building with `make`...\n    CC=" +~ cc +~
-	       "\n    CFLAGS=\"" +~ cflags +~
+	       "\n    CFLAGS=\"" +~ cflags +~ "\" " +~
 	       "\n    LONG_BIT=" +~ str(long_bit) +~
 	       "\n    GEN_HOST=" +~ str(gen);
 
@@ -369,7 +369,7 @@ fn build_make(
 
 	if res.stderr.len != 0
 	{
-		io.eprint(cc +~ "generated warning(s):\n\n");
+		io.eprint(cc +~ " generated warning(s):\n\n");
 		io.eprint(str(res.stderr));
 		sys.exit(1);
 	}
@@ -404,7 +404,7 @@ fn build_rig(
 	cflags_str: str = strv2str(cflags);
 
 	hdr := "Building with Rig...\n    CC=" +~ cc +~
-	       "\n    CFLAGS=\"" +~ cflags_str +~
+	       "\n    CFLAGS=\"" +~ cflags_str +~ "\" " +~
 	       "\n    LONG_BIT=" +~ str(long_bit);
 
 	header(hdr);
