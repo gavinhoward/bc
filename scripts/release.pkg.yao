@@ -36,6 +36,12 @@ DEFOPT: str = if WINDOWS { "/D"; } else { "-D"; };
 C11OPT: str = if WINDOWS { "/std:c11"; } else { "-std=c11"; };
 C99OPT: str = if WINDOWS { "/std:c99"; } else { "-std=c99"; };
 
+C11OPT_RIG: str = "--compiler-flag=" +~ C11OPT;
+C99OPT_RIG: str = "--compiler-flag=" +~ C99OPT;
+
+RANDOPT: str = DEFOPT +~ "BC_RAND_BUILTIN=0";
+RANDOPT_RIG: str = "--compiler-flag=" +~ RANDOPT;
+
 ENVS: []str = @[
     "POSIXLY_CORRECT", "BC_ENV_ARGS", "BC_LINE_LENGTH", "BC_BANNER",
     "BC_SIGINT_RESET", "BC_TTY_MODE", "BC_PROMPT", "BC_EXPR_EXIT",
@@ -220,6 +226,18 @@ CLANG_FLAGS: []str = @[ "-Weverything", "-Wno-padded",
                         cgoto_flags;
 GCC_FLAGS: []str = @[ "-Wno-clobbered" ] +~ cgoto_flags;
 
+CLANG_FLAGS_RIG: []str =
+for f: CLANG_FLAGS
+{
+	"--compiler-flag=" +~ f;
+};
+
+GCC_FLAGS_RIG: []str =
+for f: GCC_FLAGS
+{
+	"--compiler-flag=" +~ f;
+};
+
 CLANG_FLAGS_STR: str = strv2str(CLANG_FLAGS);
 
 GCC_FLAGS_STR: str = strv2str(GCC_FLAGS);
@@ -234,6 +252,18 @@ DEBUG_CFLAGS: []str = CFLAGS +~ @[ "-fno-omit-frame-pointer" ];
 DEBUG_CFLAGS_STR: str = CFLAGS_STR +~ " -fno-omit-frame-pointer";
 RELEASE_CFLAGS: []str = CFLAGS +~ @[ "-DNDEBUG" ];
 RELEASE_CFLAGS_STR: str = CFLAGS_STR +~ " -DNDEBUG";
+
+RELEASE_CFLAGS_RIG: []str =
+for f: RELEASE_CFLAGS
+{
+	"--compiler-flag=" +~ f;
+};
+
+DEBUG_CFLAGS_RIG: []str =
+for f: DEBUG_CFLAGS
+{
+	"--compiler-flag=" +~ f;
+};
 
 /**
  * Print a header with a message. This is just to make it easy to track
@@ -309,7 +339,7 @@ fn configure_make(
 		// We need to quiet this warning from GCC because the configure.sh docs
 		// have this warning, so people should know. Also, I want this script to
 		// work.
-		GCC_FLAGS_STR +~ (if !gen_host { "-Wno-overlength-strings"; });
+		GCC_FLAGS_STR +~ (if !gen_host { " -Wno-overlength-strings"; });
 	};
 
 	all_flags: []str = flags +~ extra_flags;
@@ -401,7 +431,32 @@ fn build_rig(
 		sys.panic("Cannot run Rig");
 	}
 
-	cflags_str: str = strv2str(cflags);
+	extra_cflags: []str =
+	if cc == "clang"
+	{
+		// We need to quiet this warning from Clang because the configure.sh
+		// docs have this warning, so people should know. Also, I want this
+		// script to work.
+		CLANG_FLAGS_RIG +~
+		if !gen_host
+		{
+			@[ "--compiler-flag=-Wno-overlength-strings" ];
+		};
+	}
+	else if cc == "gcc"
+	{
+		// We need to quiet this warning from GCC because the configure.sh docs
+		// have this warning, so people should know. Also, I want this script to
+		// work.
+		GCC_FLAGS_RIG +~
+		if !gen_host
+		{
+			@[ "--compiler-flag=-Wno-overlength-strings" ];
+		};
+	};
+
+	all_cflags: []str = cflags +~ extra_cflags;
+	cflags_str: str = strv2str(all_cflags);
 
 	hdr := "Building with Rig...\n    CC=" +~ cc +~
 	       "\n    CFLAGS=\"" +~ cflags_str +~ "\" " +~
@@ -409,7 +464,7 @@ fn build_rig(
 
 	header(hdr);
 
-	res := $ rig -gr -j64 %(flags);
+	res := $ rig -gr %(flags) @("--compiler=" +~ cc) %(all_cflags);
 
 	if res.exitcode != 0
 	{
@@ -628,23 +683,21 @@ fn run_config_series_make(
 			run_config_tests_make(cflags, cc, flags, false, usize(64));
 		}
 
-		run_config_tests_make(cflags +~ " " +~ DEFOPT +~ "BC_RAND_BUILTIN=0",
-		                      cc, flags, true, usize(64));
+		run_config_tests_make(cflags +~ " " +~ RANDOPT, cc, flags, true,
+		                      usize(64));
 
 		// Test Editline if history is not turned off.
 		if editline && !(flags contains "H")
 		{
-			run_config_tests_make(cflags +~ " " +~ DEFOPT +~
-			                          "BC_RAND_BUILTIN=0",
-			                      cc, flags +~ @[ "-e" ], true, usize(64));
+			run_config_tests_make(cflags +~ " " +~ RANDOPT, cc,
+			                      flags +~ @[ "-e" ], true, usize(64));
 		}
 
 		// Test Readline if history is not turned off.
 		if readline && !(flags contains "H")
 		{
-			run_config_tests_make(cflags +~ " " +~ DEFOPT +~
-			                          "BC_RAND_BUILTIN=0",
-			                      cc, flags +~ @[ "-r" ], true, usize(64));
+			run_config_tests_make(cflags +~ " " +~ RANDOPT, cc,
+			                      flags +~ @[ "-r" ], true, usize(64));
 		}
 	}
 
@@ -682,23 +735,20 @@ fn run_config_series_rig(
 			run_config_tests_rig(cflags, cc, flags, usize(64));
 		}
 
-		run_config_tests_rig(cflags +~ @[ DEFOPT +~ "BC_RAND_BUILTIN=0" ], cc,
-		                     flags, usize(64));
+		run_config_tests_rig(cflags +~ @[ RANDOPT_RIG ], cc, flags, usize(64));
 
 		// Test Editline if history is not turned off.
 		if editline && !(flags contains "-Dhistory=none")
 		{
-			run_config_tests_rig(cflags +~ @[ DEFOPT +~ "BC_RAND_BUILTIN=0" ],
-			                     cc, flags +~ @[ "-Dhistory=editline" ],
-			                     usize(64));
+			run_config_tests_rig(cflags +~ @[ RANDOPT_RIG ], cc,
+			                     flags +~ @[ "-Dhistory=editline" ], usize(64));
 		}
 
 		// Test Readline if history is not turned off.
 		if readline && !(flags contains "-Dhistory=none")
 		{
-			run_config_tests_rig(cflags +~ @[ DEFOPT +~ "BC_RAND_BUILTIN=0" ],
-			                     cc, flags +~ @[ "-Dhistory=readline" ],
-			                     usize(64));
+			run_config_tests_rig(cflags +~ @[ RANDOPT_RIG ], cc,
+			                     flags +~ @[ "-Dhistory=readline" ], usize(64));
 		}
 	}
 
@@ -863,14 +913,14 @@ fn run_lib_tests_make(
 		sys.panic("Cannot run `configure.sh` or make");
 	}
 
-	build_make(cflags +~ " -a", cc, flags, true, usize(64));
+	build_make(cflags, cc, flags +~ @[ "-a" ], true, usize(64));
 
 	if tests
 	{
 		run_test_make(@[ "test" ]);
 	}
 
-	build_make(cflags +~ " -a", cc, flags, true, usize(32));
+	build_make(cflags, cc, flags +~ @[ "-a" ], true, usize(32));
 
 	if tests
 	{
@@ -955,11 +1005,11 @@ fn run_tests_rig(
 		sys.panic("Cannot run Rig");
 	}
 
-	run_test_series_rig(cflags +~ @[ C99OPT ], cc, flags);
+	run_test_series_rig(cflags +~ @[ C99OPT_RIG ], cc, flags);
 
 	if c11
 	{
-		run_test_series_rig(cflags +~ @[ C11OPT ], cc, flags);
+		run_test_series_rig(cflags +~ @[ C11OPT_RIG ], cc, flags);
 	}
 }
 
@@ -990,7 +1040,7 @@ fn karatsuba_rig() -> void
 
 	header("Running Karatsuba tests");
 
-	build_rig(RELEASE_CFLAGS, defcc, @[ "-O3" ], usize(64));
+	build_rig(RELEASE_CFLAGS_RIG, defcc, @[ "-Doptimization=3" ], usize(64));
 
 	do_rig(@[ "karatsuba_test" ]);
 }
@@ -1008,26 +1058,26 @@ fn vg_make() -> void
 
 	header("Running Valgrind under `make`");
 
-	build_make(DEBUG_CFLAGS_STR +~ " -std=c99", "gcc", @[ "-O3", "-gv" ], true,
-	           defbits);
+	build_make(DEBUG_CFLAGS_STR +~ " " +~ C99OPT, "gcc", @[ "-O3", "-gv" ],
+	           true, defbits);
 	run_test_make(@[ "test" ]);
 
 	do_make(@[ "clean_config" ]);
 
-	build_make(DEBUG_CFLAGS_STR +~ " -std=c99", "gcc", @[ "-O3", "-gvb" ], true,
-	           defbits);
+	build_make(DEBUG_CFLAGS_STR +~ " " +~ C99OPT, "gcc", @[ "-O3", "-gvb" ],
+	           true, defbits);
 	run_test_make(@[ "test" ]);
 
 	do_make(@[ "clean_config" ]);
 
-	build_make(DEBUG_CFLAGS_STR +~ " -std=c99", "gcc", @[ "-O3", "-gvd" ], true,
-	           defbits);
+	build_make(DEBUG_CFLAGS_STR +~ " " +~ C99OPT, "gcc", @[ "-O3", "-gvd" ],
+	           true, defbits);
 	run_test_make(@[ "test" ]);
 
 	do_make(@[ "clean_config" ]);
 
-	build_make(DEBUG_CFLAGS_STR +~ " -std=c99", "gcc", @[ "-O3", "-gva" ], true,
-	           defbits);
+	build_make(DEBUG_CFLAGS_STR +~ " " +~ C99OPT, "gcc", @[ "-O3", "-gva" ],
+	           true, defbits);
 	run_test_make(@[ "test" ]);
 
 	do_make(@[ "clean_config" ]);
@@ -1042,25 +1092,26 @@ fn vg_rig() -> void
 
 	header("Running Valgrind under Rig");
 
-	build_rig(DEBUG_CFLAGS +~ @[ "-std=c99" ], "gcc", @[ "-O3", "-gv" ],
-	          defbits);
+	build_rig(DEBUG_CFLAGS_RIG +~ @[ C99OPT_RIG ], "gcc",
+	          @[ "-Doptimization=3", "-Ddebug=1" ], defbits);
 	run_test_rig(@[ "test" ]);
 
 	do_rig(@[ "clean_config" ]);
 
-	build_rig(DEBUG_CFLAGS +~ @[ "-std=c99" ], "gcc", @[ "-O3", "-gvb" ],
-	          defbits);
+	build_rig(DEBUG_CFLAGS_RIG +~ @[ C99OPT_RIG ], "gcc",
+	          @[ "-Doptimization=3", "-Ddebug=1", "-Dbuild_mode=bc" ], defbits);
 	run_test_rig(@[ "test" ]);
 
 	do_rig(@[ "clean_config" ]);
 
-	build_rig(DEBUG_CFLAGS +~ @[ "-std=c99" ], "gcc", @[ "-O3", "-gvd" ],
-	          defbits);
+	build_rig(DEBUG_CFLAGS_RIG +~ @[ C99OPT_RIG ], "gcc",
+	          @[ "-Doptimization=3", "-Ddebug=1", "-Dbuild_mode=dc" ], defbits);
 	run_test_rig(@[ "test" ]);
 
 	do_rig(@[ "clean_config" ]);
 
-	build_rig(DEBUG_CFLAGS +~ @[ "-std=c99" ], "gcc", @[ "-O3", "-gva" ],
+	build_rig(DEBUG_CFLAGS_RIG +~ @[ C99OPT_RIG ], "gcc",
+	          @[ "-Doptimization=3", "-Ddebug=1", "-Dbuild_mode=library" ],
 	          defbits);
 	run_test_rig(@[ "test" ]);
 
@@ -1209,12 +1260,13 @@ fn debug_rig(
 
 	if cc == "clang" && sanitizers
 	{
-		run_tests_rig(DEBUG_CFLAGS +~ @[ " -fsanitize=undefined" ], cc,
-		              @[ "-Dmemcheck=1", "-Ddebug=1" ]);
+		run_tests_rig(DEBUG_CFLAGS_RIG +~
+		                  @[ "--compiler-flag=-fsanitize=undefined" ],
+		              cc, @[ "-Dmemcheck=1", "-Ddebug=1" ]);
 	}
 	else
 	{
-		run_tests_rig(DEBUG_CFLAGS, cc, @[ "-Ddebug=1" ]);
+		run_tests_rig(DEBUG_CFLAGS_RIG, cc, @[ "-Ddebug=1" ]);
 	}
 }
 
@@ -1231,8 +1283,8 @@ fn release_rig(
 		sys.panic("Cannot run Rig");
 	}
 
-	run_tests_rig(RELEASE_CFLAGS, cc, @[ "-Doptimization=3" ]);
-	run_lib_tests_rig(RELEASE_CFLAGS, cc, @[ "-Doptimization=3" ]);
+	run_tests_rig(RELEASE_CFLAGS_RIG, cc, @[ "-Doptimization=3" ]);
+	run_lib_tests_rig(RELEASE_CFLAGS_RIG, cc, @[ "-Doptimization=3" ]);
 }
 
 /**
@@ -1251,26 +1303,33 @@ fn reldebug_rig(
 
 	if cc == "clang" && sanitizers
 	{
-		run_tests_rig(DEBUG_CFLAGS +~ @[ " -fsanitize=address" ], cc,
-		              @[ "-Dmemcheck=1", "-Ddebug=1", "-Doptimization=3" ]);
-		run_tests_rig(DEBUG_CFLAGS +~ @[ " -fsanitize=memory" ], cc,
-		              @[ "-Dmemcheck=1", "-Ddebug=1", "-Doptimization=3" ]);
+		run_tests_rig(DEBUG_CFLAGS_RIG +~
+		                  @[ "--compiler-flag=-fsanitize=address" ],
+		              cc, @[ "-Dmemcheck=1", "-Ddebug=1", "-Doptimization=3" ]);
+		run_tests_rig(DEBUG_CFLAGS_RIG +~
+		                  @[ "--compiler-flag=-fsanitize=memory" ],
+		              cc, @[ "-Dmemcheck=1", "-Ddebug=1", "-Doptimization=3" ]);
 	}
 	else
 	{
-		run_tests_rig(DEBUG_CFLAGS, cc, @[ "-gO3" ]);
+		run_tests_rig(DEBUG_CFLAGS_RIG, cc,
+		              @[ "-Ddebug=1", "-Doptimization=3" ]);
 	}
 
 	if cc == "clang" && sanitizers
 	{
-		run_lib_tests_rig(DEBUG_CFLAGS +~ @[ " -fsanitize=address" ], cc,
+		run_lib_tests_rig(DEBUG_CFLAGS_RIG +~
+		                      @[ "--compiler-flag=-fsanitize=address" ],
+		                  cc,
 		                  @[ "-Dmemcheck=1", "-Ddebug=1", "-Doptimization=3" ]);
-		run_lib_tests_rig(DEBUG_CFLAGS +~ @[ " -fsanitize=memory" ], cc,
+		run_lib_tests_rig(DEBUG_CFLAGS_RIG +~
+		                      @[ "--compiler-flag=-fsanitize=memory" ],
+		                  cc,
 		                  @[ "-Dmemcheck=1", "-Ddebug=1", "-Doptimization=3" ]);
 	}
 	else
 	{
-		run_lib_tests_rig(DEBUG_CFLAGS, cc,
+		run_lib_tests_rig(DEBUG_CFLAGS_RIG, cc,
 		                  @[ "-Ddebug=1", "-Doptimization=3" ]);
 	}
 }
@@ -1288,8 +1347,8 @@ fn minsize_rig(
 		sys.panic("Cannot run Rig");
 	}
 
-	run_tests_rig(RELEASE_CFLAGS, cc, @[ "-Doptimization=s" ]);
-	run_lib_tests_rig(RELEASE_CFLAGS, cc, @[ "-Doptimization=s" ]);
+	run_tests_rig(RELEASE_CFLAGS_RIG, cc, @[ "-Doptimization=s" ]);
+	run_lib_tests_rig(RELEASE_CFLAGS_RIG, cc, @[ "-Doptimization=s" ]);
 }
 
 /**
@@ -1329,7 +1388,7 @@ fn build_sets_make() -> void
 {
 	header("Running math library under --standard with Rig");
 
-	build_make(DEBUG_CFLAGS_STR +~ " -std=c99", defcc, @[ "-g" ], true,
+	build_make(DEBUG_CFLAGS_STR +~ " " +~ C99OPT, defcc, @[ "-g" ], true,
 	           defbits);
 
 	$ bin/bc -ls << @("quit\n");
@@ -1354,7 +1413,7 @@ fn build_sets_rig() -> void
 {
 	header("Running math library under --standard with Rig");
 
-	build_rig(DEBUG_CFLAGS +~ @[ "-std=c99" ], defcc, @[ "-Ddebug=1" ],
+	build_rig(DEBUG_CFLAGS_RIG +~ @[ C99OPT_RIG ], defcc, @[ "-Ddebug=1" ],
 	          defbits);
 
 	$ build/bc -ls << @("quit\n");
