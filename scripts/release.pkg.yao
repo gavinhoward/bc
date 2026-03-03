@@ -104,7 +104,6 @@ opts: Gaml = @(gaml){
 		}
 		GEN: {
 			help: "Turn off running the gen script."
-			short: @G
 			long: @no-gen-script
 			type: @NONE
 		}
