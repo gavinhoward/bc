@@ -365,7 +365,7 @@ fn build_make(
 
 	header(hdr);
 
-	res := $ make;
+	res := $ make -j64;
 
 	if res.stderr.len != 0
 	{
