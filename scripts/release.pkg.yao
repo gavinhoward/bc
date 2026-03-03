@@ -30,6 +30,8 @@ PROG: str = path.realpath(sys.program);
 SCRIPTDIR: str = path.dirname(PROG);
 ROOTDIR: str = path.dirname(SCRIPTDIR);
 
+MAKE_DIR: str = "release_make";
+
 WINDOWS: bool = (host.os == "Windows");
 
 DEFOPT: str = if WINDOWS { "/D"; } else { "-D"; };
@@ -359,8 +361,7 @@ fn configure_make(
 	        env.str("CC", cc), env.str("GEN_HOST", str(gen)),
 	        env.str("LONG_BIT", str(long_bit))
 	{
-		$ @(path.join(ROOTDIR, "configure.sh")) %(all_flags) > /dev/null
-		  !> /dev/null;
+		$ ../configure.sh %(all_flags) > /dev/null !> /dev/null;
 	}
 }
 
@@ -1387,23 +1388,29 @@ fn build_set_rig(
  */
 fn build_sets_make() -> void
 {
-	header("Running math library under --standard with Rig");
+	// We do this so that we can have a separate directory for `make`.
+	path.mkdirp(MAKE_DIR);
 
-	build_make(DEBUG_CFLAGS_STR +~ " " +~ C99OPT, defcc, @[ "-g" ], true,
-	           defbits);
-
-	$ bin/bc -ls << @("quit\n");
-
-	do_make(@[ "clean_tests" ]);
-
-	if clang
+	cd MAKE_DIR
 	{
-		build_set_make("clang");
-	}
+		header("Running math library under --standard with Rig");
 
-	if gcc
-	{
-		build_set_make("gcc");
+		build_make(DEBUG_CFLAGS_STR +~ " " +~ C99OPT, defcc, @[ "-g" ], true,
+		           defbits);
+
+		$ bin/bc -ls << @("quit\n");
+
+		do_make(@[ "clean_tests" ]);
+
+		if clang
+		{
+			build_set_make("clang");
+		}
+
+		if gcc
+		{
+			build_set_make("gcc");
+		}
 	}
 }
 
@@ -1442,14 +1449,32 @@ fn build_sets() -> void
 		}
 	}
 
-	if run_rig
+	if !run_make
 	{
 		build_sets_rig();
 	}
-
-	if run_make
+	else if !run_rig
 	{
 		build_sets_make();
+	}
+	else
+	{
+		parallel.map @[ "rig", "make" ]:
+		(builder: str) -> void
+		{
+			if builder == "rig"
+			{
+				build_sets_rig();
+			}
+			else if builder == "make"
+			{
+				build_sets_make();
+			}
+			else
+			{
+				sys.panic("Bad builder: " +~ builder +~ "\n");
+			}
+		}
 	}
 
 	io.eprint("\nTests successful.\n");
