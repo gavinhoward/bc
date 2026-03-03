@@ -288,8 +288,8 @@ MAINEXEC_FLAGS: []str = @[ DEFOPT +~ "MAINEXEC=" +~ MAINEXEC ];
 BC_DEF: str = if LIBRARY_ENABLED == "0" { BC_ENABLED; } else { "1"; };
 DC_DEF: str = if LIBRARY_ENABLED == "0" { DC_ENABLED; } else { "1"; };
 
-CFLAGS1: []str = config_list["cflags"] +~ @[ OPTOPT, INCOPT ] +~
-                 COVERAGE_CFLAGS +~ MAINEXEC_FLAGS;
+CFLAGS1: []str = config_list["cflags"] +~ compiler_flags +~
+                 @[ OPTOPT, INCOPT ] +~ COVERAGE_CFLAGS +~ MAINEXEC_FLAGS;
 CFLAGS2: []str = @[
 	DEFOPT +~ "BC_ENABLED=" +~ BC_DEF,
 	DEFOPT +~ "DC_ENABLED=" +~ DC_DEF,
