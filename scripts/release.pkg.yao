@@ -726,7 +726,7 @@ fn run_settings_series_make(
 	if settings
 	{
 		settings_path: str = path.join(SCRIPTDIR, "release_settings_make.txt");
-		settings_txt: str = io.read_file(settings_path);
+		settings_txt: str = str(io.read_file(settings_path));
 		lines: []str = settings_txt.split("\n");
 
 		for line: lines
@@ -761,7 +761,7 @@ fn run_settings_series_rig(
 	if settings
 	{
 		settings_path: str = path.join(SCRIPTDIR, "release_settings_rig.txt");
-		settings_txt: str = io.read_file(settings_path);
+		settings_txt: str = str(io.read_file(settings_path));
 		lines: []str = settings_txt.split("\n");
 
 		for line: lines
@@ -828,7 +828,7 @@ fn run_test_series_rig(
 	}
 
 	series_path: str = path.join(SCRIPTDIR, "release_flags_rig.txt");
-	series_txt: str = io.read_file(series_path);
+	series_txt: str = str(io.read_file(series_path));
 	series_flags: []str = series_txt.split("\n");
 
 	run_settings_series_rig(cflags, cc, flags);
