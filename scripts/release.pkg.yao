@@ -222,7 +222,8 @@ CLANG_FLAGS: []str = @[ "-Weverything", "-Wno-padded",
                         "-Wno-poison-system-directories",
                         "-Wno-switch-default", "-Wno-unknown-warning-option",
                         "-Wno-pre-c11-compat", "-Wno-implicit-int-enum-cast",
-                        "-Wno-implicit-void-ptr-cast", "-Wno-c++-keyword" ] +~
+                        "-Wno-implicit-void-ptr-cast", "-Wno-c++-keyword",
+                        "-Wno-clobbered", "-Wno-nrvo" ] +~
                         cgoto_flags;
 GCC_FLAGS: []str = @[ "-Wno-clobbered" ] +~ cgoto_flags;
 
