@@ -386,7 +386,7 @@ fn build_make(
  * release.
  * @param cflags    The C compiler flags.
  * @param cc        The C compiler.
- * @param flags     The flags to pass to `configure.sh` itself.
+ * @param flags     The flags to pass to Rig itself.
  * @param long_bit  The number of bits in longs.
  */
 fn build_rig(
