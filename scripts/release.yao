@@ -37,12 +37,12 @@
 //
 // For FreeBSD, run using the following:
 //
-// scripts/release.yao -ger --no-gen-script --no-128 --computed-goto
+// scripts/release.yao -ger --no-gen-script --computed-goto
 //
 // For Linux, run two separate ones (in different checkouts), like so:
 //
 // scripts/release.yao -gpGser --no-gen-script --computed-goto --no-128
-// cd temp_build; ../scripts/release.yao -gpCverk --no-gen-script --history
+// scripts/release.yao -gpCverk --no-gen-script --history
 //
 // Yes, I usually do sanitizers with Clang and Valgrind with GCC, and I also do
 // out-of-source builds with GCC.
