@@ -272,7 +272,9 @@ if bool(config["strict"])
 			@[ "-Weverything", "-ferror-limit=100000", "-Wno-padded",
 			   "-Wno-unknown-warning-option", "-Wno-unsafe-buffer-usage",
 			   "-Wno-documentation-unknown-command", "-Wno-pre-c11-compat",
-			   "-Wno-enum-enum-conversion", "-Wno-switch-default" ];
+			   "-Wno-enum-enum-conversion", "-Wno-switch-default",
+			   "-Wno-implicit-int-enum-cast", "-Wno-implicit-void-ptr-cast",
+			   "-Wno-c++-keyword", "-Wno-clobbered", "-Wno-nrvo" ];
 		};
 
 		// Return the combination of the sets.
