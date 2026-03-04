@@ -564,7 +564,7 @@ fn run_config_tests_make(
 		"Building with configure flags and `make`";
 	};
 
-	header("\"" +~ header_start +~ "\" ...\n" +~
+	header(header_start +~ "...\n" +~
 	       "    CC=" +~ cc +~ "\n" +~
 	       "    CFLAGS=\"" +~ cflags +~ "\"\n" +~
 	       "    LONG_BIT=" +~ str(long_bit) +~ "\n" +~
@@ -628,7 +628,7 @@ fn run_config_tests_rig(
 		"Building with Rig";
 	};
 
-	header("\"" +~ header_start +~ "\" ...\n" +~
+	header(header_start +~ "...\n" +~
 	       "    CC=" +~ cc +~ "\n" +~
 	       "    CFLAGS=\"" +~ strv2str(cflags) +~ "\"\n" +~
 	       "    flags=\"" +~ strv2str(flags) +~ "\"\n" +~
@@ -1395,7 +1395,7 @@ fn build_sets_make() -> void
 
 	cd MAKE_DIR
 	{
-		header("Running math library under --standard with Rig");
+		header("Running math library under --standard with `make`");
 
 		build_make(DEBUG_CFLAGS_STR +~ " " +~ C99OPT, defcc, @[ "-g" ], true,
 		           defbits);
