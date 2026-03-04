@@ -665,7 +665,8 @@ fn exe(name: str, o_files: []str) -> void
 	target name: o_files
 	{
 		$ $CC %(config_list["other_cflags"]) %(config_list["strip_flag"])
-		  %(CFLAGS) %(LDFLAGS) $EXEOUTOPT @(tgt) %(file_deps);
+		  %(CFLAGS) %(LDFLAGS) $EXEOUTOPT @(tgt) %(file_deps)
+		  %(config_list["lib_flags"]);
 	}
 }
 

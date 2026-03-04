@@ -241,7 +241,7 @@ if bool(config["lto"])
 
 hist_sym: sym = sym(config["history"]);
 
-hist_flag: []str =
+lib_flag: []str =
 if hist_sym == @readline
 {
 	@[ "-lreadline" ];
@@ -293,7 +293,7 @@ version: str = version_lines[0];
 version_flag: []str = @[ DEFOPT +~ "VERSION=" +~ version ];
 
 other_flags: []str = freebsd_flags +~ macos_flags +~ openbsd_flags +~
-                     lto_flag +~ strict_flags +~ version_flag +~ hist_flag +~
+                     lto_flag +~ strict_flags +~ version_flag +~
 if bool(config["debug"])
 {
 	@[ compiler_db["opt.debug"] ];
@@ -326,6 +326,7 @@ else
 build_config: Gaml = @(gaml){
 	other_cflags: $other_flags
 	strip_flag: $strip_flag
+	lib_flags: $lib_flag
 };
 
 targets: []str =
