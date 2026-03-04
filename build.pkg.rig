@@ -659,7 +659,6 @@ fn txt2o(
  * Generates a target for an executable and returns its name.
  * @param name     The name of the executable.
  * @param o_files  The object files for the executable.
- * @return         The name of the generated target.
  */
 fn exe(name: str, o_files: []str) -> void
 {
