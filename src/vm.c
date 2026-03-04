@@ -1247,12 +1247,12 @@ err:
 		goto restart;
 	}
 
-#if BC_DEBUG
+#if BC_DEBUG || BC_ENABLE_MEMCHECK
 	// Since these are tied to this function, free them here. We only free in
 	// debug mode because stdin is always the last thing read.
 	bc_vec_free(&vm->line_buf);
 	bc_vec_free(&vm->buffer);
-#endif // BC_DEBUG
+#endif // BC_DEBUG || BC_ENABLE_MEMCHECK
 
 	BC_LONGJMP_CONT(vm);
 }
@@ -1822,9 +1822,9 @@ bc_vm_atexit(BcStatus status)
 
 	bc_vm_shutdown();
 
-#if BC_DEBUG
+#if BC_DEBUG || BC_ENABLE_MEMCHECK
 	bc_vec_free(&vm->jmp_bufs);
-#endif // BC_DEBUG
+#endif // BC_DEBUG || BC_ENABLE_MEMCHECK
 
 	return s;
 }

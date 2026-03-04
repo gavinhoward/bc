@@ -85,12 +85,12 @@ typedef enum BcDtorType
 
 #if !BC_ENABLE_LIBRARY
 
-#if BC_DEBUG
+#if BC_DEBUG || BC_ENABLE_MEMCHECK
 
 	/// BcFunc destructor.
 	BC_DTOR_FUNC,
 
-#endif // BC_DEBUG
+#endif // BC_DEBUG || BC_ENABLE_MEMCHECK
 
 	/// BcSlab destructor.
 	BC_DTOR_SLAB,

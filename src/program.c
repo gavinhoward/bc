@@ -2869,9 +2869,9 @@ bc_program_free(BcProgram* p)
 	if (BC_IS_BC) bc_num_free(&p->last);
 #endif // BC_ENABLED
 
-#if BC_ENABLE_EXTRA_MATH && BC_DEBUG
+#if BC_ENABLE_EXTRA_MATH
 	bc_rand_free(&p->rng);
-#endif // BC_ENABLE_EXTRA_MATH && BC_DEBUG
+#endif // BC_ENABLE_EXTRA_MATH
 
 #if DC_ENABLED
 	if (BC_IS_DC) bc_vec_free(&p->tail_calls);
@@ -2934,11 +2934,11 @@ bc_program_init(BcProgram* p)
 	if (BC_IS_BC) bc_num_init(&p->last, BC_NUM_DEF_SIZE);
 #endif // BC_ENABLED
 
-#if BC_DEBUG
+#if BC_DEBUG || BC_ENABLE_MEMCHECK
 	bc_vec_init(&p->fns, sizeof(BcFunc), BC_DTOR_FUNC);
-#else // BC_DEBUG
+#else // BC_DEBUG || BC_ENABLE_MEMCHECK
 	bc_vec_init(&p->fns, sizeof(BcFunc), BC_DTOR_NONE);
-#endif // BC_DEBUG
+#endif // BC_DEBUG || BC_ENABLE_MEMCHECK
 	bc_map_init(&p->fn_map);
 	bc_program_insertFunc(p, bc_func_main);
 	bc_program_insertFunc(p, bc_func_read);
