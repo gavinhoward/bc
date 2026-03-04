@@ -177,7 +177,7 @@ if LIBRARY_ENABLED == "0"
 				}
 				else
 				{
-					error("History does not work\n");
+					error("History does not work\n" +~ str(res.stderr_full));
 				}
 			}
 			else
@@ -239,6 +239,18 @@ if bool(config["lto"])
 	if CC contains "gcc" { @[ "-flto=auto" ]; } else { @[ "-flto" ]; }
 };
 
+hist_sym: sym = sym(config["history"]);
+
+hist_flag: []str =
+if hist_sym == @readline
+{
+	@[ "-lreadline" ];
+}
+else if hist_sym == @editline
+{
+	@[ "-ledit" ];
+};
+
 strict_flags: []str =
 if bool(config["strict"])
 {
@@ -281,7 +293,7 @@ version: str = version_lines[0];
 version_flag: []str = @[ DEFOPT +~ "VERSION=" +~ version ];
 
 other_flags: []str = freebsd_flags +~ macos_flags +~ openbsd_flags +~
-                     lto_flag +~ strict_flags +~ version_flag +~
+                     lto_flag +~ strict_flags +~ version_flag +~ hist_flag +~
 if bool(config["debug"])
 {
 	@[ compiler_db["opt.debug"] ];
