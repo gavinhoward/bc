@@ -129,6 +129,8 @@ usage() {
 	printf '        Installs all locales, regardless of how many are on the system. This\n'
 	printf '        option is useful for package maintainers who want to make sure that\n'
 	printf '        a package contains all of the locales that end users might need.\n'
+	printf '    -m, --memcheck\n'
+	printf '        Enable memcheck.\n'
 	printf '    -M, --disable-man-pages\n'
 	printf '        Disable installing manpages.\n'
 	printf '    -N, --disable-nls\n'
@@ -689,6 +691,7 @@ hist_impl="internal"
 extra_math=1
 optimization=""
 generate_tests=1
+memcheck=0
 install_manpages=1
 nls=1
 force=0
@@ -715,7 +718,7 @@ dc_default_digit_clamp=0
 # getopts is a POSIX utility, but it cannot handle long options. Thus, the
 # handling of long options is done by hand, and that's the reason that short and
 # long options cannot be mixed.
-while getopts "abBcdDeEfgGhHik:lMNO:p:PrS:s:T-" opt; do
+while getopts "abBcdDeEfgGhHik:lmMNO:p:PrS:s:T-" opt; do
 
 	case "$opt" in
 		a) library=1 ;;
@@ -734,6 +737,7 @@ while getopts "abBcdDeEfgGhHik:lMNO:p:PrS:s:T-" opt; do
 		i) hist_impl="internal" ;;
 		k) karatsuba_len="$OPTARG" ;;
 		l) all_locales=1 ;;
+		m) memcheck=1 ;;
 		M) install_manpages=0 ;;
 		N) nls=0 ;;
 		O) optimization="$OPTARG" ;;
@@ -866,6 +870,7 @@ while getopts "abBcdDeEfgGhHik:lMNO:p:PrS:s:T-" opt; do
 				enable-readline) hist_impl="readline" ;;
 				enable-internal-history) hist_impl="internal" ;;
 				install-all-locales) all_locales=1 ;;
+				memcheck) memcheck=1 ;;
 				help* | bc-only* | dc-only* | debug*)
 					usage "No arg allowed for --$arg option" ;;
 				disable-bc* | disable-dc* | disable-clean*)
@@ -1684,6 +1689,8 @@ contents=$(replace "$contents" "LIBRARY" "$library")
 contents=$(replace "$contents" "HISTORY" "$hist")
 contents=$(replace "$contents" "EXTRA_MATH" "$extra_math")
 contents=$(replace "$contents" "NLS" "$nls")
+
+contents=$(replace "$contents" "BC_ENABLE_MEMCHECK" "$memcheck")
 
 contents=$(replace "$contents" "BC_LIB_O" "$bc_lib")
 contents=$(replace "$contents" "BC_HELP_O" "$bc_help")
