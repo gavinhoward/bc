@@ -275,6 +275,10 @@ if bool(config["strict"])
 			   "-Wno-enum-enum-conversion", "-Wno-switch-default",
 			   "-Wno-implicit-int-enum-cast", "-Wno-implicit-void-ptr-cast",
 			   "-Wno-c++-keyword", "-Wno-clobbered", "-Wno-nrvo" ];
+		}
+		else if CC contains "gcc"
+		{
+			@[ "-Wno-unknown-warning", "-Wno-clobbered" ];
 		};
 
 		// Return the combination of the sets.
