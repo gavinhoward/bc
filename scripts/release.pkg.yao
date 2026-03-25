@@ -40,8 +40,8 @@ DEFOPT: str = if WINDOWS { "/D"; } else { "-D"; };
 C11OPT: str = if WINDOWS { "/std:c11"; } else { "-std=c11"; };
 C99OPT: str = if WINDOWS { "/std:c99"; } else { "-std=c99"; };
 
-C11OPT_RIG: str = "--compiler-flag=" +~ C11OPT;
-C99OPT_RIG: str = "--compiler-flag=" +~ C99OPT;
+C11OPT_RIG: str = "-D=std=c11";
+C99OPT_RIG: str = "-D=std=c99";
 
 RANDOPT: str = DEFOPT +~ "BC_RAND_BUILTIN=0";
 RANDOPT_RIG: str = "--compiler-flag=" +~ RANDOPT;
@@ -1009,11 +1009,11 @@ fn run_tests_rig(
 		sys.panic("Cannot run Rig");
 	}
 
-	run_test_series_rig(cflags +~ @[ C99OPT_RIG ], cc, flags);
+	run_test_series_rig(cflags, cc, flags +~ @[ C99OPT_RIG ]);
 
 	if c11
 	{
-		run_test_series_rig(cflags +~ @[ C11OPT_RIG ], cc, flags);
+		run_test_series_rig(cflags, cc, flags +~ @[ C11OPT_RIG ]);
 	}
 }
 

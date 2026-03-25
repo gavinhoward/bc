@@ -251,6 +251,33 @@ else if hist_sym == @editline
 	@[ "-ledit" ];
 };
 
+// For efficiency.
+stdsym: sym = sym(config["std"]);
+
+std_flags: []str =
+if OS == "Windows"
+{
+	if stdsym == @c11
+	{
+		@[ "/std:c11" ];
+	}
+	else if stdsym == @c99
+	{
+		@[ "/std:c99" ];
+	}
+}
+else
+{
+	if stdsym == @c11
+	{
+		@[ "-std=c11" ];
+	}
+	else if stdsym == @c99
+	{
+		@[ "-std=c99" ];
+	}
+};
+
 strict_flags: []str =
 if bool(config["strict"])
 {
@@ -299,7 +326,7 @@ version: str = version_lines[0];
 version_flag: []str = @[ DEFOPT +~ "VERSION=" +~ version ];
 
 other_flags: []str = freebsd_flags +~ macos_flags +~ openbsd_flags +~
-                     lto_flag +~ strict_flags +~ version_flag +~
+                     lto_flag +~ std_flags +~ strict_flags +~ version_flag +~
 if bool(config["debug"])
 {
 	@[ compiler_db["opt.debug"] ];

@@ -179,6 +179,16 @@ options: {
 		default: @system
 		desc: "Whether to disable locales, use just the system ones, or use all (for building a package)."
 	}
+	std: {
+		type: @option
+		options: [
+			@none
+			@c99
+			@c11
+		]
+		default: @c11
+		desc: "The C standard to build under, if any."
+	}
 	bc/default_banner: {
 		type: @bool
 		default: false
