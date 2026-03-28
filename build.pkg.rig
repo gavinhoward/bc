@@ -65,9 +65,9 @@ fn safe_install(dest: str, src: str, mode: uint, symlink: bool) -> void
 
 	dest_file: str = path.basename(dest);
 
-	io.dir(dest_dir): d
+	if symlink
 	{
-		if symlink
+		io.dir(dest_dir): d
 		{
 			path.rmf(dest_file, d);
 
@@ -82,20 +82,26 @@ fn safe_install(dest: str, src: str, mode: uint, symlink: bool) -> void
 			{
 				path.symlink(src, dest_file, d);
 			}
-		}
-		else
-		{
-			tmp: str = path.tmp("bc_install");
 
-			contents: bytes = io.read_file(src);
-
-			io.open(tmp): f
+			io.open(dest_file, "a", d): f
 			{
-				f.print(contents);
 				f.chmod(mode);
 			}
+		}
+	}
+	else
+	{
+		real: str = path.realpath(src);
 
-			path.mv(tmp, dest_file, d);
+		io.dir(dest_dir): d
+		{
+			path.rmf(dest_file, d);
+			path.cp(real, dest_file, d);
+
+			io.open(dest_file, "a", d): f
+			{
+				f.chmod(mode);
+			}
 		}
 	}
 }

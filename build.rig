@@ -499,7 +499,17 @@ if OS != "Windows"
 
 			if DC_ENABLED != "0"
 			{
-				safe_install(path.join(bindir, DC_BIN), DC_BIN,
+				bin: str =
+				if BC_ENABLED != "0"
+				{
+					path.join(".", BC_BIN);
+				}
+				else
+				{
+					DC_BIN;
+				};
+
+				safe_install(path.join(bindir, DC_BIN), bin,
 				             EXEC_INSTALL_MODE, BC_ENABLED != "0");
 			}
 
