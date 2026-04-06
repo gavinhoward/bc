@@ -296,16 +296,15 @@ bc_read_file(const char* path)
 	buf2 = buf;
 	to_read = size;
 
-	do
+	while (to_read)
 	{
 		// Read the file. We just bail if a signal interrupts. This is so that
 		// users can interrupt the reading of big files if they want.
 		ssize_t r = read(fd, buf2, to_read);
-		if (BC_ERR(r < 0)) goto read_err;
+		if (BC_ERR(r <= 0)) goto read_err;
 		to_read -= (size_t) r;
 		buf2 += (size_t) r;
 	}
-	while (to_read);
 
 	// Got to have a nul byte.
 	buf[size] = '\0';
