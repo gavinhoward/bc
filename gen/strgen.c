@@ -195,6 +195,7 @@ bc_read_file(const char* path)
 		fprintf(stderr, "Could not malloc\n");
 		exit(INVALID_INPUT_FILE);
 	}
+
 	buf2 = buf;
 	to_read = size;
 
