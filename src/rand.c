@@ -415,6 +415,42 @@ bc_rand_seedZeroes(BcRNG* r, BcRNGData* rng, size_t idx)
 	}
 }
 
+#ifndef _WIN32
+
+/**
+ * Opens entropy devices with hardened flags.
+ * @param path  The entropy device path.
+ * @return      A file descriptor, or -1 on error.
+ */
+static int
+bc_rand_open(const char* path)
+{
+	int fd;
+	int flags = O_RDONLY;
+
+#ifdef O_CLOEXEC
+	flags |= O_CLOEXEC;
+#endif // O_CLOEXEC
+
+#ifdef O_NOCTTY
+	flags |= O_NOCTTY;
+#endif // O_NOCTTY
+
+	fd = open(path, flags);
+
+#if !defined(O_CLOEXEC) && defined(F_GETFD) && defined(F_SETFD) && defined(FD_CLOEXEC)
+	if (fd >= 0)
+	{
+		int cloexec = fcntl(fd, F_GETFD);
+		if (cloexec >= 0) (void) fcntl(fd, F_SETFD, cloexec | FD_CLOEXEC);
+	}
+#endif // !defined(O_CLOEXEC) && defined(F_GETFD) && defined(F_SETFD) && defined(FD_CLOEXEC)
+
+	return fd;
+}
+
+#endif // !_WIN32
+
 void
 bc_rand_srand(BcRNGData* rng)
 {
@@ -425,7 +461,7 @@ bc_rand_srand(BcRNGData* rng)
 #ifndef _WIN32
 
 	// Try /dev/urandom first.
-	fd = open("/dev/urandom", O_RDONLY);
+	fd = bc_rand_open("/dev/urandom");
 
 	if (BC_NO_ERR(fd >= 0))
 	{
@@ -435,7 +471,7 @@ bc_rand_srand(BcRNGData* rng)
 	else
 	{
 		// Try /dev/random second.
-		fd = open("/dev/random", O_RDONLY);
+		fd = bc_rand_open("/dev/random");
 
 		if (BC_NO_ERR(fd >= 0))
 		{

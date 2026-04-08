@@ -162,6 +162,16 @@ else
 	sh "$testdir/stdin.sh" "$d" "$exe" "$@"
 fi
 
+# Non-regular input streaming tests for bc.
+if [ "$d" = "bc" ]; then
+	if [ "$pll" -ne 0 ]; then
+		sh "$testdir/nonregular_streaming.sh" "$d" "$exe" "$@" &
+		pids="$pids $!"
+	else
+		sh "$testdir/nonregular_streaming.sh" "$d" "$exe" "$@"
+	fi
+fi
+
 # Script tests.
 if [ "$pll" -ne 0 ]; then
 	sh "$testdir/scripts.sh" "$d" "$extra" "$run_stack_tests" "$generate_tests" \

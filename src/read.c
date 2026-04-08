@@ -36,6 +36,8 @@
 #include <assert.h>
 #include <ctype.h>
 #include <errno.h>
+#include <limits.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -53,6 +55,32 @@
 #include <program.h>
 #include <vm.h>
 
+#define BC_READ_STREAM_CHUNK ((size_t) 8192)
+#define BC_READ_STREAM_MAX ((size_t) (1024U * 1024U * 1024U))
+
+#ifndef _WIN32
+
+/**
+ * Sets close-on-exec if O_CLOEXEC is unavailable at open() time.
+ * @param fd  The fd to mark.
+ */
+static void
+bc_read_cloexec(int fd)
+{
+#if !defined(O_CLOEXEC) && defined(F_GETFD) && defined(F_SETFD) && defined(FD_CLOEXEC)
+	int flags;
+
+	if (fd < 0) return;
+
+	flags = fcntl(fd, F_GETFD);
+	if (flags >= 0) (void) fcntl(fd, F_SETFD, flags | FD_CLOEXEC);
+#else // !defined(O_CLOEXEC) && defined(F_GETFD) && defined(F_SETFD) && defined(FD_CLOEXEC)
+	(void) fd;
+#endif // !defined(O_CLOEXEC) && defined(F_GETFD) && defined(F_SETFD) && defined(FD_CLOEXEC)
+}
+
+#endif // !_WIN32
+
 /**
  * A portability file open function. This is copied to gen/strgen.c. Make sure
  * to update that if this changes.
@@ -65,7 +93,18 @@ bc_read_open(const char* path, int mode)
 	int fd;
 
 #ifndef _WIN32
-	fd = open(path, mode);
+	int flags = mode;
+
+#ifdef O_CLOEXEC
+	flags |= O_CLOEXEC;
+#endif // O_CLOEXEC
+
+#ifdef O_NOCTTY
+	flags |= O_NOCTTY;
+#endif // O_NOCTTY
+
+	fd = open(path, flags);
+	bc_read_cloexec(fd);
 #else // _WIN32
 	fd = -1;
 	open(&fd, path, mode);
@@ -257,9 +296,10 @@ bc_read_file(const char* path)
 	BcErr e = BC_ERR_FATAL_IO_ERR;
 	size_t size, to_read;
 	struct stat pstat;
-	int fd;
+	int fd = -1;
 	char* buf;
 	char* buf2;
+	bool regular;
 
 	// This has been copied to gen/strgen.c. Make sure to change that if this
 	// changes.
@@ -290,21 +330,88 @@ bc_read_file(const char* path)
 		goto malloc_err;
 	}
 
-	// Get the size of the file and allocate that much.
-	size = (size_t) pstat.st_size;
-	buf = bc_vm_malloc(size + 1);
-	buf2 = buf;
-	to_read = size;
+	regular = true;
+#if defined(S_ISREG)
+	regular = S_ISREG(pstat.st_mode);
+#endif // defined(S_ISREG)
 
-	while (to_read)
+	if (regular)
 	{
-		// Read the file. We just bail if a signal interrupts. This is so that
-		// users can interrupt the reading of big files if they want.
-		ssize_t r = read(fd, buf2, to_read);
-		if (BC_ERR(r <= 0)) goto read_err;
-		to_read -= (size_t) r;
-		buf2 += (size_t) r;
+		// Reject sizes that cannot fit in size_t plus the trailing nul.
+		if (BC_ERR(pstat.st_size < 0 ||
+		           (uintmax_t) pstat.st_size > (uintmax_t) (SIZE_MAX - 1)))
+		{
+			goto malloc_err;
+		}
+
+		// Get the size of the file and allocate that much.
+		size = (size_t) pstat.st_size;
+		buf = bc_vm_malloc(bc_vm_growSize(size, 1));
+		buf2 = buf;
+		to_read = size;
+
+		while (to_read)
+		{
+			size_t chunk = to_read > (size_t) INT_MAX ? (size_t) INT_MAX : to_read;
+
+			ssize_t r = read(fd, buf2, chunk);
+
+			if (BC_ERR(r < 0))
+			{
+				if (errno == EINTR) continue;
+				goto read_err;
+			}
+			if (BC_ERR(r == 0)) goto read_err;
+
+			to_read -= (size_t) r;
+			buf2 += (size_t) r;
+		}
 	}
+	else
+	{
+		BcVec vec;
+		char stream_buf[BC_READ_STREAM_CHUNK];
+		ssize_t r;
+
+		bc_vec_init(&vec, sizeof(char), BC_DTOR_NONE);
+
+		for (;;)
+		{
+			r = read(fd, stream_buf, sizeof(stream_buf));
+
+			if (r == 0) break;
+			if (BC_ERR(r < 0))
+			{
+				if (errno == EINTR) continue;
+				bc_vec_free(&vec);
+				goto malloc_err;
+			}
+
+			if (BC_ERR(vec.len > SIZE_MAX - (size_t) r))
+			{
+				e = BC_ERR_FATAL_ALLOC_ERR;
+				bc_vec_free(&vec);
+				goto malloc_err;
+			}
+
+			if (BC_ERR((size_t) r > BC_READ_STREAM_MAX - vec.len))
+			{
+				e = BC_ERR_FATAL_ALLOC_ERR;
+				bc_vec_free(&vec);
+				goto malloc_err;
+			}
+
+			bc_vec_npush(&vec, (size_t) r, stream_buf);
+		}
+
+		bc_vec_pushByte(&vec, '\0');
+		size = vec.len - 1;
+		buf = vec.v;
+		bc_vec_clear(&vec);
+	}
+
+	close(fd);
+	fd = -1;
 
 	// Got to have a nul byte.
 	buf[size] = '\0';
@@ -315,14 +422,12 @@ bc_read_file(const char* path)
 		goto read_err;
 	}
 
-	close(fd);
-
 	return buf;
 
 read_err:
 	free(buf);
 malloc_err:
-	close(fd);
+	if (fd >= 0) close(fd);
 	bc_verr(e, path);
 	return NULL;
 }
