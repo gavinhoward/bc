@@ -270,6 +270,30 @@ If there are scripts that depend on the behavior of other dc(1) implementations,
 it is recommended that those scripts be changed to redirect **stderr** to
 **/dev/null**.
 
+# STREAMS
+
+dc(1) reads **stdin** and regular files only. If provided with the name of a
+pipe made by mkfifo(1) or equivalent, or some other stream-like file, its
+behavior is undefined.
+
+The typical behavior may be that dc(1) will think that the file is empty and
+does nothing. This is because it checks the size of the file first. However, do
+not expect this behavior.
+
+If reading from a pipe is necessary, redirect it into **stdin**, like so:
+
+    $ tail -f /path/to/pipe | dc
+
+The same technique can be used to direct output from a socket to dc(1):
+
+    $ netcat localhost 80 | dc
+
+The same principle applies to the output; dc(1) will only output **stdout** and
+**stderr**, which can be redirected:
+
+    $ dc > /path/to/pipe
+    $ dc | netcat localhost 80
+
 # SYNTAX
 
 Each item in the input source code, either a number (see the **NUMBERS**

@@ -472,6 +472,30 @@ If there are scripts that depend on the behavior of other bc(1) implementations,
 it is recommended that those scripts be changed to redirect **stderr** to
 **/dev/null**.
 
+# STREAMS
+
+bc(1) reads **stdin** and regular files only. If provided with the name of a
+pipe made by mkfifo(1) or equivalent, or some other stream-like file, its
+behavior is undefined.
+
+The typical behavior may be that bc(1) will think that the file is empty and
+does nothing. This is because it checks the size of the file first. However, do
+not expect this behavior.
+
+If reading from a pipe is necessary, redirect it into **stdin**, like so:
+
+    $ tail -f /path/to/pipe | bc
+
+The same technique can be used to direct output from a socket to bc(1):
+
+    $ netcat localhost 80 | bc
+
+The same principle applies to the output; bc(1) will only output **stdout** and
+**stderr**, which can be redirected:
+
+    $ bc > /path/to/pipe
+    $ bc | netcat localhost 80
+
 # SYNTAX
 
 The syntax for bc(1) programs is mostly C-like, with some differences. This

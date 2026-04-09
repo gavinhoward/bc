@@ -311,6 +311,36 @@ This is done so that dc(1) can exit with an error code when
 If there are scripts that depend on the behavior of other dc(1)
 implementations, it is recommended that those scripts be changed to
 redirect \f[B]stderr\f[R] to \f[B]/dev/null\f[R].
+.SH STREAMS
+dc(1) reads \f[B]stdin\f[R] and regular files only.
+If provided with the name of a pipe made by mkfifo(1) or equivalent, or
+some other stream\-like file, its behavior is undefined.
+.PP
+The typical behavior may be that dc(1) will think that the file is empty
+and does nothing.
+This is because it checks the size of the file first.
+However, do not expect this behavior.
+.PP
+If reading from a pipe is necessary, redirect it into \f[B]stdin\f[R],
+like so:
+.IP
+.EX
+$ tail \-f /path/to/pipe | dc
+.EE
+.PP
+The same technique can be used to direct output from a socket to dc(1):
+.IP
+.EX
+$ netcat localhost 80 | dc
+.EE
+.PP
+The same principle applies to the output; dc(1) will only output
+\f[B]stdout\f[R] and \f[B]stderr\f[R], which can be redirected:
+.IP
+.EX
+$ dc > /path/to/pipe
+$ dc | netcat localhost 80
+.EE
 .SH SYNTAX
 Each item in the input source code, either a number (see the
 \f[B]NUMBERS\f[R] section) or a command (see the \f[B]COMMANDS\f[R]
