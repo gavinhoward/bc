@@ -331,6 +331,10 @@ clean_config: clean clean_benchmarks
 	@$(RM) -f $(BCL_PC)
 
 test:
+	@if [ $(BC_ENABLED) -ne 0 ]; then $(TESTSDIR)/all.sh bc $(BC_ENABLE_EXTRA_MATH) 1 $(GENERATE_TESTS) $(PROBLEMATIC_TESTS) $(BC_EXEC); fi
+	@if [ $(DC_ENABLED) -ne 0 ]; then $(TESTSDIR)/all.sh dc $(BC_ENABLE_EXTRA_MATH) 1 $(GENERATE_TESTS) $(PROBLEMATIC_TESTS) $(DC_EXEC); fi
+
+test_serial:
 	@if [ $(BC_ENABLED) -ne 0 ]; then $(TESTSDIR)/all.sh -n bc $(BC_ENABLE_EXTRA_MATH) 1 $(GENERATE_TESTS) $(PROBLEMATIC_TESTS) $(BC_EXEC); fi
 	@if [ $(DC_ENABLED) -ne 0 ]; then $(TESTSDIR)/all.sh -n dc $(BC_ENABLE_EXTRA_MATH) 1 $(GENERATE_TESTS) $(PROBLEMATIC_TESTS) $(DC_EXEC); fi
 

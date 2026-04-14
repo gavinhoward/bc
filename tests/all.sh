@@ -44,6 +44,53 @@ usage() {
 	exit 1
 }
 
+do_wait() {
+
+	if [ "$pll" -eq 0 ]; then
+		printf 'Not running parallel\n'
+		exit 1
+	fi
+
+	_do_wait_exit_err=0
+
+	for p in $pids; do
+
+		wait "$p"
+		_do_wait_err="$?"
+
+		if [ "$_do_wait_err" -ne 0 ]; then
+			printf 'A test failed!\n'
+			_do_wait_exit_err=1
+		fi
+	done
+
+	if [ "$_do_wait_exit_err" -ne 0 ]; then
+		exit 1
+	fi
+
+	pids=""
+}
+
+launch() {
+
+	if [ "$pll" -eq 0 ]; then
+		printf 'Not running parallel\n'
+		exit 1
+	fi
+
+	_launch_njobs=$(jobs -r | wc -l | tr -d " ")
+
+	if [ "$_launch_njobs" -ge "$procs" ]; then
+		do_wait
+	fi
+
+	"$@" &
+	pids="$pids $!"
+
+}
+
+procs=$(nproc)
+
 # We need to figure out if we should run stuff in parallel.
 pll=1
 
@@ -146,8 +193,7 @@ while read t; do
 	fi
 
 	if [ "$pll" -ne 0 ]; then
-		sh "$testdir/test.sh" "$d" "$t" "$generate_tests" "$exe" "$@" &
-		pids="$pids $!"
+		launch sh "$testdir/test.sh" "$d" "$t" "$generate_tests" "$exe" "$@"
 	else
 		sh "$testdir/test.sh" "$d" "$t" "$generate_tests" "$exe" "$@"
 	fi
@@ -156,26 +202,23 @@ done < "$testdir/$d/all.txt"
 
 # stdin tests.
 if [ "$pll" -ne 0 ]; then
-	sh "$testdir/stdin.sh" "$d" "$exe" "$@" &
-	pids="$pids $!"
+	launch sh "$testdir/stdin.sh" "$d" "$exe" "$@"
 else
 	sh "$testdir/stdin.sh" "$d" "$exe" "$@"
 fi
 
 # Script tests.
 if [ "$pll" -ne 0 ]; then
-	sh "$testdir/scripts.sh" "$d" "$extra" "$run_stack_tests" "$generate_tests" \
-		"$exe" "$@" &
-	pids="$pids $!"
+	launch sh "$testdir/scripts.sh" "$d" "$extra" "$run_stack_tests" \
+		"$generate_tests" "$exe" "$@"
 else
-	sh "$testdir/scripts.sh" -n "$d" "$extra" "$run_stack_tests" "$generate_tests" \
-		"$exe" "$@"
+	sh "$testdir/scripts.sh" -n "$d" "$extra" "$run_stack_tests" \
+		"$generate_tests" "$exe" "$@"
 fi
 
 # Error tests.
 if [ "$pll" -ne 0 ]; then
-	sh "$testdir/errors.sh" "$d" "$exe" "$@" &
-	pids="$pids $!"
+	launch sh "$testdir/errors.sh" "$d" "$exe" "$@"
 else
 	sh "$testdir/errors.sh" "$d" "$exe" "$@"
 fi
@@ -189,8 +232,7 @@ for testfile in $testdir/$d/errors/*.txt; do
 	b=$(basename "$testfile")
 
 	if [ "$pll" -ne 0 ]; then
-		sh "$testdir/error.sh" "$d" "$b" "$problematic_tests" "$@" &
-		pids="$pids $!"
+		launch sh "$testdir/error.sh" "$d" "$b" "$problematic_tests" "$@"
 	else
 		sh "$testdir/error.sh" "$d" "$b" "$problematic_tests" "$@"
 	fi
@@ -198,24 +240,7 @@ for testfile in $testdir/$d/errors/*.txt; do
 done
 
 if [ "$pll" -ne 0 ]; then
-
-	exit_err=0
-
-	for p in $pids; do
-
-		wait "$p"
-		err="$?"
-
-		if [ "$err" -ne 0 ]; then
-			printf 'A test failed!\n'
-			exit_err=1
-		fi
-	done
-
-	if [ "$exit_err" -ne 0 ]; then
-		exit 1
-	fi
-
+	do_wait
 fi
 
 printf '\nAll %s tests passed.\n' "$d"
