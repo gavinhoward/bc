@@ -2230,6 +2230,42 @@ fn register_history_tests(
 }
 
 /**
+ * Registers the truncate test for `bc`.
+ * @param exec         The name of the main executable target. This is to let
+ *                     all of the tests depend on it, not to run it.
+ * @param testdir      The full path to the test directory in the build
+ *                     directory.
+ * @param src_testdir  The full path to the test directory in the source
+ *                     directory.
+ */
+fn register_trunc_test(
+	exec: str,
+	testdir: str,
+	src_testdir: str,
+) -> void
+{
+	test_file: str = path.join(testdir, "trunc_test.txt");
+
+	// The file needs to be copied because we don't want to truncate the
+	// original.
+	target test_file: path.join(src_testdir, "shift.txt")
+	{
+		path.rmf(tgt);
+		path.cp(file_dep, tgt);
+	}
+
+	test @trunc_test: test_file
+	{
+		env.set "_BC_TEST_TRUNC=1"
+		{
+			res := $ %(config_list["args"]) @(file_dep);
+
+			check_err_test(tgt, res);
+		}
+	}
+}
+
+/**
  * Generates all of the test targets for an executable.
  * @param name  The base name of the executable.
  * @param targets  The targets that tests should depend on.
@@ -2318,6 +2354,11 @@ fn exe_tests(name: str) -> void
 		if host.os != "Windows" && sym(config["history"]) == @builtin
 		{
 			register_history_tests(exec, testdir, src_testdir);
+		}
+
+		if bool(config["debug"]) && name == "bc"
+		{
+			register_trunc_test(exec, testdir, src_testdir);
 		}
 	}
 }

@@ -48,6 +48,21 @@
  */
 #define BC_READ_BIN_CHAR(c) (!(c))
 
+#if BC_DEBUG
+
+/**
+ * @def bc_read_ftruncate
+ * Truncates the file with the given fd to 0.
+ * @param fd  The fd of the file.
+ */
+#ifndef _WIN32
+#define bc_read_ftruncate(fd) ftruncate((fd), 0)
+#else // _WIN32
+#define bc_read_ftruncate(fd) _chsize_s((fd), 0)
+#endif // _WIN32
+
+#endif // BC_DEBUG
+
 /**
  * Reads a line from stdin after printing prompt, if desired.
  * @param vec     The vector to put the stdin data into.

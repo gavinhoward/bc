@@ -258,6 +258,7 @@ bc_read_file(const char* path)
 	size_t size, to_read;
 	struct stat pstat;
 	int fd;
+	int mode;
 	char* buf;
 	char* buf2;
 
@@ -268,13 +269,21 @@ bc_read_file(const char* path)
 
 	assert(path != NULL);
 
+	mode = O_RDONLY;
+
 #if BC_DEBUG
 	// Need this to quiet MSan.
 	// NOLINTNEXTLINE
 	memset(&pstat, 0, sizeof(struct stat));
+
+	// This is for testing how `bc` behaves under truncation.
+	if (getenv("_BC_TEST_TRUNC") != NULL)
+	{
+		mode = O_RDWR;
+	}
 #endif // BC_DEBUG
 
-	fd = bc_read_open(path, O_RDONLY);
+	fd = bc_read_open(path, mode);
 
 	// If we can't read a file, we just barf.
 	if (BC_ERR(fd < 0)) bc_verr(BC_ERR_FATAL_FILE_ERR, path);
@@ -298,6 +307,17 @@ bc_read_file(const char* path)
 
 	while (to_read)
 	{
+#if BC_DEBUG
+		// This is for testing how `bc` behaves under truncation.
+		if (getenv("_BC_TEST_TRUNC") != NULL)
+		{
+			if (bc_read_ftruncate(fd) != 0)
+			{
+				abort();
+			}
+		}
+#endif // BC_DEBUG
+
 		// Read the file. We just bail if a signal interrupts. This is so that
 		// users can interrupt the reading of big files if they want.
 		ssize_t r = read(fd, buf2, to_read);
