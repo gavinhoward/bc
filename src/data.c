@@ -982,23 +982,23 @@ const uint8_t bc_parse_exprs[] = {
 /// An array of data for operators that correspond to token types. Note that a
 /// lower precedence *value* means a higher precedence.
 const uchar bc_parse_ops[] = {
-	BC_PARSE_OP(0, 0), BC_PARSE_OP(0, 0), BC_PARSE_OP(1, 0),
+	BC_PARSE_OP(0, 0),  BC_PARSE_OP(0, 0),  BC_PARSE_OP(1, 0),
 	BC_PARSE_OP(1, 0),
 #if BC_ENABLE_EXTRA_MATH
 	BC_PARSE_OP(2, 0),
 #endif // BC_ENABLE_EXTRA_MATH
-	BC_PARSE_OP(4, 0), BC_PARSE_OP(5, 1),  BC_PARSE_OP(5, 1),
+	BC_PARSE_OP(4, 0),  BC_PARSE_OP(5, 1),  BC_PARSE_OP(5, 1),
 	BC_PARSE_OP(5, 1),  BC_PARSE_OP(6, 1),  BC_PARSE_OP(6, 1),
 #if BC_ENABLE_EXTRA_MATH
-	BC_PARSE_OP(3, 0), BC_PARSE_OP(7, 1),  BC_PARSE_OP(7, 1),
+	BC_PARSE_OP(3, 0),  BC_PARSE_OP(7, 1),  BC_PARSE_OP(7, 1),
 #endif // BC_ENABLE_EXTRA_MATH
 	BC_PARSE_OP(9, 1),  BC_PARSE_OP(9, 1),  BC_PARSE_OP(9, 1),
 	BC_PARSE_OP(9, 1),  BC_PARSE_OP(9, 1),  BC_PARSE_OP(9, 1),
 	BC_PARSE_OP(11, 1), BC_PARSE_OP(10, 1), BC_PARSE_OP(8, 0),
-	BC_PARSE_OP(8, 0), BC_PARSE_OP(8, 0), BC_PARSE_OP(8, 0),
-	BC_PARSE_OP(8, 0), BC_PARSE_OP(8, 0),
+	BC_PARSE_OP(8, 0),  BC_PARSE_OP(8, 0),  BC_PARSE_OP(8, 0),
+	BC_PARSE_OP(8, 0),  BC_PARSE_OP(8, 0),
 #if BC_ENABLE_EXTRA_MATH
-	BC_PARSE_OP(8, 0), BC_PARSE_OP(8, 0), BC_PARSE_OP(8, 0),
+	BC_PARSE_OP(8, 0),  BC_PARSE_OP(8, 0),  BC_PARSE_OP(8, 0),
 #endif // BC_ENABLE_EXTRA_MATH
 	BC_PARSE_OP(8, 0),
 };

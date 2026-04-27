@@ -264,7 +264,7 @@ bc_lex_token(BcLex* l);
  * @param e8  The eighth bit.
  * @return    An expression entry for bc_parse_exprs[].
  */
-#define BC_PARSE_EXPR_ENTRY(e1, e2, e3, e4, e5, e6, e7, e8)               \
+#define BC_PARSE_EXPR_ENTRY(e1, e2, e3, e4, e5, e6, e7, e8)         \
 	((UINT8_C(e1) << 7) | (UINT8_C(e2) << 6) | (UINT8_C(e3) << 5) | \
 	 (UINT8_C(e4) << 4) | (UINT8_C(e5) << 3) | (UINT8_C(e6) << 2) | \
 	 (UINT8_C(e7) << 1) | (UINT8_C(e8) << 0))
