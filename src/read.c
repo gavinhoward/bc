@@ -307,6 +307,8 @@ bc_read_file(const char* path)
 
 	while (to_read)
 	{
+		ssize_t r;
+
 #if BC_DEBUG
 		// This is for testing how `bc` behaves under truncation.
 		if (getenv("_BC_TEST_TRUNC") != NULL)
@@ -320,7 +322,7 @@ bc_read_file(const char* path)
 
 		// Read the file. We just bail if a signal interrupts. This is so that
 		// users can interrupt the reading of big files if they want.
-		ssize_t r = read(fd, buf2, to_read);
+		r = read(fd, buf2, to_read);
 		if (BC_ERR(r <= 0)) goto read_err;
 		to_read -= (size_t) r;
 		buf2 += (size_t) r;
