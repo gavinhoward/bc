@@ -119,6 +119,19 @@ fn exe_name(name: str) -> str
 }
 
 /**
+ * Generates the true object file name for the given name of the C file.
+ * @param name  The name of the C file.
+ * @return      The true name of the object file.
+ */
+fn o_name(name: str) -> str
+{
+	ext: str = if bool(config["cbmc"]) { ".goto"; } else { ""; } +~
+	           if OS == "Windows" { ".obj"; } else { ".o"; };
+
+	return name +~ ext;
+}
+
+/**
  * Generates the default executable name for the given base name.
  * @param name  The base name of the executable.
  * @return      The true name of the executable, including prefix, suffix, and
@@ -605,12 +618,12 @@ fn strgen(
  */
 fn c2o(c_file: str) -> str
 {
-	o_file: str = c_file +~ (if OS == "Windows" { ".obj"; } else { ".o"; });
+	o_file: str = o_name(c_file);
 
 	target o_file: c_file, HEADERS
 	{
-		$ $CC %(config_list["other_cflags"]) %(CFLAGS) $OBJOPT $OBJOUTOPT @(tgt)
-		  @(file_dep);
+		$ @(str(config["cc"])) %(config_list["other_cflags"]) %(CFLAGS) $OBJOPT
+		  $OBJOUTOPT @(tgt) @(file_dep);
 	}
 
 	return o_file;
@@ -638,7 +651,7 @@ fn txt2o(
 	remove_tabs: bool,
 ) -> str
 {
-	c_file: str = txt_file +~ ".c";
+	c_file: str = txt_file +~ if bool(config["cbmc"]) { ".goto"; } +~ ".c";
 
 	c_config: Gaml = @(gaml){
 		strgen_name: $name
@@ -670,9 +683,9 @@ fn exe(name: str, o_files: []str) -> void
 {
 	target name: o_files
 	{
-		$ $CC %(config_list["other_cflags"]) %(config_list["strip_flag"])
-		  %(CFLAGS) %(LDFLAGS) $EXEOUTOPT @(tgt) %(file_deps)
-		  %(config_list["lib_flags"]);
+		$ @(str(config["cc"])) %(config_list["other_cflags"])
+		  %(config_list["strip_flag"]) %(CFLAGS) %(LDFLAGS) $EXEOUTOPT @(tgt)
+		  %(file_deps) %(config_list["lib_flags"]);
 	}
 }
 
@@ -752,6 +765,40 @@ fn check_err_test(
 	{
 		error("Test \"" +~ name +~ "\" produced no error message");
 	}
+}
+
+/**
+ * Creates targets for turning each C file into a corresponding object file, and
+ * returns the object file names.
+ * @param c_files  The C files to add targets for conversion to object files.
+ * @return         The list of target names for the object files.
+ */
+fn object_files(c_files: []str) -> []str
+{
+	gen_o_files: []str =
+	if BUILD_MODE == @both || BUILD_MODE == @bc
+	{
+		@[
+			txt2o("gen/lib.bc", "bc_lib", "bc_lib_name", "BC_ENABLED", true),
+			txt2o("gen/lib2.bc", "bc_lib2", "bc_lib2_name",
+			      "BC_ENABLED && BC_ENABLE_EXTRA_MATH", true),
+			txt2o("gen/bc_help.txt", "bc_help", "", "BC_ENABLED", false),
+		];
+	} +~
+	if BUILD_MODE == @both || BUILD_MODE == @dc
+	{
+		@[
+			txt2o("gen/dc_help.txt", "dc_help", "", "DC_ENABLED", false),
+		];
+	};
+
+	obj_files: []str = gen_o_files +~
+	for f: c_files
+	{
+		c2o(f);
+	};
+
+	return obj_files;
 }
 
 /**

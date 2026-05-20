@@ -334,6 +334,11 @@ options: {
 		default: false
 		desc: "Enable code coverage (only works on GCC)."
 	}
+	cbmc_bindir: {
+		type: @path
+		default: ""
+		desc: "The path to the directory with CBMC binaries. If empty, CBMC is not activated."
+	}
 	install_manpages: {
 		type: @bool
 		default: true

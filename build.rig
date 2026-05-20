@@ -357,36 +357,17 @@ else
 };
 
 build_config: Gaml = @(gaml){
+	cc: $CC
 	other_cflags: $other_flags
 	strip_flag: $strip_flag
 	lib_flags: $lib_flag
+	cbmc: false
 };
 
 targets: []str =
 push build_config: config_stack
 {
-	gen_o_files: []str =
-	if BUILD_MODE == @both || BUILD_MODE == @bc
-	{
-		@[
-			txt2o("gen/lib.bc", "bc_lib", "bc_lib_name", "BC_ENABLED", true),
-			txt2o("gen/lib2.bc", "bc_lib2", "bc_lib2_name",
-			      "BC_ENABLED && BC_ENABLE_EXTRA_MATH", true),
-			txt2o("gen/bc_help.txt", "bc_help", "", "BC_ENABLED", false),
-		];
-	} +~
-	if BUILD_MODE == @both || BUILD_MODE == @dc
-	{
-		@[
-			txt2o("gen/dc_help.txt", "dc_help", "", "DC_ENABLED", false),
-		];
-	};
-
-	obj_files: []str = gen_o_files +~
-	for f: c_files
-	{
-		c2o(f);
-	};
+	obj_files: []str = object_files(c_files);
 
 	if BUILD_MODE == @both || BUILD_MODE == @bc
 	{
@@ -676,6 +657,38 @@ if platform == host && BUILD_MODE != @library
 		for f: path.find_ext("txt")
 		{
 			path.rmf(f);
+		}
+	}
+
+	cbmc_bindir: str = str(config["cbmc_bindir"]);
+
+	if OS == "Linux" && cbmc_bindir != "" && BUILD_MODE == @both
+	{
+		cbmc_cc: str = path.join(cbmc_bindir, "goto-cc");
+
+		cbmc_config: Gaml = @(gaml){
+			cc: $cbmc_cc
+			other_cflags: $other_flags
+			strip_flag: $strip_flag
+			lib_flags: $lib_flag
+			cbmc: true
+		};
+
+		push cbmc_config: config_stack
+		{
+			obj_files: []str = object_files(c_files);
+			exe("goto", obj_files);
+
+			target @cbmc: "goto"
+			{
+				cbmc_bindir: str = str(config["cbmc_bindir"]);
+
+				$ @(path.join(cbmc_bindir, "goto-instrument")) @(file_dep)
+				  @(file_dep +~ ".bin");
+
+				$ @(path.join(cbmc_bindir, "cbmc")) --smt2 --all-properties
+				  @(file_dep +~ ".bin");
+			}
 		}
 	}
 }
