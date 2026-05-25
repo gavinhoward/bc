@@ -57,6 +57,7 @@ main(void)
 	size_t scale;
 	BclNumber n, n2, n3, n4, n5, n6, n7;
 	char* res;
+	unsigned char seed[BCL_SEED_SIZE];
 	BclBigDig b = 0;
 
 	e = bcl_start();
@@ -259,6 +260,26 @@ main(void)
 	// Still checking asserts.
 	n4 = bcl_rand_seed2num();
 	err(bcl_err(n4));
+
+	// This section tests for use of uninitialized data (see GitHub PR #99).
+	memset(seed, 0, BCL_SEED_SIZE);
+
+	e = bcl_rand_seed(seed);
+	err(e);
+
+	n4 = bcl_rand_seed2num();
+	err(bcl_err(n4));
+
+	res = bcl_string(n4);
+
+	if (strcmp(res, ".138197721243864058449858898926140252615093221162022648196"
+	                "8894881171236437429440395050460332893038639667793177068233"
+	                "4899902343750"))
+	{
+		err(BCL_ERROR_FATAL_UNKNOWN_ERR);
+	}
+
+	free(res);
 
 	// Finally, check modexp, yet another special case.
 	n5 = bcl_parse("10");
