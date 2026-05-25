@@ -1701,6 +1701,9 @@ bcl_rand_seed(unsigned char seed[BCL_SEED_SIZE])
 
 	BC_FUNC_HEADER(vm, err);
 
+	// The loop below OR's into vals, so it must start zeroed.
+	memset(vals, 0, sizeof(vals));
+
 	// Fill the array.
 	for (i = 0; i < BCL_SEED_SIZE; ++i)
 	{
