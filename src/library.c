@@ -1706,7 +1706,7 @@ bcl_rand_seed(unsigned char seed[BCL_SEED_SIZE])
 	{
 		ulong val = ((ulong) seed[i])
 		            << (((ulong) CHAR_BIT) * (i % sizeof(ulong)));
-		vals[i / sizeof(long)] |= val;
+		vals[i / sizeof(long)] = val;
 	}
 
 	bc_rand_seed(&vm->rng, vals[0], vals[1], vals[2], vals[3]);
