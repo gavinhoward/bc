@@ -104,6 +104,7 @@ LLVMFuzzerTestOneInput(const uint8_t* Data, size_t Size)
 exit:
 
 	BC_SIG_MAYLOCK;
+	s = bc_vm_atexit(s);
 
 	free(bc_fuzzer_data);
 

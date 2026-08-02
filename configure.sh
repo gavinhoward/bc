@@ -949,7 +949,7 @@ if [ "$karatsuba_len" -lt 16 ]; then
 fi
 
 if [ "$ossfuzz" -ne 0 ] && [ "$memcheck" -eq 0 ]; then
-	usage "Can only enable OSSFUZZ when MEMCHECK is enabled"
+	memcheck=1
 fi
 
 set -e
@@ -1180,6 +1180,8 @@ if [ "$fuzz" -ne 0 ] || [ "$ossfuzz" -ne 0 ]; then
 	hist=0
 	nls=0
 	optimization="3"
+	bc_default_expr_exit=0
+	dc_default_expr_exit=0
 fi
 
 # This sets some necessary things for debug mode.
