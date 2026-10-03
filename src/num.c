@@ -4329,10 +4329,21 @@ bc_num_divmod(BcNum* a, BcNum* b, BcNum* c, BcNum* d, size_t scale)
 
 		bc_num_divArray(ptr_a, (BcBigDig) b->num[0], c, &rem);
 
+		if (BC_NUM_NONZERO(c))
+		{
+			BC_NUM_RDX_SET_NEG(c, BC_NUM_RDX_VAL(c),
+			                   BC_NUM_NEG(a) != BC_NUM_NEG(b));
+		}
+
 		assert(rem < BC_BASE_POW);
 
 		d->num[0] = (BcDig) rem;
 		d->len = (rem != 0);
+
+		if (BC_NUM_NONZERO(d))
+		{
+			BC_NUM_RDX_SET_NEG(d, 0, BC_NUM_NEG(a) != BC_NUM_NEG(b));
+		}
 	}
 	// Do the slow method.
 	else bc_num_r(ptr_a, b, c, d, scale, ts);
