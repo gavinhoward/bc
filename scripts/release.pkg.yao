@@ -527,7 +527,8 @@ fn run_test_rig(args: []str) -> void
 
 		if history
 		{
-			do_rig(@[ "test_history" ]);
+			// This is an explicit call because I want them serial.
+			$ rig -j1 test_history > /dev/null;
 		}
 	}
 }

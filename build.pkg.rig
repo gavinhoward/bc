@@ -2238,12 +2238,13 @@ fn register_timeconst_tests(
  *                     directory.
  * @param src_testdir  The full path to the test directory in the source
  *                     directory.
+ * @return             A list of the names of the history tests.
  */
 fn register_history_tests(
 	exec: str,
 	testdir: str,
 	src_testdir: str,
-) -> void
+) -> []sym
 {
 	calc: str = path.basename(testdir);
 
@@ -2254,16 +2255,21 @@ fn register_history_tests(
 	if len_res.exitcode != 0
 	{
 		io.eprint("Python 3 with pexpect doesn't work. Skipping history tests");
-		return;
+
+		return @[];
 	}
 
 	len: usize = usize(str(len_res.stdout));
 	scriptdir: str = path.dirname(testdir);
 
+	history_tests: []sym =
 	for i: range(len)
 	{
-		test sym(calc +~ "/history/" +~ str(i)):
-		     exec, path.join(scriptdir, "history.py")
+		test_name: sym = sym(calc +~ "/history/" +~ str(i));
+
+		// These are not tests because I don't want them run with the regular
+		// tests, but only when `test_history` is invoked.
+		target test_name: exec, path.join(scriptdir, "history.py")
 		{
 			name: str = tgt;
 			parts: []str = name.split("/");
@@ -2273,7 +2279,11 @@ fn register_history_tests(
 
 			$ @(file_deps[1]) -t $calc $idx @(file_dep);
 		}
-	}
+
+		test_name;
+	};
+
+	return history_tests;
 }
 
 /**
@@ -2284,6 +2294,7 @@ fn register_history_tests(
  *                     directory.
  * @param src_testdir  The full path to the test directory in the source
  *                     directory.
+ * @return             A list of the names of the history tests.
  */
 fn register_trunc_test(
 	exec: str,
@@ -2317,7 +2328,7 @@ fn register_trunc_test(
  * @param name  The base name of the executable.
  * @param targets  The targets that tests should depend on.
  */
-fn exe_tests(name: str) -> void
+fn exe_tests(name: str) -> []sym
 {
 	exec: str = exe_name(name);
 
@@ -2381,6 +2392,7 @@ fn exe_tests(name: str) -> void
 		var: $var
 	};
 
+	history_tests: []sym =
 	push test_config: config_stack
 	{
 		extra: bool = bool(config["extra_math"]);
@@ -2398,16 +2410,18 @@ fn exe_tests(name: str) -> void
 			register_timeconst_tests(exec, testdir);
 		}
 
-		if host.os != "Windows" && sym(config["history"]) == @builtin
-		{
-			register_history_tests(exec, testdir, src_testdir);
-		}
-
 		if bool(config["debug"]) && name == "bc"
 		{
 			register_trunc_test(exec, testdir, src_testdir);
 		}
-	}
+
+		if host.os != "Windows" && sym(config["history"]) == @builtin
+		{
+			register_history_tests(exec, testdir, src_testdir);
+		}
+	};
+
+	return history_tests;
 }
 
 /**

@@ -341,6 +341,10 @@ test_serial:
 	@if [ $(BC_ENABLED) -ne 0 ]; then $(TESTSDIR)/all.sh -n bc $(BC_ENABLE_EXTRA_MATH) 1 $(GENERATE_TESTS) $(PROBLEMATIC_TESTS) $(BC_EXEC); fi
 	@if [ $(DC_ENABLED) -ne 0 ]; then $(TESTSDIR)/all.sh -n dc $(BC_ENABLE_EXTRA_MATH) 1 $(GENERATE_TESTS) $(PROBLEMATIC_TESTS) $(DC_EXEC); fi
 
+test_history:
+	@if [ $(BC_ENABLED) -ne 0 ]; then $(TESTSDIR)/history.sh bc -a $(BC_EXEC); fi
+	@if [ $(DC_ENABLED) -ne 0 ]; then $(TESTSDIR)/history.sh dc -a $(DC_EXEC); fi
+
 clean_tests: clean clean_config
 	@printf 'Cleaning test files...\n'
 	@$(RM) -fr $(BC_TEST_OUTPUTS) $(DC_TEST_OUTPUTS)

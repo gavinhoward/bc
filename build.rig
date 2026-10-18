@@ -642,14 +642,21 @@ if OS != "Windows"
 // If the platform matches the host, we can run the test suite.
 if platform == host && BUILD_MODE != @library
 {
+	bc_history_tests: []sym =
 	if BUILD_MODE != @dc
 	{
 		exe_tests("bc");
-	}
+	};
 
+	dc_history_tests: []sym =
 	if BUILD_MODE != @bc
 	{
 		exe_tests("dc");
+	};
+
+	if bc_history_tests.len > 0 || dc_history_tests.len > 0
+	{
+		target @test_history: bc_history_tests, dc_history_tests;
 	}
 
 	target @clean_tests
