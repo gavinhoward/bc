@@ -3538,6 +3538,9 @@ bc_num_parse(BcNum* restrict n, const char* restrict val, BcBigDig base)
 #if BC_DEBUG
 #if BC_ENABLE_LIBRARY
 	BcVm* vm = bcl_getspecific();
+
+	// Mark unused because it will be unused when NDEBUG is defined.
+	(void) vm;
 #endif // BC_ENABLE_LIBRARY
 #endif // BC_DEBUG
 
@@ -3604,6 +3607,9 @@ bc_num_bigdig2(const BcNum* restrict n)
 #if BC_DEBUG
 #if BC_ENABLE_LIBRARY
 	BcVm* vm = bcl_getspecific();
+
+	// Mark unused because it will be unused when NDEBUG is defined.
+	(void) vm;
 #endif // BC_ENABLE_LIBRARY
 #endif // BC_DEBUG
 
