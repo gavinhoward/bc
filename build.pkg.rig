@@ -50,6 +50,8 @@ EXECSUFFIX: str = str(config["execsuffix"]);
 
 GEN_TESTS: bool = bool(config["generated_tests"]);
 
+BUILD_MODE: sym = sym(config["build_mode"]);
+
 /**
  * Does a safe install of an item. This emulates the `scripts/safe_install.sh`
  * script.
@@ -209,8 +211,6 @@ HEADERS: []str = find_src_ext("h", "include");
 
 FORCE: bool = bool(config["force"]);
 
-BUILD_MODE: sym = sym(config["build_mode"]);
-
 BC_ENABLED: str = str(uint(BUILD_MODE == @both || BUILD_MODE == @bc));
 DC_ENABLED: str = str(uint(BUILD_MODE == @both || BUILD_MODE == @dc));
 LIBRARY_ENABLED: str = str(uint(BUILD_MODE == @library));
@@ -347,7 +347,11 @@ CFLAGS2: []str = @[
 ];
 CFLAGS: []str = CFLAGS1 +~ CFLAGS2;
 
-LDFLAGS: []str = config_list["ldflags"];
+LDFLAGS: []str = config_list["ldflags"] +~
+if OS == "FreeBSD" && BUILD_MODE == @library
+{
+	@[ "-pthread" ];
+};
 
 COMMON_C_FILES: []str = @[
 	"src/data.c",

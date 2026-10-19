@@ -1455,7 +1455,14 @@ flags="-DBC_TEST_FREEBSD -DBC_ENABLE_AFL=0"
 err="$?"
 
 if [ "$err" -ne 0 ]; then
+
 	printf 'On FreeBSD. Not using _POSIX_C_SOURCE and _XOPEN_SOURCE.\n\n'
+
+	# FreeBSD wants pthread for bcl.
+	if [ "$library" -ne 0 ]; then
+		LDFLAGS=" -pthread"
+	fi
+
 else
 	printf 'Not on FreeBSD. Using _POSIX_C_SOURCE and _XOPEN_SOURCE.\n\n'
 	CPPFLAGS="$CPPFLAGS -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700"
