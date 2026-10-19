@@ -108,11 +108,6 @@ opts: Gaml = @(gaml){
 			long: @no-gcc
 			type: @NONE
 		}
-		GEN: {
-			help: "Turn off running the gen script."
-			long: @no-gen-script
-			type: @NONE
-		}
 		T: {
 			help: "Turn off running tests."
 			short: @T
@@ -185,7 +180,6 @@ no128: !bool = false;
 clang: !bool = true;
 c11: !bool = true;
 gcc: !bool = true;
-gen_host: !bool = true;
 tests: !bool = true;
 computed_goto: !bool = false;
 editline: !bool = false;
@@ -283,32 +277,7 @@ fn build_rig(
 	long_bit: usize
 ) -> void
 {
-	extra_cflags: []str =
-	if cc == "clang"
-	{
-		// We need to quiet this warning from Clang because the configure.sh
-		// docs have this warning, so people should know. Also, I want this
-		// script to work.
-		CLANG_FLAGS_RIG +~
-		if !gen_host
-		{
-			@[ "--compiler-flag=-Wno-overlength-strings" ];
-		};
-	}
-	else if cc == "gcc"
-	{
-		// We need to quiet this warning from GCC because the configure.sh docs
-		// have this warning, so people should know. Also, I want this script to
-		// work.
-		GCC_FLAGS_RIG +~
-		if !gen_host
-		{
-			@[ "--compiler-flag=-Wno-overlength-strings" ];
-		};
-	};
-
-	all_cflags: []str = cflags +~ extra_cflags;
-	cflags_str: str = strv2str(all_cflags);
+	cflags_str: str = strv2str(cflags);
 
 	hdr := "Building with Rig...\n    CC=" +~ cc +~
 	       "\n    CFLAGS=\"" +~ cflags_str +~ "\" " +~
@@ -316,7 +285,7 @@ fn build_rig(
 
 	header(hdr);
 
-	res := $ rig -gr %(flags) @("--compiler=" +~ cc) %(all_cflags);
+	res := $ rig -gr %(flags) @("--compiler=" +~ cc) %(cflags);
 
 	if res.exitcode != 0
 	{

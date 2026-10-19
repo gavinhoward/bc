@@ -78,10 +78,6 @@ sys.getopts opt, arg: opts, sys.argv
 	{
 		gcc! = false;
 	}
-	else if opt == @GEN
-	{
-		gen_host! = false;
-	}
 	else if opt == @T
 	{
 		tests! = false;
