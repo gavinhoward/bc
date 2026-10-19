@@ -39,6 +39,15 @@
 
 #include <bcl.h>
 
+#if BC_LONG_BIT >= 64
+#define BCL_SEED0                                                              \
+	".13819772124386405844985889892614025261509322116202264819688948811712364" \
+	"374294403950504603328930386396677931770682334899902343750"
+#else // BC_LONG_BIT >= 64
+#define BCL_SEED0 \
+	".3450005159944193763822337106539350770617602393031120300292968750"
+#endif // BC_LONG_BIT >= 64
+
 /**
  * Takes an error code and aborts if it actually is an error.
  * @param e  The error code.
@@ -272,12 +281,7 @@ main(void)
 
 	res = bcl_string(n4);
 
-	if (strcmp(res, ".138197721243864058449858898926140252615093221162022648196"
-	                "8894881171236437429440395050460332893038639667793177068233"
-	                "4899902343750"))
-	{
-		err(BCL_ERROR_FATAL_UNKNOWN_ERR);
-	}
+	if (strcmp(res, BCL_SEED0)) err(BCL_ERROR_FATAL_UNKNOWN_ERR);
 
 	free(res);
 
