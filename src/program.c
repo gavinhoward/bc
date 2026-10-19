@@ -861,6 +861,10 @@ bc_program_rand(BcProgram* p)
 	// braces because I declare every local at the top of the scope.
 	{
 		BcResult* r = bc_vec_top(&p->results);
+
+		// Mark as unused for when NDEBUG is undefined.
+		(void) r;
+
 		assert(BC_NUM_RDX_VALID_NP(r->d.n));
 	}
 #endif // BC_DEBUG
@@ -3765,6 +3769,9 @@ bc_program_exec(BcProgram* p)
 #else // BC_HAS_COMPUTED_GOTO
 
 #if BC_DEBUG
+		// Mark as unused in case NDEBUG is undefined.
+		(void) jmp_bufs_len;
+
 		// This is to allow me to use a debugger to see the last instruction,
 		// which will point to which function was the problem. But it's also a
 		// good smoke test for error handling changes.
