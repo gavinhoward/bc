@@ -29,20 +29,20 @@
 
 // For macOS from Ventura on, run using the following:
 //
-// scripts/release.yao -gG --no-gen-script --computed-goto
+// scripts/release.yao -gG --computed-goto
 //
 // For OpenBSD, run using the following:
 //
-// scripts/release.yao --no-gen-script --no-c11 --editline
+// scripts/release.yao --no-c11 --editline
 //
 // For FreeBSD, run using the following:
 //
-// scripts/release.yao -ger --no-gen-script --computed-goto
+// scripts/release.yao -ger --computed-goto
 //
 // For Linux, run two separate ones (in different checkouts), like so:
 //
-// scripts/release.yao -gpGser --no-gen-script --computed-goto --no-128
-// scripts/release.yao -gpCverk --no-gen-script --history
+// scripts/release.yao -gpGser --computed-goto --no-128
+// scripts/release.yao -gpCverk --history
 //
 // Yes, I usually do sanitizers with Clang and Valgrind with GCC, and I also do
 // out-of-source builds with GCC.
