@@ -329,7 +329,11 @@ other_flags: []str = freebsd_flags +~ macos_flags +~ openbsd_flags +~
                      lto_flag +~ std_flags +~ strict_flags +~ version_flag +~
 if bool(config["debug"])
 {
-	@[ compiler_db["opt.debug"] ];
+	@[ compiler_db["opt.debug"], DEFOPT +~ "BC_DEBUG=1" ];
+}
+else
+{
+	@[ DEFOPT +~ "BC_DEBUG=0" ];
 };
 
 history_files: []str =

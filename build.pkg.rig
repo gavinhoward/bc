@@ -2317,7 +2317,7 @@ fn register_trunc_test(
 		path.cp(file_dep, tgt);
 	}
 
-	test @trunc_test: test_file
+	test @trunc_test: test_file, exec
 	{
 		env.set "_BC_TEST_TRUNC=1"
 		{
