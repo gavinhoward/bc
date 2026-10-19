@@ -1140,10 +1140,13 @@ fn debug_make(
 	{
 		run_tests_make(DEBUG_CFLAGS_STR +~ " -fsanitize=undefined", cc,
 		               @[ "-mg" ]);
+		run_lib_tests_make(DEBUG_CFLAGS_STR +~ "-fsanitize=undefined", cc,
+		                   @[ "-g" ]);
 	}
 	else
 	{
 		run_tests_make(DEBUG_CFLAGS_STR, cc, @[ "-g" ]);
+		run_lib_tests_make(DEBUG_CFLAGS_STR, cc, @[ "-g" ]);
 	}
 }
 
