@@ -174,7 +174,7 @@ DC_DEFAULT_DIGIT_CLAMP = %%DC_DEFAULT_DIGIT_CLAMP%%
 RM = rm
 MKDIR = mkdir
 
-SCRIPTS = ./scripts
+SCRIPTS = $(ROOTDIR)/scripts
 
 MINISTAT = ministat
 MINISTAT_EXEC = $(SCRIPTS)/$(MINISTAT)
@@ -267,8 +267,8 @@ $(DC_HELP_C): $(GEN_EXEC) $(DC_HELP)
 $(DC_HELP_O): $(DC_HELP_C)
 	$(CC) $(CFLAGS) -o $@ -c $<
 
-$(BIN)/bcl.o: $(BIN) src $(HEADERS) $(EXTRA_MATH_HEADERS) $(BC_HEADERS) $(DC_HEADERS) $(LIBRARY_HEADERS) ./tests/bcl.c
-	$(CC) $(CFLAGS) -o $(BIN)/bcl.o -c ./tests/bcl.c
+$(BIN)/bcl.o: $(BIN) src $(HEADERS) $(EXTRA_MATH_HEADERS) $(BC_HEADERS) $(DC_HEADERS) $(LIBRARY_HEADERS) $(ROOTDIR)/tests/bcl.c
+	$(CC) $(CFLAGS) -o $(BIN)/bcl.o -c $(ROOTDIR)/tests/bcl.c
 
 $(BIN):
 	$(MKDIR) -p $(BIN)
