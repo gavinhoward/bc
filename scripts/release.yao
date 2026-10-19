@@ -123,6 +123,10 @@ sys.getopts opt, arg: opts, sys.argv
 	{
 		problematic! = true;
 	}
+	else if opt == @P
+	{
+		pll! = false;
+	}
 	else if opt == @r
 	{
 		readline! = true;

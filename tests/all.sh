@@ -89,7 +89,13 @@ launch() {
 
 }
 
-procs=$(nproc)
+name=$(uname)
+
+if [ "$name" = "Darwin" ]; then
+	procs=1
+else
+	procs=$(nproc)
+fi
 
 # We need to figure out if we should run stuff in parallel.
 pll=1

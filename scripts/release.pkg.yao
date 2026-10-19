@@ -167,6 +167,12 @@ opts: Gaml = @(gaml){
 			long: @problematic-tests
 			type: @NONE
 		}
+		P: {
+			help: "Whether to run `make` tests serially or not."
+			short: @P
+			long: @no-parallel
+			type: @NONE
+		}
 		r: {
 			help: "Whether to test with readline or not."
 			short: @r
@@ -209,6 +215,7 @@ generated: !bool = false;
 history: !bool = false;
 karatsuba: !bool = false;
 problematic: !bool = false;
+pll: !bool = true;
 readline: !bool = false;
 sanitizers: !bool = false;
 settings: !bool = false;
@@ -478,9 +485,8 @@ fn build_rig(
 
 /**
  * Run tests with `make`.
- * @param args  Any arguments to pass to `make`, if any.
  */
-fn run_test_make(args: []str) -> void
+fn run_test_make() -> void
 {
 	if !run_make
 	{
@@ -489,13 +495,13 @@ fn run_test_make(args: []str) -> void
 
 	header("Running `make` tests");
 
-	if args.len > 0
+	if pll
 	{
-		do_make(args);
+		do_make(@[ "test" ]);
 	}
 	else
 	{
-		do_make(@[ "test" ]);
+		do_make(@[ "test_serial" ]);
 
 		if history
 		{
@@ -575,7 +581,7 @@ fn run_config_tests_make(
 
 	if tests
 	{
-		run_test_make(@[]);
+		run_test_make();
 	}
 
 	do_make(@[ "clean" ]);
@@ -584,7 +590,7 @@ fn run_config_tests_make(
 
 	if tests
 	{
-		run_test_make(@[]);
+		run_test_make();
 	}
 
 	do_make(@[ "clean" ]);
@@ -593,7 +599,7 @@ fn run_config_tests_make(
 
 	if tests
 	{
-		run_test_make(@[]);
+		run_test_make();
 	}
 
 	do_make(@[ "clean" ]);
@@ -922,14 +928,14 @@ fn run_lib_tests_make(
 
 	if tests
 	{
-		run_test_make(@[ "test" ]);
+		run_test_make();
 	}
 
 	build_make(cflags, cc, flags +~ @[ "-a" ], true, usize(32));
 
 	if tests
 	{
-		run_test_make(@[ "test" ]);
+		run_test_make();
 	}
 }
 
@@ -1065,25 +1071,25 @@ fn vg_make() -> void
 
 	build_make(DEBUG_CFLAGS_STR +~ " " +~ C99OPT, "gcc", @[ "-O3", "-gv" ],
 	           true, defbits);
-	run_test_make(@[ "test" ]);
+	run_test_make();
 
 	do_make(@[ "clean_config" ]);
 
 	build_make(DEBUG_CFLAGS_STR +~ " " +~ C99OPT, "gcc", @[ "-O3", "-gvb" ],
 	           true, defbits);
-	run_test_make(@[ "test" ]);
+	run_test_make();
 
 	do_make(@[ "clean_config" ]);
 
 	build_make(DEBUG_CFLAGS_STR +~ " " +~ C99OPT, "gcc", @[ "-O3", "-gvd" ],
 	           true, defbits);
-	run_test_make(@[ "test" ]);
+	run_test_make();
 
 	do_make(@[ "clean_config" ]);
 
 	build_make(DEBUG_CFLAGS_STR +~ " " +~ C99OPT, "gcc", @[ "-O3", "-gva" ],
 	           true, defbits);
-	run_test_make(@[ "test" ]);
+	run_test_make();
 
 	do_make(@[ "clean_config" ]);
 }
@@ -1140,7 +1146,7 @@ fn debug_make(
 	{
 		run_tests_make(DEBUG_CFLAGS_STR +~ " -fsanitize=undefined", cc,
 		               @[ "-mg" ]);
-		run_lib_tests_make(DEBUG_CFLAGS_STR +~ "-fsanitize=undefined", cc,
+		run_lib_tests_make(DEBUG_CFLAGS_STR +~ " -fsanitize=undefined", cc,
 		                   @[ "-g" ]);
 	}
 	else
