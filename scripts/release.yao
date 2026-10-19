@@ -82,19 +82,6 @@ sys.getopts opt, arg: opts, sys.argv
 	{
 		gen_host! = false;
 	}
-	else if opt == @MAKE
-	{
-		run_make! = false;
-	}
-	else if opt == @RIG
-	{
-		if WINDOWS
-		{
-			sys.panic("Must run Rig on Windows");
-		}
-
-		run_rig! = false;
-	}
 	else if opt == @T
 	{
 		tests! = false;
@@ -122,10 +109,6 @@ sys.getopts opt, arg: opts, sys.argv
 	else if opt == @p
 	{
 		problematic! = true;
-	}
-	else if opt == @P
-	{
-		pll! = false;
 	}
 	else if opt == @r
 	{
