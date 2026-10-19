@@ -3607,9 +3607,6 @@ bc_num_bigdig2(const BcNum* restrict n)
 #if BC_DEBUG
 #if BC_ENABLE_LIBRARY
 	BcVm* vm = bcl_getspecific();
-
-	// Mark unused because it will be unused when NDEBUG is defined.
-	(void) vm;
 #endif // BC_ENABLE_LIBRARY
 #endif // BC_DEBUG
 
@@ -3621,6 +3618,13 @@ bc_num_bigdig2(const BcNum* restrict n)
 
 	BcBigDig r = 0;
 	size_t nrdx = BC_NUM_RDX_VAL(n);
+
+#if BC_DEBUG
+#if BC_ENABLE_LIBRARY
+	// Mark unused because it will be unused when NDEBUG is defined.
+	(void) vm;
+#endif // BC_ENABLE_LIBRARY
+#endif // BC_DEBUG
 
 	assert(n != NULL);
 	assert(!BC_NUM_NEG(n));
