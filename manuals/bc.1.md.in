@@ -1334,9 +1334,9 @@ the math library:
     This is a transcendental function (see the *Transcendental Functions*
     subsection below).
 
-**j(x, n)**
+**j(n, x)**
 
-:   Returns the bessel integer order **n** (truncated) of **x**.
+:   Returns the bessel integer order **n** (truncated) in **x**.
 
     This is a transcendental function (see the *Transcendental Functions*
     subsection below).
